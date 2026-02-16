@@ -11,13 +11,16 @@
     "./lib/*": "./src/lib/*.ts",
     "./hooks/*": "./src/hooks/*.ts",
     "./utils": "./src/lib/utils.ts",
-    "./*": "./src/ui/*.tsx"
+    "./*": "./src/ui/*.tsx",
+    "./form/form-input": "./src/form/form-input.tsx",
+    "./form/form-textarea": "./src/form/form-textarea.tsx"
   },
   "scripts": {
     "check-types": "tsc --noEmit"
   },
   "peerDependencies": {
-    "react": ">=18"
+    "react": ">=18",
+    "react-hook-form": ">=7"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
@@ -33,6 +36,7 @@
   },
   "devDependencies": {
     "@types/react": "^19",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "react-hook-form": "^7.71.1"
   }
 }
