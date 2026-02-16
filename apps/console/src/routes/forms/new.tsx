@@ -3,6 +3,7 @@ import { Button } from "@repo/design-system/button";
 import { useUser } from "@clerk/clerk-react";
 import { useMutation } from "@repo/convex/react";
 import { api } from "@repo/convex";
+import { getErrorMessage } from "@repo/convex/error";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -72,9 +73,7 @@ function NewFormPage() {
       });
       navigate({ to: "/forms/$formId", params: { formId } });
     } catch (err) {
-      setError("root", {
-        message: err instanceof Error ? err.message : "Failed to create form",
-      });
+      setError("root", { message: getErrorMessage(err, "Failed to create form") });
     }
   };
 

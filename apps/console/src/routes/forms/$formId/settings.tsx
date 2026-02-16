@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@repo/convex/react";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
+import { getErrorMessage } from "@repo/convex/error";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -91,21 +92,31 @@ function FormSettingsPage() {
         : undefined;
     const redirectUrl =
       typeof data.redirectUrl === "string" ? data.redirectUrl.trim() : "";
-    await updateForm({
-      formId: formIdTyped,
-      title: data.title.trim(),
-      description: data.description?.trim() || undefined,
-      slug: data.slug?.trim() || undefined,
-      isClosed: data.isClosed,
-      settings: {
-        collectEmail: data.collectEmail,
-        limitOneResponsePerPerson: data.limitOneResponsePerPerson,
-        confirmationMessage: data.confirmationMessage?.trim() || undefined,
-        redirectUrl: redirectUrl || undefined,
-        closeAt,
-      },
-    });
-    formRHF.reset(data);
+    try {
+      await updateForm({
+        formId: formIdTyped,
+        title: data.title.trim(),
+        description: data.description?.trim() || undefined,
+        slug: data.slug?.trim() || undefined,
+        isClosed: data.isClosed,
+        settings: {
+          collectEmail: data.collectEmail,
+          limitOneResponsePerPerson: data.limitOneResponsePerPerson,
+          confirmationMessage: data.confirmationMessage?.trim() || undefined,
+          redirectUrl: redirectUrl || undefined,
+          closeAt,
+        },
+      });
+      formRHF.reset(data);
+    } catch (err) {
+      const message = getErrorMessage(err, "Failed to save settings");
+      const isSlugError = message.toLowerCase().includes("slug");
+      if (isSlugError) {
+        formRHF.setError("slug", { message });
+      } else {
+        formRHF.setError("root", { message });
+      }
+    }
   };
 
   if (form === undefined) {

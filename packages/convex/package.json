@@ -30,6 +30,11 @@
       "types": "./react.tsx",
       "import": "./react.tsx",
       "default": "./react.tsx"
+    },
+    "./error": {
+      "types": "./error.ts",
+      "import": "./error.ts",
+      "default": "./error.ts"
     }
   }
 }
