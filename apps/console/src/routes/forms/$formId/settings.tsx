@@ -13,6 +13,8 @@ import { FormInput } from "@repo/design-system/form/form-input";
 import { FormTextarea } from "@repo/design-system/form/form-textarea";
 
 const settingsSchema = z.object({
+  title: z.string().min(1, "Form name is required"),
+  description: z.string().optional(),
   slug: z
     .string()
     .optional()
@@ -43,6 +45,8 @@ function FormSettingsPage() {
   const formRHF = useForm<SettingsValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
+      title: "",
+      description: "",
       slug: "",
       collectEmail: false,
       limitOneResponsePerPerson: false,
@@ -68,6 +72,8 @@ function FormSettingsPage() {
     const closeAtDate =
       closeAt != null ? new Date(closeAt).toISOString().slice(0, 10) : "";
     formRHF.reset({
+      title: form.title ?? "",
+      description: form.description ?? "",
       slug: form.slug ?? "",
       collectEmail: s?.collectEmail ?? false,
       limitOneResponsePerPerson: s?.limitOneResponsePerPerson ?? false,
@@ -87,6 +93,8 @@ function FormSettingsPage() {
       typeof data.redirectUrl === "string" ? data.redirectUrl.trim() : "";
     await updateForm({
       formId: formIdTyped,
+      title: data.title.trim(),
+      description: data.description?.trim() || undefined,
       slug: data.slug?.trim() || undefined,
       isClosed: data.isClosed,
       settings: {
@@ -115,6 +123,21 @@ function FormSettingsPage() {
       </p>
 
       <form onSubmit={formRHF.handleSubmit(onSubmit)} className="space-y-6">
+        <FormInput
+          name="title"
+          control={formRHF.control}
+          label="Form name"
+          placeholder="Untitled form"
+          required
+        />
+        <FormTextarea
+          name="description"
+          control={formRHF.control}
+          label="Form description"
+          description="Optional short description shown to respondents."
+          placeholder="Add a short description"
+          rows={2}
+        />
         <FormInput
           name="slug"
           control={formRHF.control}
