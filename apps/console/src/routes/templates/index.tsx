@@ -66,7 +66,7 @@ function TemplatesPage() {
         onOpenChange={(open) => !open && setPreviewTemplateId(null)}
       >
         {previewTemplate && (
-          <DialogContent className="max-h-[90vh] w-2xl flex flex-col gap-0 p-0 overflow-hidden">
+          <DialogContent className="max-h-[90vh] max-w-2xl flex flex-col gap-0 p-0 overflow-hidden">
             <DialogHeader className="shrink-0 border-b border-border px-4 py-3">
               <DialogTitle>Preview: {previewTemplate.name}</DialogTitle>
             </DialogHeader>
