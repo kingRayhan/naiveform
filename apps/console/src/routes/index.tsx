@@ -1,17 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@repo/design-system/button";
+import { useUser } from "@clerk/clerk-react";
+import { useQuery } from "@repo/convex/react";
+import { api } from "@repo/convex";
 
 export const Route = createFileRoute("/")({
   component: DashboardPage,
 });
 
-// Mock data – replace with real API
-const MOCK_FORMS = [
-  { id: "1", title: "Customer feedback", updatedAt: "2 hours ago", responses: 12 },
-  { id: "2", title: "Event sign-up", updatedAt: "1 day ago", responses: 0 },
-];
+function formatRelativeTime(ms: number) {
+  const sec = Math.floor((Date.now() - ms) / 1000);
+  if (sec < 60) return "just now";
+  if (sec < 3600) return `${Math.floor(sec / 60)} min ago`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)} hours ago`;
+  if (sec < 604800) return `${Math.floor(sec / 86400)} days ago`;
+  return "long ago";
+}
 
 function DashboardPage() {
+  const { user } = useUser();
+  const forms = useQuery(
+    api.forms.listByUser,
+    user?.id ? { userId: user.id } : "skip"
+  );
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -26,23 +38,29 @@ function DashboardPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {MOCK_FORMS.map((form) => (
-          <Link
-            key={form.id}
-            to="/forms/$formId"
-            params={{ formId: form.id }}
-            className="block p-4 border border-border rounded-lg bg-card hover:bg-muted/50 transition-colors text-left"
-          >
-            <h3 className="font-medium text-foreground truncate">{form.title}</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              {form.responses} response{form.responses !== 1 ? "s" : ""} · {form.updatedAt}
-            </p>
-          </Link>
-        ))}
-      </div>
+      {forms === undefined ? (
+        <div className="p-8 text-center text-muted-foreground">Loading…</div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {forms.map((form) => (
+            <Link
+              key={form._id}
+              to="/forms/$formId"
+              params={{ formId: form._id }}
+              className="block p-4 border border-border rounded-lg bg-card hover:bg-muted/50 transition-colors text-left"
+            >
+              <h3 className="font-medium text-foreground truncate">{form.title}</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                {form.updatedAt != null
+                  ? `Updated ${formatRelativeTime(form.updatedAt)}`
+                  : "No responses yet"}
+              </p>
+            </Link>
+          ))}
+        </div>
+      )}
 
-      {MOCK_FORMS.length === 0 && (
+      {forms?.length === 0 && (
         <div className="p-8 border border-dashed border-border rounded-lg text-center text-muted-foreground">
           No forms yet. Create your first form to get started.
         </div>

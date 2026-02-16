@@ -1,0 +1,35 @@
+{
+  "name": "@repo/convex",
+  "version": "1.0.0",
+  "description": "Convex backend for Naive Form",
+  "scripts": {
+    "dev": "convex dev",
+    "deploy": "convex deploy"
+  },
+  "dependencies": {
+    "convex": "^1.31.7"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "react": "^19.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./convex/_generated/api.d.ts",
+      "import": "./convex/_generated/api.js",
+      "default": "./convex/_generated/api.js"
+    },
+    "./dataModel": {
+      "types": "./dataModel.d.ts",
+      "import": "./dataModel.js",
+      "default": "./dataModel.js"
+    },
+    "./react": {
+      "types": "./react.tsx",
+      "import": "./react.tsx",
+      "default": "./react.tsx"
+    }
+  }
+}
