@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { FormInput } from "@repo/design-system/form/form-input";
 import { FormTextarea } from "@repo/design-system/form/form-textarea";
+import { getTemplateById } from "@/lib/templates.config";
 
 const newFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -17,17 +18,23 @@ const newFormSchema = z.object({
 type NewFormValues = z.infer<typeof newFormSchema>;
 
 export const Route = createFileRoute("/forms/new")({
+  validateSearch: z.object({ templateId: z.string().optional() }),
   component: NewFormPage,
 });
 
 function NewFormPage() {
   const navigate = useNavigate();
+  const { templateId } = Route.useSearch();
+  const template = templateId ? getTemplateById(templateId) : undefined;
   const { user } = useUser();
   const createForm = useMutation(api.forms.create);
 
   const form = useForm<NewFormValues>({
     resolver: zodResolver(newFormSchema),
-    defaultValues: { title: "", description: "" },
+    defaultValues: {
+      title: template?.form.title ?? "",
+      description: template?.form.description ?? "",
+    },
   });
 
   const {
@@ -46,6 +53,7 @@ function NewFormPage() {
         title: data.title.trim() || "Untitled form",
         description: data.description?.trim() || undefined,
         userId: user.id,
+        questions: template?.form.questions,
       });
       navigate({ to: "/forms/$formId", params: { formId } });
     } catch (err) {
