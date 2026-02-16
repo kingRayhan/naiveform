@@ -4,7 +4,7 @@ import {
   useMutation,
   useQuery,
 } from "convex/react";
-import React, { type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 export {
   BaseConvexProvider as ConvexProvider,
@@ -24,7 +24,10 @@ interface ConvexProviderWithURLProps {
  *   {children}
  * </ConvexProviderWithURL>
  */
-export function ConvexProviderWithURL({ url, children }: ConvexProviderWithURLProps) {
+export function ConvexProviderWithURL({
+  url,
+  children,
+}: ConvexProviderWithURLProps) {
   const client = new ConvexReactClient(url);
   return <BaseConvexProvider client={client}>{children}</BaseConvexProvider>;
 }
