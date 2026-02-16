@@ -16,6 +16,14 @@ const questionValidator = {
   options: v.optional(v.array(v.string())),
 };
 
+const formSettingsValidator = {
+  collectEmail: v.optional(v.boolean()),
+  limitOneResponsePerPerson: v.optional(v.boolean()),
+  confirmationMessage: v.optional(v.string()),
+  closeAt: v.optional(v.number()),
+  redirectUrl: v.optional(v.string()),
+};
+
 export const create = mutation({
   args: {
     title: v.string(),
@@ -50,6 +58,9 @@ export const update = mutation({
     title: v.optional(v.string()),
     description: v.optional(v.string()),
     questions: v.optional(v.array(v.object(questionValidator))),
+    slug: v.optional(v.string()),
+    isClosed: v.optional(v.boolean()),
+    settings: v.optional(v.object(formSettingsValidator)),
   },
   handler: async (ctx, args) => {
     const { formId, ...updates } = args;

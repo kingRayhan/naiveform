@@ -12,8 +12,7 @@
     "./hooks/*": "./src/hooks/*.ts",
     "./utils": "./src/lib/utils.ts",
     "./*": "./src/ui/*.tsx",
-    "./form/form-input": "./src/form/form-input.tsx",
-    "./form/form-textarea": "./src/form/form-textarea.tsx"
+    "./form/*": "./src/form/*.tsx"
   },
   "scripts": {
     "check-types": "tsc --noEmit"
