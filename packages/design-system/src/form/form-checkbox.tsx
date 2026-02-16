@@ -8,6 +8,7 @@ type FormCheckboxProps<T extends FieldValues> = {
   description?: string;
   id?: string;
   className?: string;
+  required?: boolean;
 };
 
 const checkboxStyles =
@@ -20,6 +21,7 @@ export function FormCheckbox<T extends FieldValues>({
   description,
   id,
   className,
+  required = false,
 }: FormCheckboxProps<T>) {
   const inputId = id ?? name;
 
@@ -53,7 +55,14 @@ export function FormCheckbox<T extends FieldValues>({
               }
               className={cn(checkboxStyles)}
             />
-            <span className="font-normal">{label}</span>
+            <span className="font-normal">
+              {label}
+              {required && (
+                <span className="text-destructive ml-0.5" aria-hidden>
+                  *
+                </span>
+              )}
+            </span>
           </label>
           {description && !fieldState.error && (
             <p

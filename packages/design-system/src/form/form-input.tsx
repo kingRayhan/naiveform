@@ -11,6 +11,7 @@ type FormInputProps<T extends FieldValues> = {
   type?: React.ComponentProps<"input">["type"];
   id?: string;
   className?: string;
+  required?: boolean;
 };
 
 export function FormInput<T extends FieldValues>({
@@ -22,6 +23,7 @@ export function FormInput<T extends FieldValues>({
   type = "text",
   id,
   className,
+  required = false,
 }: FormInputProps<T>) {
   const inputId = id ?? name;
 
@@ -39,6 +41,11 @@ export function FormInput<T extends FieldValues>({
             className="block text-sm font-medium text-foreground"
           >
             {label}
+            {required && (
+              <span className="text-destructive ml-0.5" aria-hidden>
+                *
+              </span>
+            )}
           </label>
           <Input
             {...field}

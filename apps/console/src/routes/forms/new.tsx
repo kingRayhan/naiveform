@@ -94,6 +94,7 @@ function NewFormPage() {
           control={form.control}
           label="Form title"
           placeholder="Untitled form"
+          required
         />
         <FormTextarea
           name="description"

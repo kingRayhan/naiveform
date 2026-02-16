@@ -13,6 +13,7 @@ type FormTextareaProps<T extends FieldValues> = {
   rows?: number;
   id?: string;
   className?: string;
+  required?: boolean;
 };
 
 export function FormTextarea<T extends FieldValues>({
@@ -24,6 +25,7 @@ export function FormTextarea<T extends FieldValues>({
   rows = 3,
   id,
   className,
+  required = false,
 }: FormTextareaProps<T>) {
   const inputId = id ?? name;
 
@@ -41,6 +43,11 @@ export function FormTextarea<T extends FieldValues>({
             className="block text-sm font-medium text-foreground"
           >
             {label}
+            {required && (
+              <span className="text-destructive ml-0.5" aria-hidden>
+                *
+              </span>
+            )}
           </label>
           <textarea
             {...field}
