@@ -10,6 +10,19 @@ import { FormInput } from "@repo/design-system/form/form-input";
 import { FormTextarea } from "@repo/design-system/form/form-textarea";
 import { getTemplateById } from "@/lib/templates.config";
 
+/** "Event form" -> "event-form-abc12def" */
+function createFormSlugFromTitle(title: string): string {
+  const base = title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 50);
+  const slugBase = base || "form";
+  const random = crypto.randomUUID().slice(0, 8);
+  return `${slugBase}-${random}`;
+}
+
 const newFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
@@ -49,11 +62,13 @@ function NewFormPage() {
       return;
     }
     try {
+      const title = data.title.trim() || "Untitled form";
       const formId = await createForm({
-        title: data.title.trim() || "Untitled form",
+        title,
         description: data.description?.trim() || undefined,
         userId: user.id,
         questions: template?.form.questions,
+        slug: createFormSlugFromTitle(title),
       });
       navigate({ to: "/forms/$formId", params: { formId } });
     } catch (err) {

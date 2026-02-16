@@ -22,6 +22,7 @@ export const create = mutation({
     description: v.optional(v.string()),
     userId: v.string(),
     questions: v.optional(v.array(v.object(questionValidator))),
+    slug: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -30,6 +31,7 @@ export const create = mutation({
       description: args.description,
       userId: args.userId,
       questions: args.questions ?? [],
+      slug: args.slug,
       updatedAt: now,
     });
   },
