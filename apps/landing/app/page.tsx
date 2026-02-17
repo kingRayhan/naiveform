@@ -1,8 +1,12 @@
-import { Button } from "@repo/design-system/button";
-import React from "react";
+import { FeaturePlatform } from "@/components/feature-platform";
+import { HeroAiValueProposition } from "@repo/design-system/hero-ai-value-proposition";
 
 const Page = () => {
-  return <Button>Click me</Button>;
+  return (
+    <>
+      <HeroAiValueProposition />
+      <FeaturePlatform />
+    </>
+  );
 };
-
 export default Page;
