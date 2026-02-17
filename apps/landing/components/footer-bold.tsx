@@ -1,6 +1,12 @@
 "use client";
 
 export const BoldFooter = () => {
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <footer className="w-full bg-white text-zinc-900 overflow-hidden border-t border-zinc-200 font-dmSans">
       <div className="max-w-7xl mx-auto px-4 py-20 sm:px-6 lg:px-8 flex flex-col items-center">
@@ -23,13 +29,22 @@ export const BoldFooter = () => {
                 Platform
               </p>
               <nav className="flex flex-col gap-2">
-                <a href="#" className="text-sm font-medium hover:underline">
+                <a
+                  href="#features"
+                  className="text-sm font-medium hover:underline"
+                >
                   Features
                 </a>
-                <a href="#" className="text-sm font-medium hover:underline">
+                <a
+                  href="#pricing"
+                  className="text-sm font-medium hover:underline"
+                >
                   Pricing
                 </a>
-                <a href="#" className="text-sm font-medium hover:underline">
+                <a
+                  href="http://localhost:5173"
+                  className="text-sm font-medium hover:underline"
+                >
                   Login
                 </a>
               </nav>
@@ -69,7 +84,7 @@ export const BoldFooter = () => {
                 v1.0.0 — {new Date().getFullYear()}
               </span>
               <button
-                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                onClick={scrollToTop}
                 className="text-xs font-bold uppercase tracking-widest hover:text-zinc-500 transition-colors"
               >
                 Back to top ↑

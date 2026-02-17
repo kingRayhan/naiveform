@@ -1,187 +1,213 @@
-'use client'
-import React, { useState } from 'react'
-import { Check } from 'lucide-react'
-import { motion } from 'motion/react'
-import NumberFlow from '@number-flow/react'
-import { useId } from 'react'
+"use client";
 
-// import { Button } from '@repo/ui/shadcn'
-import { cn } from '@/lib/utils'
-import { Switch, Button } from '@repo/shadcn'
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@repo/design-system/button";
+import Link from "next/link";
+import { useState } from "react";
+
 const PLANS = [
   {
-    name: 'Basic Plan',
-    description: 'Ideal for small businesses',
-    monthly: 29,
-    yearly: 23,
+    name: "Hobby",
+    description: "Perfect for personal projects and small experiments.",
+    price: "$0",
     features: [
-      'Unified dashboard',
-      'Finance management module',
-      'Inventory control',
-      'Basic reporting and analytics',
-      '10 user accounts',
+      "Unlimited forms",
+      "500 submissions / month",
+      "Basic analytics",
+      "Email notifications",
+      "Community support",
     ],
-    variant: 'outline' as const,
+    variant: "outline" as const,
+    featured: false,
   },
   {
-    name: 'Business Plan',
-    description: 'For growing businesses',
-    monthly: 59,
-    yearly: 47,
+    name: "Pro",
+    description: "For creators and businesses who need more power.",
+    price: "$10",
     features: [
-      'Everything in basic plan',
-      'HR & payroll module',
-      'Sales & CRM module',
-      'Workflow automation',
-      'Advanced analytics & reporting',
+      "Unlimited forms",
+      "Unlimited submissions",
+      "Remove NaiveForm branding",
+      "Priority email support",
+      "Export to CSV/Excel",
+      "Custom redirect after submission",
     ],
-    variant: 'secondary' as const,
+    variant: "default" as const,
     featured: true,
   },
-  {
-    name: 'Premium Plan',
-    description: 'Ideal for enterprises seeking',
-    monthly: 99,
-    yearly: 79,
-    features: [
-      'Everything in business plan',
-      'Custom integrations',
-      'AI-Driven recommendations',
-      'Role based access control',
-      'Unlimited user accounts',
-    ],
-    variant: 'outline' as const,
-  },
-]
+];
 
 export const GrowthPlans = () => {
-  const [billing, setBilling] = useState<'monthly' | 'yearly'>('yearly')
-  const id = useId()
+  const [isYearly, setIsYearly] = useState(false);
+
   return (
-    <section className="py-24 bg-white font-dmSans text-black">
+    <section
+      id="pricing"
+      className="py-24 bg-white font-dmSans text-black border-t border-zinc-100"
+    >
       <div className="max-w-6xl mx-auto px-6 text-center">
-        <h2 className="text-4xl font-semibold tracking-tight mb-2 text-balance">
-          Plans that grow your SASS.
+        <h2 className="text-4xl font-semibold tracking-tight mb-4 text-balance">
+          Simple, transparent pricing.
         </h2>
-        <p className="text-neutral-500 mb-5 text-pretty">
-          Unlock potential with plans designed to fuel growth.
+        <p className="text-neutral-500 mb-8 text-pretty max-w-2xl mx-auto">
+          Start for free, upgrade when you need to scale. No hidden fees.
         </p>
-        <div className="flex items-center justify-center gap-4 mb-16 bg-neutral-100 border border-neutral-200 w-fit p-3 mx-auto">
+
+        {/* Toggle */}
+        <div className="flex items-center justify-center gap-4 mb-16">
           <span
             className={cn(
-              'text-sm transition-colors',
-              billing === 'monthly'
-                ? 'text-neutral-900 font-medium'
-                : 'text-neutral-400'
+              "text-sm",
+              !isYearly ? "text-slate-900 font-medium" : "text-slate-500",
             )}
           >
             Monthly
           </span>
-          <Switch
-            id={id}
-            // @ts-ignore
-            checked={billing === 'yearly'}
-            className="bg-neutral-300"
-            // @ts-ignore
-            onCheckedChange={(checked) =>
-              setBilling(checked ? 'yearly' : 'monthly')
-            }
-          />
-
-          <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsYearly(!isYearly)}
+            className="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+          >
             <span
               className={cn(
-                'text-sm transition-colors',
-                billing === 'yearly'
-                  ? 'text-neutral-900 font-medium'
-                  : 'text-neutral-400'
+                "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                isYearly ? "translate-x-6" : "translate-x-1",
               )}
-            >
-              Yearly
+            />
+          </button>
+          <span
+            className={cn(
+              "text-sm",
+              isYearly ? "text-slate-900 font-medium" : "text-slate-500",
+            )}
+          >
+            Yearly{" "}
+            <span className="text-emerald-600 text-xs font-bold ml-1">
+              (2 months free)
             </span>
-            <span className="px-2 py-0.5 bg- text-[10px] font-bold rounded-full uppercase">
-              Save 20%
-            </span>
-          </div>
+          </span>
         </div>
 
-        <div className="grid lg:grid-cols-3 -gap-x-4 items-stretch">
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {PLANS.map((plan) => (
             <div
               key={plan.name}
               className={cn(
-                'rounded-lg p-8 flex flex-col border transition-all',
+                "rounded-3xl p-8 flex flex-col border transition-all text-left relative overflow-hidden",
                 plan.featured
-                  ? 'bg-neutral-950 text-white scale-105 shadow-2xl z-10 border-transparent'
-                  : 'bg-neutral-100 border border-neutral-200'
+                  ? "bg-neutral-900 text-white shadow-xl ring-1 ring-neutral-900"
+                  : "bg-white border-neutral-200 hover:border-neutral-300",
               )}
             >
-              <div className="text-left mb-8">
-                <h4 className="font-bold text-lg">{plan.name}</h4>
+              {plan.featured && (
+                <div className="absolute top-0 right-0 bg-gradient-to-bl from-blue-500 to-purple-600 text-white text-xs font-bold px-3 py-1 rounded-bl-xl">
+                  MOST POPULAR
+                </div>
+              )}
+
+              <div className="mb-8">
+                <h4 className="font-bold text-xl mb-2">{plan.name}</h4>
                 <p
                   className={cn(
-                    'text-sm',
-                    plan.featured ? 'text-neutral-400' : 'text-neutral-400'
+                    "text-sm leading-relaxed",
+                    plan.featured ? "text-neutral-400" : "text-neutral-500",
                   )}
                 >
                   {plan.description}
                 </p>
               </div>
-              <div className="flex items-baseline gap-1 mb-8 text-left">
+
+              <div className="flex items-baseline gap-1 mb-8">
                 <span
                   className={cn(
-                    'text-2xl font-medium',
-                    plan.featured ? 'text-gre' : 'text-neutral-400'
+                    "text-5xl font-bold tracking-tight",
+                    plan.featured ? "text-white" : "text-neutral-900",
                   )}
                 >
-                  $
+                  {plan.price === "$0" ? "$0" : isYearly ? "$8" : plan.price}
                 </span>
                 <span
                   className={cn(
-                    'text-5xl font-bold ',
-                    plan.featured ? 'text-white' : 'text-neutral-900'
+                    "text-sm font-medium",
+                    plan.featured ? "text-neutral-400" : "text-neutral-500",
                   )}
                 >
-                  <NumberFlow
-                    value={billing === 'monthly' ? plan.monthly : plan.yearly}
-                  />
+                  /month
                 </span>
-                <span className="text-neutral-400 text-sm">/monthly</span>
+                {isYearly && plan.price !== "$0" && (
+                  <span className="ml-2 text-xs text-emerald-500 font-medium">
+                    Billed ${parseInt(plan.price.replace("$", "")) * 10} yearly
+                  </span>
+                )}
               </div>
+
               <Button
-                variant={plan.variant}
+                asChild
                 className={cn(
-                  'w-full mb-10 rounded-lg h-14',
+                  "w-full mb-8 rounded-xl h-12 text-base font-medium transition-all",
                   plan.featured
-                    ? 'py-4 bg-neutral-800 border border-neutral-700'
-                    : 'bg-white border-neutral-200 hover:shadow-neutral-200 hover:shadow-lg hover:bg-white'
+                    ? "bg-white text-black hover:bg-neutral-100 border-0"
+                    : "bg-white border border-neutral-200 text-neutral-900 hover:bg-neutral-50 shadow-sm",
                 )}
               >
-                Select Plan
+                <Link
+                  href={
+                    plan.price === "$0"
+                      ? "http://localhost:5173/forms/new"
+                      : "http://localhost:5173/settings/billing"
+                  }
+                >
+                  {plan.price === "$0" ? "Get Started Free" : "Upgrade to Pro"}
+                </Link>
               </Button>
+
               <div
                 className={cn(
-                  'space-y-4 pt-8 border-t text-left',
-                  plan.featured ? 'border-neutral-700' : 'border-neutral-200'
+                  "space-y-4 pt-8 border-t flex-1",
+                  plan.featured ? "border-neutral-800" : "border-neutral-100",
                 )}
               >
+                <p
+                  className={cn(
+                    "text-xs font-bold uppercase tracking-widest",
+                    plan.featured ? "text-neutral-500" : "text-neutral-400",
+                  )}
+                >
+                  What's included
+                </p>
                 {plan.features.map((f, i) => (
                   <div
                     key={i}
                     className={cn(
-                      'flex items-center gap-3 text-sm',
-                      plan.featured ? 'text-neutral-300' : 'text-neutral-600'
+                      "flex items-start gap-3 text-sm",
+                      plan.featured ? "text-neutral-300" : "text-neutral-600",
                     )}
                   >
-                    <Check className="size-4 shrink-0" />
-                    {f}
+                    <Check
+                      className={cn(
+                        "size-5 shrink-0",
+                        plan.featured ? "text-blue-400" : "text-blue-600",
+                      )}
+                    />
+                    <span>{f}</span>
                   </div>
                 ))}
               </div>
             </div>
           ))}
         </div>
+
+        <p className="mt-12 text-sm text-neutral-500">
+          Need a custom plan for your enterprise?{" "}
+          <a
+            href="mailto:enterprise@naiveform.com"
+            className="underline hover:text-black"
+          >
+            Contact us
+          </a>
+          .
+        </p>
       </div>
     </section>
-  )
-}
+  );
+};
