@@ -1,12 +1,18 @@
-import { FeaturePlatform } from "@/components/feature-platform";
-import { HeroAiValueProposition } from "@repo/design-system/hero-ai-value-proposition";
+import { Navbar } from "@/components/navbar";
+import { Hero } from "@/components/hero";
+import { Features } from "@/components/features";
+import { CtaSection } from "@/components/cta-section";
+import { Footer } from "@/components/footer";
+import { BoldFooter } from "@/components/footer-bold";
 
-const Page = () => {
+export default function Home() {
   return (
-    <>
-      <HeroAiValueProposition />
-      <FeaturePlatform />
-    </>
+    <main className="min-h-screen bg-white">
+      <Navbar />
+      <Hero />
+      <Features />
+      <CtaSection />
+      <BoldFooter />
+    </main>
   );
-};
-export default Page;
+}
