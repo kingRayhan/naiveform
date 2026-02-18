@@ -1,5 +1,7 @@
 "use client";
 
+import { CONSOLE_APP_URL } from "@/lib/config";
+
 export const BoldFooter = () => {
   const scrollToTop = () => {
     if (typeof window !== "undefined") {
@@ -42,7 +44,7 @@ export const BoldFooter = () => {
                   Pricing
                 </a>
                 <a
-                  href="http://localhost:5173"
+                  href={CONSOLE_APP_URL}
                   className="text-sm font-medium hover:underline"
                 >
                   Login

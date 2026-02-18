@@ -2,6 +2,7 @@
 
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CONSOLE_APP_NEW_FORM_URL, CONSOLE_APP_URL } from "@/lib/config";
 import { Button } from "@repo/design-system/button";
 import Link from "next/link";
 import { useState } from "react";
@@ -153,8 +154,8 @@ export const GrowthPlans = () => {
                 <Link
                   href={
                     plan.price === "$0"
-                      ? "http://localhost:5173/forms/new"
-                      : "http://localhost:5173/settings/billing"
+                      ? CONSOLE_APP_NEW_FORM_URL
+                      : `${CONSOLE_APP_URL}/settings/billing`
                   }
                 >
                   {plan.price === "$0" ? "Get Started Free" : "Upgrade to Pro"}

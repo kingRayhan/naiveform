@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CONSOLE_APP_NEW_FORM_URL } from "@/lib/config";
 import { Button } from "@repo/design-system/button";
 
 export function CtaSection() {
@@ -28,7 +29,7 @@ export function CtaSection() {
                 className="h-14 px-8 rounded-full text-lg bg-white text-slate-900 hover:bg-slate-100"
                 asChild
               >
-                <Link href="http://localhost:5173/forms/new">
+                <Link href={CONSOLE_APP_NEW_FORM_URL}>
                   Get Started for Free
                 </Link>
               </Button>

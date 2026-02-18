@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CONSOLE_APP_URL, CONSOLE_APP_NEW_FORM_URL } from "@/lib/config";
 import { useEffect, useState } from "react";
 import { cn } from "@repo/design-system/lib/utils";
 import { Button } from "@repo/design-system/button";
@@ -60,13 +61,13 @@ export function Navbar() {
         {/* Auth Buttons */}
         <div className="flex items-center gap-3">
           <Link
-            href="http://localhost:5173" // Console App URL
+            href={CONSOLE_APP_URL}
             className="text-sm font-medium text-zinc-600 hover:text-black transition-colors px-3 py-2"
           >
             Sign In
           </Link>
           <Button asChild className="rounded-full px-5">
-            <Link href="http://localhost:5173/forms/new">Get Started</Link>
+            <Link href={CONSOLE_APP_NEW_FORM_URL}>Get Started</Link>
           </Button>
         </div>
       </div>

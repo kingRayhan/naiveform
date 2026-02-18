@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
+import { CONSOLE_APP_NEW_FORM_URL } from "@/lib/config";
 import { Button } from "@repo/design-system/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 
@@ -55,7 +56,7 @@ export function Hero() {
               className="h-12 px-8 rounded-full text-base shadow-xl bg-primary"
               asChild
             >
-              <Link href="http://localhost:5173/forms/new">
+              <Link href={CONSOLE_APP_NEW_FORM_URL}>
                 Start Building Free <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
