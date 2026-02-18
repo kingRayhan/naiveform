@@ -19,15 +19,22 @@ const settingsSchema = z.object({
   slug: z
     .string()
     .optional()
-    .refine((v) => !v || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v), "Use lowercase letters, numbers and hyphens only"),
+    .refine(
+      (v) => !v || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v),
+      "Use lowercase letters, numbers and hyphens only"
+    ),
   limitOneResponsePerPerson: z.boolean(),
   confirmationMessage: z.string().optional(),
   redirectUrl: z
     .string()
     .optional()
-    .refine((v) => v === undefined || v === "" || /^https?:\/\/.+/.test(v), "Enter a valid URL or leave empty"),
+    .refine(
+      (v) => v === undefined || v === "" || /^https?:\/\/.+/.test(v),
+      "Enter a valid URL or leave empty"
+    ),
   closeAtDate: z.string().optional(), // YYYY-MM-DD or empty
   isClosed: z.boolean(),
+  archived: z.boolean(),
 });
 
 type SettingsValues = z.infer<typeof settingsSchema>;
@@ -53,6 +60,7 @@ function FormSettingsPage() {
       redirectUrl: "",
       closeAtDate: "",
       isClosed: false,
+      archived: false,
     },
   });
 
@@ -79,6 +87,7 @@ function FormSettingsPage() {
       redirectUrl: s?.redirectUrl ?? "",
       closeAtDate,
       isClosed: form.isClosed ?? false,
+      archived: form.archived ?? false,
     });
   }, [form, formId, formRHF]);
 
@@ -96,6 +105,7 @@ function FormSettingsPage() {
         description: data.description?.trim() || undefined,
         slug: data.slug?.trim() || undefined,
         isClosed: data.isClosed,
+        archived: data.archived,
         settings: {
           limitOneResponsePerPerson: data.limitOneResponsePerPerson,
           confirmationMessage: data.confirmationMessage?.trim() || undefined,
@@ -124,7 +134,9 @@ function FormSettingsPage() {
 
   return (
     <div className="max-w-xl">
-      <h2 className="text-lg font-semibold text-foreground mb-1">Form settings</h2>
+      <h2 className="text-lg font-semibold text-foreground mb-1">
+        Form settings
+      </h2>
       <p className="text-sm text-muted-foreground mb-6">
         Configure how your form collects responses and when it closes.
       </p>
@@ -193,6 +205,13 @@ function FormSettingsPage() {
             control={formRHF.control}
             label="Form is closed (stop accepting responses)"
           />
+          <div className="bg-destructive/30 py-2 px-1">
+            <FormCheckbox
+              name="archived"
+              control={formRHF.control}
+              label="Archive form (hide from dashboard, keep data)"
+            />
+          </div>
         </FormFieldGroup>
 
         {formRHF.formState.errors.root && (

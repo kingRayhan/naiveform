@@ -85,6 +85,7 @@ export const update = mutation({
     questions: v.optional(v.array(v.object(questionValidator))),
     slug: v.optional(v.string()),
     isClosed: v.optional(v.boolean()),
+    archived: v.optional(v.boolean()),
     settings: v.optional(v.object(formSettingsValidator)),
   },
   handler: async (ctx, args) => {
@@ -112,12 +113,17 @@ export const update = mutation({
 });
 
 export const listByUser = query({
-  args: { userId: v.string() },
+  args: {
+    userId: v.string(),
+    showArchivedOnly: v.optional(v.boolean()),
+  },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const forms = await ctx.db
       .query("forms")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .order("desc")
       .collect();
+    if (args.showArchivedOnly) return forms.filter((f) => !!f.archived);
+    return forms.filter((f) => !f.archived);
   },
 });

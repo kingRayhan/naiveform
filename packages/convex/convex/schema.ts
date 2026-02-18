@@ -40,6 +40,7 @@ export default defineSchema({
     settings: v.optional(v.object(formSettingsValidator)),
     slug: v.optional(v.string()), // for /f/:slug URLs
     isClosed: v.optional(v.boolean()),
+    archived: v.optional(v.boolean()),
     updatedAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"])

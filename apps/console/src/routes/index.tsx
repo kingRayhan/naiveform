@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Button } from "@repo/design-system/button";
 import { useUser } from "@clerk/clerk-react";
 import { useQuery } from "@repo/convex/react";
@@ -20,9 +21,10 @@ function formatRelativeTime(ms: number) {
 
 function DashboardPage() {
   const { user } = useUser();
+  const [showArchived, setShowArchived] = useState(false);
   const forms = useQuery(
     api.forms.listByUser,
-    user?.id ? { userId: user.id } : "skip"
+    user?.id ? { userId: user.id, showArchivedOnly: showArchived } : "skip"
   );
 
   return (
@@ -34,9 +36,18 @@ function DashboardPage() {
             Your forms will appear here.
           </p>
         </div>
-        <Button asChild>
-          <Link to="/forms/new">Create form</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={showArchived ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => setShowArchived(!showArchived)}
+          >
+            {showArchived ? "Hide archived" : "Show archived"}
+          </Button>
+          <Button asChild>
+            <Link to="/forms/new">Create form</Link>
+          </Button>
+        </div>
       </div>
 
       {forms === undefined ? (
@@ -50,7 +61,14 @@ function DashboardPage() {
               params={{ formId: form._id }}
               className="block p-4 border border-border rounded-lg bg-card hover:bg-muted/50 transition-colors text-left"
             >
-              <h3 className="font-medium text-foreground truncate">{form.title}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium text-foreground truncate">{form.title}</h3>
+                {form.archived && (
+                  <span className="shrink-0 rounded px-1.5 py-0.5 text-xs bg-muted text-muted-foreground">
+                    Archived
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground mt-1">
                 {form.updatedAt != null
                   ? `Updated ${formatRelativeTime(form.updatedAt)}`
@@ -61,8 +79,13 @@ function DashboardPage() {
         </div>
       )}
 
-      {forms?.length === 0 && (
+      {forms?.length === 0 && !showArchived && (
         <EmptyState />
+      )}
+      {forms?.length === 0 && showArchived && (
+        <div className="rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">
+          No archived forms.
+        </div>
       )}
     </div>
   );
