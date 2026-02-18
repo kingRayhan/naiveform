@@ -3,7 +3,7 @@
 import { useQuery, useMutation } from "@repo/convex/react";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { Button } from "@repo/design-system/button";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -50,6 +50,7 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
@@ -180,6 +181,7 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
             key={q.id}
             question={q}
             register={register}
+            control={control}
             setValue={setValue}
             watch={watch}
             setError={setError}
@@ -265,6 +267,7 @@ function ShortTextInput({
 function QuestionField({
   question,
   register,
+  control,
   setValue,
   watch,
   setError,
@@ -273,6 +276,7 @@ function QuestionField({
 }: {
   question: Question;
   register: ReturnType<typeof useForm<FormData>>["register"];
+  control: ReturnType<typeof useForm<FormData>>["control"];
   setValue: ReturnType<typeof useForm<FormData>>["setValue"];
   watch: ReturnType<typeof useForm<FormData>>["watch"];
   setError: ReturnType<typeof useForm<FormData>>["setError"];
@@ -372,9 +376,7 @@ function QuestionField({
           id={id}
           max={Math.min(10, Math.max(3, question.ratingMax ?? 5))}
           required={required}
-          register={register}
-          setValue={setValue}
-          watch={watch}
+          control={control}
         />
       )}
 
@@ -391,61 +393,59 @@ function StarRatingInput({
   id,
   max,
   required,
-  register,
-  setValue,
-  watch,
+  control,
 }: {
   id: string;
   max: number;
   required: boolean;
-  register: ReturnType<typeof useForm<FormData>>["register"];
-  setValue: ReturnType<typeof useForm<FormData>>["setValue"];
-  watch: ReturnType<typeof useForm<FormData>>["watch"];
+  control: ReturnType<typeof useForm<FormData>>["control"];
 }) {
-  const value = watch(id) as string | undefined;
-  const selected = value ? parseInt(value, 10) : 0;
   const [hover, setHover] = useState(0);
 
-  const validate = (v: string | string[]) => {
-    const val = typeof v === "string" ? v : "";
-    if (!val && !required) return true;
-    if (required && !val) return "Please select a rating";
-    const n = parseInt(val, 10);
-    if (Number.isNaN(n) || n < 1 || n > max)
-      return `Please select between 1 and ${max}`;
-    return true;
-  };
-
   return (
-    <div className="flex flex-col gap-1">
-      <input
-        type="hidden"
-        {...register(id, { validate })}
-      />
-      <div
-        className="flex gap-1"
-        role="group"
-        aria-label={`Rate from 1 to ${max} stars`}
-      >
-        {Array.from({ length: max }, (_, i) => i + 1).map((star) => (
-          <button
-            key={star}
-            type="button"
-            onClick={() => setValue(id, String(star), { shouldValidate: true })}
-            onMouseEnter={() => setHover(star)}
-            onMouseLeave={() => setHover(0)}
-            className="text-2xl transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded p-0.5"
-            aria-label={`${star} star${star > 1 ? "s" : ""}`}
+    <Controller
+      name={id}
+      control={control}
+      rules={{
+        required: required ? "Please select a rating" : false,
+        validate: (v) => {
+          const val = typeof v === "string" ? v : "";
+          if (!val && !required) return true;
+          const n = parseInt(val, 10);
+          if (Number.isNaN(n) || n < 1 || n > max)
+            return `Please select between 1 and ${max}`;
+          return true;
+        },
+      }}
+      render={({ field }) => {
+        const selected = field.value ? parseInt(String(field.value), 10) : 0;
+        return (
+          <div
+            className="flex gap-1"
+            role="group"
+            aria-label={`Rate from 1 to ${max} stars`}
           >
-            {(hover || selected) >= star ? (
-              <span className="text-amber-400">★</span>
-            ) : (
-              <span className="text-muted-foreground/50">☆</span>
-            )}
-          </button>
-        ))}
-      </div>
-    </div>
+            {Array.from({ length: max }, (_, i) => i + 1).map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => field.onChange(String(star))}
+                onMouseEnter={() => setHover(star)}
+                onMouseLeave={() => setHover(0)}
+                className="text-2xl transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded p-0.5"
+                aria-label={`${star} star${star > 1 ? "s" : ""}`}
+              >
+                {(hover || selected) >= star ? (
+                  <span className="text-amber-400">★</span>
+                ) : (
+                  <span className="text-muted-foreground/50">☆</span>
+                )}
+              </button>
+            ))}
+          </div>
+        );
+      }}
+    />
   );
 }
 
