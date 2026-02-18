@@ -1,12 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useParams } from "@tanstack/react-router";
+import { useQuery } from "@repo/convex/react";
+import { api } from "@repo/convex";
+import type { Id } from "@repo/convex/dataModel";
 import { Button } from "@repo/design-system/button";
+
+const FORM_APP_URL = import.meta.env.VITE_FORM_APP_URL ?? "";
 
 export const Route = createFileRoute("/forms/$formId/share")({
   component: FormSharePage,
 });
 
 function FormSharePage() {
-  const formUrl = typeof window !== "undefined" ? `${window.location.origin}/f/form-id` : "/f/form-id";
+  const { formId } = useParams({ from: "/forms/$formId/share" });
+  const form = useQuery(api.forms.get, { formId: formId as Id<"forms"> });
+  const formIdOrSlug = form?.slug?.trim() || formId;
+  const formUrl = FORM_APP_URL ? `${FORM_APP_URL.replace(/\/$/, "")}/${formIdOrSlug}` : "";
+  const embedUrl = FORM_APP_URL ? `${FORM_APP_URL.replace(/\/$/, "")}/embed/${formIdOrSlug}` : "";
 
   return (
     <div>
@@ -21,12 +30,13 @@ function FormSharePage() {
             <input
               type="text"
               readOnly
-              value={formUrl}
+              value={formUrl || "Set VITE_FORM_APP_URL in .env"}
               className="flex-1 px-3 py-2 border border-input rounded-md bg-muted text-foreground text-sm"
             />
             <Button
               variant="secondary"
-              onClick={() => navigator.clipboard?.writeText(formUrl)}
+              onClick={() => formUrl && navigator.clipboard?.writeText(formUrl)}
+              disabled={!formUrl}
             >
               Copy
             </Button>
@@ -37,7 +47,7 @@ function FormSharePage() {
           <textarea
             readOnly
             rows={3}
-            value={`<iframe src="${formUrl}" width="640" height="480" frameborder="0"></iframe>`}
+            value={embedUrl ? `<iframe src="${embedUrl}" width="640" height="480" frameborder="0"></iframe>` : "Set VITE_FORM_APP_URL in .env"}
             className="w-full px-3 py-2 border border-input rounded-md bg-muted text-foreground text-sm font-mono"
           />
         </div>
