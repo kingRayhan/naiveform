@@ -1,5 +1,11 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import {
+  internalAction,
+  internalQuery,
+  mutation,
+  query,
+} from "./_generated/server";
+import { api, internal } from "./_generated/api";
 
 export const listByForm = query({
   args: { formId: v.id("forms") },
@@ -31,9 +37,80 @@ export const submit = mutation({
       throw new ConvexError("This form has closed.");
     }
 
-    return await ctx.db.insert("responses", {
+    const questionsById = new Map(form.questions.map((q) => [q.id, q]));
+    const answersByFieldName: Record<string, string | string[] | number> = {};
+    for (const [qId, value] of Object.entries(args.answers)) {
+      const q = questionsById.get(qId);
+      const fieldName = q?.title ?? qId;
+      answersByFieldName[fieldName] = value;
+    }
+
+    const responseId = await ctx.db.insert("responses", {
       formId: args.formId,
-      answers: args.answers,
+      answers: answersByFieldName,
     });
+
+    const webhooks = form.settings?.webhooks?.filter(
+      (url): url is string => typeof url === "string" && url.trim().length > 0
+    );
+    if (webhooks?.length) {
+      await ctx.scheduler.runAfter(0, internal.responses.triggerWebhooks, {
+        responseId,
+        formId: args.formId,
+      });
+    }
+
+    return responseId;
+  },
+});
+
+export const getWebhookPayload = internalQuery({
+  args: {
+    responseId: v.id("responses"),
+    formId: v.id("forms"),
+  },
+  handler: async (ctx, args) => {
+    const response = await ctx.db.get(args.responseId);
+    const form = await ctx.db.get(args.formId);
+    if (!response || !form || response.formId !== args.formId) return null;
+    // responses are stored with question title as key; use as-is for webhook
+    return {
+      formId: form._id,
+      formTitle: form.title,
+      responseId: response._id,
+      submittedAt: response._creationTime,
+      answers: response.answers,
+    };
+  },
+});
+
+export const triggerWebhooks = internalAction({
+  args: {
+    responseId: v.id("responses"),
+    formId: v.id("forms"),
+  },
+  handler: async (ctx, args) => {
+    const payload = await ctx.runQuery(internal.responses.getWebhookPayload, {
+      responseId: args.responseId,
+      formId: args.formId,
+    });
+    if (!payload) return;
+    const form = await ctx.runQuery(api.forms.get, { formId: args.formId });
+    const webhooks = form?.settings?.webhooks?.filter(
+      (url): url is string => typeof url === "string" && url.trim().length > 0
+    );
+    if (!webhooks?.length) return;
+    const body = JSON.stringify(payload);
+    for (const url of webhooks) {
+      try {
+        await fetch(url.trim(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+        });
+      } catch {
+        // ignore per-URL failures
+      }
+    }
   },
 });

@@ -31,6 +31,7 @@ const formSettingsValidator = {
   confirmationMessage: v.optional(v.string()),
   closeAt: v.optional(v.number()),
   redirectUrl: v.optional(v.string()),
+  webhooks: v.optional(v.array(v.string())),
 };
 
 export const create = mutation({

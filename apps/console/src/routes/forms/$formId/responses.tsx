@@ -64,7 +64,7 @@ function FormResponsesPage() {
         timeStyle: "short",
       }),
       ...questions.map((q) =>
-        formatAnswerForCsv(r.answers[q.id])
+        formatAnswerForCsv(r.answers[q.title] ?? r.answers[q.id])
       ),
     ]);
     const csvContent = [
@@ -131,8 +131,8 @@ function FormResponsesPage() {
                     })}
                   </td>
                   {questions.map((q) => (
-                    <td key={q.id} className="px-4 py-3 text-foreground max-w-[200px] truncate" title={formatAnswer(r.answers[q.id])}>
-                      {formatAnswer(r.answers[q.id])}
+                    <td key={q.id} className="px-4 py-3 text-foreground max-w-[200px] truncate" title={formatAnswer(r.answers[q.title] ?? r.answers[q.id])}>
+                      {formatAnswer(r.answers[q.title] ?? r.answers[q.id])}
                     </td>
                   ))}
                 </tr>

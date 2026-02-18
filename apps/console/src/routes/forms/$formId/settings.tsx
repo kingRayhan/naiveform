@@ -1,5 +1,5 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation } from "@repo/convex/react";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
@@ -12,6 +12,8 @@ import { FormCheckbox } from "@repo/design-system/form/form-checkbox";
 import { FormFieldGroup } from "@repo/design-system/form/form-field-group";
 import { FormInput } from "@repo/design-system/form/form-input";
 import { FormTextarea } from "@repo/design-system/form/form-textarea";
+import { Input } from "@repo/design-system/input";
+import { Plus, Trash2 } from "lucide-react";
 
 const settingsSchema = z.object({
   title: z.string().min(1, "Form name is required"),
@@ -64,6 +66,8 @@ function FormSettingsPage() {
     },
   });
 
+  const [webhookUrls, setWebhookUrls] = useState<string[]>([]);
+
   const hasSyncedRef = useRef(false);
   const prevFormIdRef = useRef(formId);
   useEffect(() => {
@@ -74,6 +78,7 @@ function FormSettingsPage() {
     }
     if (hasSyncedRef.current) return;
     hasSyncedRef.current = true;
+    setWebhookUrls((Array.isArray(form.settings?.webhooks) ? form.settings.webhooks : []) as string[]);
     const s = form.settings;
     const closeAt = s?.closeAt;
     const closeAtDate =
@@ -110,6 +115,7 @@ function FormSettingsPage() {
           limitOneResponsePerPerson: data.limitOneResponsePerPerson,
           confirmationMessage: data.confirmationMessage?.trim() || undefined,
           redirectUrl: redirectUrl || undefined,
+          webhooks: webhookUrls.map((u) => u.trim()).filter((u) => u.length > 0),
           closeAt,
         },
       });
@@ -198,6 +204,60 @@ function FormSettingsPage() {
           type="date"
           description="Form will stop accepting responses after this date (optional)."
         />
+
+        <FormFieldGroup
+          title="Webhooks"
+          description="We'll POST the submission payload (form title, response ID, submitted at, answers) to each URL when someone submits the form."
+        >
+          <div className="space-y-2">
+            {webhookUrls.map((url, i) => (
+              <div key={i} className="flex gap-2 items-start">
+                <div className="flex-1 space-y-1.5">
+                  <label
+                    htmlFor={`webhook-${i}`}
+                    className="block text-sm font-medium text-foreground"
+                  >
+                    Webhook {i + 1}
+                  </label>
+                  <Input
+                    id={`webhook-${i}`}
+                    type="text"
+                    value={url}
+                    onChange={(e) =>
+                      setWebhookUrls((prev) => {
+                        const next = [...prev];
+                        next[i] = e.target.value;
+                        return next;
+                      })
+                    }
+                    placeholder="https://your-server.com/webhook"
+                    className="w-full"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 text-muted-foreground hover:text-destructive"
+                  onClick={() => setWebhookUrls((prev) => prev.filter((_, j) => j !== i))}
+                  aria-label="Remove webhook"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setWebhookUrls((prev) => [...prev, ""])}
+              className="gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              Add webhook URL
+            </Button>
+          </div>
+        </FormFieldGroup>
 
         <FormFieldGroup title="Status">
           <FormCheckbox
