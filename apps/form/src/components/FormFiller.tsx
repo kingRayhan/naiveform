@@ -161,10 +161,7 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="mx-auto max-w-2xl rounded-lg border border-border bg-card p-6 shadow-sm"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-3xl">
       <div className="mb-6 border-b border-border pb-6">
         <h1 className="text-2xl font-semibold text-foreground">{form.title}</h1>
         {form.description && (
@@ -210,7 +207,11 @@ function ShortTextInput({
   error: { message?: string } | undefined;
 }) {
   const htmlType =
-    inputType === "email" ? "email" : inputType === "number" ? "number" : "text";
+    inputType === "email"
+      ? "email"
+      : inputType === "number"
+        ? "number"
+        : "text";
   const placeholder =
     inputType === "email"
       ? "you@example.com"
