@@ -9,6 +9,20 @@ export default defineConfig({
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes("node_modules")) {
+            if (id.includes("@clerk/")) return "clerk";
+            if (id.includes("convex")) return "convex";
+            if (id.includes("@dnd-kit")) return "dnd";
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
   plugins: [
     tanstackRouter({
       target: "react",
