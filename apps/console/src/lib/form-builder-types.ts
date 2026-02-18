@@ -5,6 +5,7 @@ export const QUESTION_TYPES = [
   { value: "checkboxes", label: "Checkboxes" },
   { value: "dropdown", label: "Dropdown" },
   { value: "date", label: "Date" },
+  { value: "star_rating", label: "Star rating" },
 ] as const;
 
 export type QuestionType = (typeof QUESTION_TYPES)[number]["value"];
@@ -25,6 +26,7 @@ export interface FormQuestion {
   required: boolean;
   options?: string[]; // for multiple_choice, checkboxes, dropdown
   inputType?: ShortTextInputType; // for short_text
+  ratingMax?: number; // for star_rating, default 5
 }
 
 export function createEmptyQuestion(id: string): FormQuestion {

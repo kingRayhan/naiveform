@@ -57,6 +57,11 @@ export function SortableQuestionItem({
     } else if (!question.inputType) {
       updates.inputType = "text";
     }
+    if (newType === "star_rating") {
+      updates.ratingMax = 5;
+    } else {
+      updates.ratingMax = undefined;
+    }
     onUpdate(question.id, updates);
   };
 
@@ -190,6 +195,29 @@ export function SortableQuestionItem({
           )}
           {question.type === "date" && (
             <p className="text-muted-foreground text-sm">Date</p>
+          )}
+
+          {question.type === "star_rating" && (
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-sm flex-none">
+                Max stars:
+              </span>
+              <select
+                value={question.ratingMax ?? 5}
+                onChange={(e) =>
+                  onUpdate(question.id, {
+                    ratingMax: parseInt(e.target.value, 10),
+                  })
+                }
+                className={`${inputClass} w-auto min-w-[80px]`}
+              >
+                {[3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
 
           <div className="flex items-center justify-between pt-1">

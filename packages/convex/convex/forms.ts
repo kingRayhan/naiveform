@@ -9,7 +9,8 @@ const questionValidator = {
     v.literal("multiple_choice"),
     v.literal("checkboxes"),
     v.literal("dropdown"),
-    v.literal("date")
+    v.literal("date"),
+    v.literal("star_rating")
   ),
   title: v.string(),
   required: v.boolean(),
@@ -22,6 +23,7 @@ const questionValidator = {
       v.literal("number")
     )
   ),
+  ratingMax: v.optional(v.number()),
 };
 
 const formSettingsValidator = {

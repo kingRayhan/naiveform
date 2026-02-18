@@ -72,7 +72,7 @@ export function Hero() {
         </div>
 
         {/* Mockup Placeholder */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.4 }}
@@ -87,10 +87,9 @@ export function Hero() {
               </div>
             </div>
           </div>
-          {/* Decorative blurs */}
           <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-100/50 rounded-full blur-3xl -z-10 animate-pulse" />
           <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-100/50 rounded-full blur-3xl -z-10 animate-pulse delay-700" />
-        </motion.div>
+        </motion.div> */}
       </div>
 
       {/* Background Grid Pattern */}

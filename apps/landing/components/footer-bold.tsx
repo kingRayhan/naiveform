@@ -25,7 +25,7 @@ export const BoldFooter = () => {
             </a>
           </div>
 
-          <div className="grid grid-cols-2 gap-12 sm:gap-24">
+          {/* <div className="grid grid-cols-2 gap-12 sm:gap-24">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-4">
                 Platform
@@ -70,7 +70,7 @@ export const BoldFooter = () => {
                 </a>
               </nav>
             </div>
-          </div>
+          </div> */}
         </div>
 
         <div className="relative w-full">

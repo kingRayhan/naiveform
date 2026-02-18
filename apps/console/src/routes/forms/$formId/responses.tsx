@@ -14,21 +14,31 @@ function escapeCsvCell(val: string): string {
   return val;
 }
 
-function formatAnswerForCsv(value: string | string[] | number | undefined): string {
+function formatAnswerForCsv(
+  value: string | string[] | number | undefined,
+  questionType?: string
+): string {
   if (value === undefined) return "";
   if (Array.isArray(value)) return value.join(", ");
   if (typeof value === "number") {
-    return new Date(value).toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    // Date answers are timestamps (ms); star ratings are small integers
+    if (value > 1e12) {
+      return new Date(value).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    }
+    return String(value);
   }
   return String(value);
 }
 
-function formatAnswer(value: string | string[] | number | undefined): string {
-  return formatAnswerForCsv(value);
+function formatAnswer(
+  value: string | string[] | number | undefined,
+  questionType?: string
+): string {
+  return formatAnswerForCsv(value, questionType);
 }
 
 function FormResponsesPage() {
@@ -55,7 +65,9 @@ function FormResponsesPage() {
         dateStyle: "short",
         timeStyle: "short",
       }),
-      ...questions.map((q) => formatAnswerForCsv(r.answers[q.id])),
+      ...questions.map((q) =>
+        formatAnswerForCsv(r.answers[q.id], q.type)
+      ),
     ]);
     const csvContent = [
       headers.map(escapeCsvCell).join(","),
@@ -121,8 +133,8 @@ function FormResponsesPage() {
                     })}
                   </td>
                   {questions.map((q) => (
-                    <td key={q.id} className="px-4 py-3 text-foreground max-w-[200px] truncate" title={formatAnswer(r.answers[q.id])}>
-                      {formatAnswer(r.answers[q.id])}
+                    <td key={q.id} className="px-4 py-3 text-foreground max-w-[200px] truncate" title={formatAnswer(r.answers[q.id], q.type)}>
+                      {formatAnswer(r.answers[q.id], q.type)}
                     </td>
                   ))}
                 </tr>
