@@ -189,6 +189,17 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
           {isSubmitting ? "Submitting…" : "Submit"}
         </Button>
       </div>
+      <p className="mt-8 pt-4 text-center text-xs text-muted-foreground/60">
+        Powered by{" "}
+        <a
+          href="https://naiveform.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-muted-foreground/80 transition-colors"
+        >
+          NaiveForm
+        </a>
+      </p>
     </form>
   );
 }
