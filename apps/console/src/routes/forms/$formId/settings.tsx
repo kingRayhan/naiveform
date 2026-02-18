@@ -20,7 +20,6 @@ const settingsSchema = z.object({
     .string()
     .optional()
     .refine((v) => !v || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v), "Use lowercase letters, numbers and hyphens only"),
-  collectEmail: z.boolean(),
   limitOneResponsePerPerson: z.boolean(),
   confirmationMessage: z.string().optional(),
   redirectUrl: z
@@ -49,7 +48,6 @@ function FormSettingsPage() {
       title: "",
       description: "",
       slug: "",
-      collectEmail: false,
       limitOneResponsePerPerson: false,
       confirmationMessage: "",
       redirectUrl: "",
@@ -76,7 +74,6 @@ function FormSettingsPage() {
       title: form.title ?? "",
       description: form.description ?? "",
       slug: form.slug ?? "",
-      collectEmail: s?.collectEmail ?? false,
       limitOneResponsePerPerson: s?.limitOneResponsePerPerson ?? false,
       confirmationMessage: s?.confirmationMessage ?? "",
       redirectUrl: s?.redirectUrl ?? "",
@@ -100,7 +97,6 @@ function FormSettingsPage() {
         slug: data.slug?.trim() || undefined,
         isClosed: data.isClosed,
         settings: {
-          collectEmail: data.collectEmail,
           limitOneResponsePerPerson: data.limitOneResponsePerPerson,
           confirmationMessage: data.confirmationMessage?.trim() || undefined,
           redirectUrl: redirectUrl || undefined,
@@ -158,11 +154,6 @@ function FormSettingsPage() {
         />
 
         <FormFieldGroup title="Response options">
-          <FormCheckbox
-            name="collectEmail"
-            control={formRHF.control}
-            label="Collect respondent email addresses"
-          />
           <FormCheckbox
             name="limitOneResponsePerPerson"
             control={formRHF.control}

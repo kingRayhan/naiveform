@@ -14,10 +14,17 @@ const questionValidator = {
   title: v.string(),
   required: v.boolean(),
   options: v.optional(v.array(v.string())),
+  inputType: v.optional(
+    v.union(
+      v.literal("text"),
+      v.literal("email"),
+      v.literal("phone"),
+      v.literal("number")
+    )
+  ),
 };
 
 const formSettingsValidator = {
-  collectEmail: v.optional(v.boolean()),
   limitOneResponsePerPerson: v.optional(v.boolean()),
   confirmationMessage: v.optional(v.string()),
   closeAt: v.optional(v.number()),

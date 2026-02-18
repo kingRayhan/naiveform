@@ -15,7 +15,7 @@ export function FormPreview({
   formDescription,
 }: FormPreviewProps) {
   return (
-    <div className="mx-auto max-w-2xl rounded-lg border border-border bg-card p-6 shadow-sm">
+    <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
       <div className="mb-6 border-b border-border pb-6">
         <h1 className="text-2xl font-semibold text-foreground">{formTitle}</h1>
         {formDescription && (
@@ -33,13 +33,27 @@ export function FormPreview({
             <div key={q.id} className="space-y-2">
               <label className="block text-sm font-medium text-foreground">
                 {q.title || "(Untitled question)"}
-                {q.required && <span className="text-destructive ml-0.5">*</span>}
+                {q.required && (
+                  <span className="text-destructive ml-0.5">*</span>
+                )}
               </label>
 
               {q.type === "short_text" && (
                 <input
-                  type="text"
-                  placeholder="Your answer"
+                  type={
+                    q.inputType === "email"
+                      ? "email"
+                      : q.inputType === "number"
+                        ? "number"
+                        : "text"
+                  }
+                  placeholder={
+                    q.inputType === "email"
+                      ? "you@example.com"
+                      : q.inputType === "phone"
+                        ? "+1 (555) 000-0000"
+                        : "Your answer"
+                  }
                   className={inputClass}
                   disabled
                   readOnly
@@ -63,7 +77,13 @@ export function FormPreview({
                       key={i}
                       className="flex items-center gap-2 text-foreground"
                     >
-                      <input type="radio" name={`q-${q.id}`} value={opt} disabled className="rounded-full border-input" />
+                      <input
+                        type="radio"
+                        name={`q-${q.id}`}
+                        value={opt}
+                        disabled
+                        className="rounded-full border-input"
+                      />
                       <span>{opt || `Option ${i + 1}`}</span>
                     </label>
                   ))}
@@ -77,7 +97,12 @@ export function FormPreview({
                       key={i}
                       className="flex items-center gap-2 text-foreground"
                     >
-                      <input type="checkbox" value={opt} disabled className="rounded border-input" />
+                      <input
+                        type="checkbox"
+                        value={opt}
+                        disabled
+                        className="rounded border-input"
+                      />
                       <span>{opt || `Option ${i + 1}`}</span>
                     </label>
                   ))}
@@ -103,7 +128,7 @@ export function FormPreview({
         )}
       </div>
 
-      {questions.length > 0 && (
+      {/* {questions.length > 0 && (
         <div className="mt-6 pt-6">
           <button
             type="button"
@@ -113,7 +138,7 @@ export function FormPreview({
             Submit (preview)
           </button>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

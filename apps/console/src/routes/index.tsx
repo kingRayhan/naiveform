@@ -3,6 +3,7 @@ import { Button } from "@repo/design-system/button";
 import { useUser } from "@clerk/clerk-react";
 import { useQuery } from "@repo/convex/react";
 import { api } from "@repo/convex";
+import { TEMPLATES } from "@/lib/templates.config";
 
 export const Route = createFileRoute("/")({
   component: DashboardPage,
@@ -61,8 +62,55 @@ function DashboardPage() {
       )}
 
       {forms?.length === 0 && (
-        <div className="p-8 border border-dashed border-border rounded-lg text-center text-muted-foreground">
-          No forms yet. Create your first form to get started.
+        <EmptyState />
+      )}
+    </div>
+  );
+}
+
+const POPULAR_TEMPLATE_IDS = ["feedback", "contact", "event-registration", "quiz"];
+
+function EmptyState() {
+  const popularTemplates = POPULAR_TEMPLATE_IDS
+    .map((id) => TEMPLATES.find((t) => t.id === id))
+    .filter(Boolean);
+
+  return (
+    <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 sm:p-12 text-center">
+      <h2 className="text-xl font-semibold text-foreground">
+        Create your first form
+      </h2>
+      <p className="mt-2 text-muted-foreground max-w-md mx-auto">
+        Start from scratch or pick a template to get going quickly.
+      </p>
+      <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <Button asChild size="lg">
+          <Link to="/forms/new">Create blank form</Link>
+        </Button>
+        <Button asChild variant="outline" size="lg">
+          <Link to="/templates">Browse templates</Link>
+        </Button>
+      </div>
+      {popularTemplates.length > 0 && (
+        <div className="mt-10 pt-8 border-t border-border">
+          <p className="text-sm font-medium text-foreground mb-4">
+            Or start from a popular template
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {popularTemplates.map((t) => (
+              <Link
+                key={t!.id}
+                to="/forms/new"
+                search={{ templateId: t!.id }}
+                className="block p-4 rounded-lg border border-border bg-card hover:bg-muted/50 hover:border-primary/50 transition-colors text-left"
+              >
+                <span className="font-medium text-foreground text-sm">{t!.name}</span>
+                <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
+                  {t!.description}
+                </p>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>

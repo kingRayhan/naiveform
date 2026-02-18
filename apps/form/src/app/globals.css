@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@import "@repo/design-system/globals.css";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@source "../app/**/*.tsx";
+@source "../components/**/*.tsx";
+
+html {
+  scroll-behavior: smooth;
+}

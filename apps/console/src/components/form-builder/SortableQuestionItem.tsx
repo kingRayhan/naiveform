@@ -1,7 +1,15 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { FormQuestion, QuestionType } from "../../lib/form-builder-types";
-import { QUESTION_TYPES, getDefaultOptions } from "../../lib/form-builder-types";
+import type {
+  FormQuestion,
+  QuestionType,
+  ShortTextInputType,
+} from "../../lib/form-builder-types";
+import {
+  QUESTION_TYPES,
+  SHORT_TEXT_INPUT_TYPES,
+  getDefaultOptions,
+} from "../../lib/form-builder-types";
 import { Button } from "@repo/design-system/button";
 
 interface SortableQuestionItemProps {
@@ -40,10 +48,16 @@ export function SortableQuestionItem({
 
   const handleTypeChange = (newType: QuestionType) => {
     const defaultOpts = getDefaultOptions(newType);
-    onUpdate(question.id, {
+    const updates: Partial<FormQuestion> = {
       type: newType,
       options: defaultOpts,
-    });
+    };
+    if (newType !== "short_text") {
+      updates.inputType = undefined;
+    } else if (!question.inputType) {
+      updates.inputType = "text";
+    }
+    onUpdate(question.id, updates);
   };
 
   const setOption = (index: number, value: string) => {
@@ -53,7 +67,10 @@ export function SortableQuestionItem({
   };
 
   const addOption = () => {
-    const next = [...(question.options ?? []), `Option ${(question.options?.length ?? 0) + 1}`];
+    const next = [
+      ...(question.options ?? []),
+      `Option ${(question.options?.length ?? 0) + 1}`,
+    ];
     onUpdate(question.id, { options: next });
   };
 
@@ -113,7 +130,11 @@ export function SortableQuestionItem({
               {options.map((opt, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <span className="text-muted-foreground text-sm">
-                    {question.type === "multiple_choice" ? "○" : question.type === "checkboxes" ? "☐" : "▾"}
+                    {question.type === "multiple_choice"
+                      ? "○"
+                      : question.type === "checkboxes"
+                        ? "☐"
+                        : "▾"}
                   </span>
                   <input
                     type="text"
@@ -142,10 +163,30 @@ export function SortableQuestionItem({
             </div>
           )}
 
-          {(question.type === "short_text" || question.type === "long_text") && (
-            <p className="text-muted-foreground text-sm">
-              {question.type === "short_text" ? "Short answer text" : "Long answer text"}
-            </p>
+          {question.type === "short_text" && (
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-sm flex-none">
+                Input type:
+              </span>
+              <select
+                value={question.inputType ?? "text"}
+                onChange={(e) =>
+                  onUpdate(question.id, {
+                    inputType: e.target.value as ShortTextInputType,
+                  })
+                }
+                className={`${inputClass} w-auto min-w-[100px]`}
+              >
+                {SHORT_TEXT_INPUT_TYPES.map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {question.type === "long_text" && (
+            <p className="text-muted-foreground text-sm">Long answer text</p>
           )}
           {question.type === "date" && (
             <p className="text-muted-foreground text-sm">Date</p>
@@ -156,7 +197,9 @@ export function SortableQuestionItem({
               <input
                 type="checkbox"
                 checked={question.required}
-                onChange={(e) => onUpdate(question.id, { required: e.target.checked })}
+                onChange={(e) =>
+                  onUpdate(question.id, { required: e.target.checked })
+                }
                 className="rounded border-input"
               />
               Required

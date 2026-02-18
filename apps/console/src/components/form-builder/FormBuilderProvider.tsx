@@ -10,8 +10,6 @@ function generateId() {
   return `q-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-const SYNC_DEBOUNCE_MS = 500;
-
 import type { Id } from "@repo/convex/dataModel";
 
 interface FormBuilderProviderProps {
@@ -43,13 +41,10 @@ export function FormBuilderProvider({
     }
   }, [formId, initialQuestions]);
 
-  useEffect(() => {
-    if (!formId || initialQuestions === undefined) return;
-    const timer = setTimeout(() => {
-      updateForm({ formId, questions });
-    }, SYNC_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [formId, initialQuestions, questions, updateForm]);
+  const saveForm = useCallback(async () => {
+    if (!formId) return;
+    await updateForm({ formId, questions });
+  }, [formId, questions, updateForm]);
 
   const updateQuestion = useCallback((id: string, updates: Partial<FormQuestion>) => {
     setQuestions((prev) =>
@@ -76,6 +71,7 @@ export function FormBuilderProvider({
     removeQuestion,
     addQuestion,
     reorderQuestions,
+    saveForm,
   };
 
   return (

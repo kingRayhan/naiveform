@@ -9,12 +9,22 @@ export const QUESTION_TYPES = [
 
 export type QuestionType = (typeof QUESTION_TYPES)[number]["value"];
 
+export const SHORT_TEXT_INPUT_TYPES = [
+  { value: "text" as const, label: "Text" },
+  { value: "email" as const, label: "Email" },
+  { value: "phone" as const, label: "Phone" },
+  { value: "number" as const, label: "Number" },
+];
+
+export type ShortTextInputType = (typeof SHORT_TEXT_INPUT_TYPES)[number]["value"];
+
 export interface FormQuestion {
   id: string;
   type: QuestionType;
   title: string;
   required: boolean;
   options?: string[]; // for multiple_choice, checkboxes, dropdown
+  inputType?: ShortTextInputType; // for short_text
 }
 
 export function createEmptyQuestion(id: string): FormQuestion {

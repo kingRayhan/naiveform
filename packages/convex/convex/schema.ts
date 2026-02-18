@@ -14,10 +14,17 @@ const questionValidator = {
   title: v.string(),
   required: v.boolean(),
   options: v.optional(v.array(v.string())),
+  inputType: v.optional(
+    v.union(
+      v.literal("text"),
+      v.literal("email"),
+      v.literal("phone"),
+      v.literal("number")
+    )
+  ),
 };
 
 const formSettingsValidator = {
-  collectEmail: v.optional(v.boolean()),
   limitOneResponsePerPerson: v.optional(v.boolean()),
   confirmationMessage: v.optional(v.string()),
   closeAt: v.optional(v.number()), // timestamp
@@ -42,7 +49,6 @@ export default defineSchema({
   responses: defineTable({
     formId: v.id("forms"),
     answers: v.record(v.string(), v.union(v.string(), v.array(v.string()), v.number())), // questionId -> value
-    respondentEmail: v.optional(v.string()),
   })
     .index("by_form", ["formId"]),
 });

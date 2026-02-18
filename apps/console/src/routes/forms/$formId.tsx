@@ -11,7 +11,6 @@ export const Route = createFileRoute("/forms/$formId")({
 const formNav: { to: string; label: string }[] = [
   { to: "/forms/$formId/", label: "Editor" },
   { to: "/forms/$formId/settings", label: "Settings" },
-  { to: "/forms/$formId/preview", label: "Preview" },
   { to: "/forms/$formId/responses", label: "Responses" },
   { to: "/forms/$formId/share", label: "Share" },
 ];

@@ -10,6 +10,7 @@ export interface FormBuilderContextValue {
   removeQuestion: (id: string) => void;
   addQuestion: () => void;
   reorderQuestions: (oldIndex: number, newIndex: number) => void;
+  saveForm: () => Promise<void>;
 }
 
 export const FormBuilderContext = createContext<FormBuilderContextValue | null>(

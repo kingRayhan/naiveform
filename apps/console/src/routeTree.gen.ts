@@ -19,7 +19,6 @@ import { Route as FormsFormIdIndexRouteImport } from './routes/forms/$formId/ind
 import { Route as FormsFormIdShareRouteImport } from './routes/forms/$formId/share'
 import { Route as FormsFormIdSettingsRouteImport } from './routes/forms/$formId/settings'
 import { Route as FormsFormIdResponsesRouteImport } from './routes/forms/$formId/responses'
-import { Route as FormsFormIdPreviewRouteImport } from './routes/forms/$formId/preview'
 
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
@@ -71,11 +70,6 @@ const FormsFormIdResponsesRoute = FormsFormIdResponsesRouteImport.update({
   path: '/responses',
   getParentRoute: () => FormsFormIdRoute,
 } as any)
-const FormsFormIdPreviewRoute = FormsFormIdPreviewRouteImport.update({
-  id: '/preview',
-  path: '/preview',
-  getParentRoute: () => FormsFormIdRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -84,7 +78,6 @@ export interface FileRoutesByFullPath {
   '/forms/$formId': typeof FormsFormIdRouteWithChildren
   '/forms/new': typeof FormsNewRoute
   '/templates/': typeof TemplatesIndexRoute
-  '/forms/$formId/preview': typeof FormsFormIdPreviewRoute
   '/forms/$formId/responses': typeof FormsFormIdResponsesRoute
   '/forms/$formId/settings': typeof FormsFormIdSettingsRoute
   '/forms/$formId/share': typeof FormsFormIdShareRoute
@@ -95,7 +88,6 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
   '/forms/new': typeof FormsNewRoute
   '/templates': typeof TemplatesIndexRoute
-  '/forms/$formId/preview': typeof FormsFormIdPreviewRoute
   '/forms/$formId/responses': typeof FormsFormIdResponsesRoute
   '/forms/$formId/settings': typeof FormsFormIdSettingsRoute
   '/forms/$formId/share': typeof FormsFormIdShareRoute
@@ -109,7 +101,6 @@ export interface FileRoutesById {
   '/forms/$formId': typeof FormsFormIdRouteWithChildren
   '/forms/new': typeof FormsNewRoute
   '/templates/': typeof TemplatesIndexRoute
-  '/forms/$formId/preview': typeof FormsFormIdPreviewRoute
   '/forms/$formId/responses': typeof FormsFormIdResponsesRoute
   '/forms/$formId/settings': typeof FormsFormIdSettingsRoute
   '/forms/$formId/share': typeof FormsFormIdShareRoute
@@ -124,7 +115,6 @@ export interface FileRouteTypes {
     | '/forms/$formId'
     | '/forms/new'
     | '/templates/'
-    | '/forms/$formId/preview'
     | '/forms/$formId/responses'
     | '/forms/$formId/settings'
     | '/forms/$formId/share'
@@ -135,7 +125,6 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/forms/new'
     | '/templates'
-    | '/forms/$formId/preview'
     | '/forms/$formId/responses'
     | '/forms/$formId/settings'
     | '/forms/$formId/share'
@@ -148,7 +137,6 @@ export interface FileRouteTypes {
     | '/forms/$formId'
     | '/forms/new'
     | '/templates/'
-    | '/forms/$formId/preview'
     | '/forms/$formId/responses'
     | '/forms/$formId/settings'
     | '/forms/$formId/share'
@@ -235,13 +223,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FormsFormIdResponsesRouteImport
       parentRoute: typeof FormsFormIdRoute
     }
-    '/forms/$formId/preview': {
-      id: '/forms/$formId/preview'
-      path: '/preview'
-      fullPath: '/forms/$formId/preview'
-      preLoaderRoute: typeof FormsFormIdPreviewRouteImport
-      parentRoute: typeof FormsFormIdRoute
-    }
   }
 }
 
@@ -258,7 +239,6 @@ const TemplatesRouteWithChildren = TemplatesRoute._addFileChildren(
 )
 
 interface FormsFormIdRouteChildren {
-  FormsFormIdPreviewRoute: typeof FormsFormIdPreviewRoute
   FormsFormIdResponsesRoute: typeof FormsFormIdResponsesRoute
   FormsFormIdSettingsRoute: typeof FormsFormIdSettingsRoute
   FormsFormIdShareRoute: typeof FormsFormIdShareRoute
@@ -266,7 +246,6 @@ interface FormsFormIdRouteChildren {
 }
 
 const FormsFormIdRouteChildren: FormsFormIdRouteChildren = {
-  FormsFormIdPreviewRoute: FormsFormIdPreviewRoute,
   FormsFormIdResponsesRoute: FormsFormIdResponsesRoute,
   FormsFormIdSettingsRoute: FormsFormIdSettingsRoute,
   FormsFormIdShareRoute: FormsFormIdShareRoute,
