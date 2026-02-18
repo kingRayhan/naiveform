@@ -73,13 +73,19 @@ export const getWebhookPayload = internalQuery({
     const response = await ctx.db.get(args.responseId);
     const form = await ctx.db.get(args.formId);
     if (!response || !form || response.formId !== args.formId) return null;
-    // responses are stored with question title as key; use as-is for webhook
+    const questionsById = new Map(form.questions.map((q) => [q.id, q]));
+    const answersByFieldName: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(response.answers)) {
+      const q = questionsById.get(key);
+      const fieldName = q ? q.title : key;
+      answersByFieldName[fieldName] = value;
+    }
     return {
       formId: form._id,
       formTitle: form.title,
       responseId: response._id,
       submittedAt: response._creationTime,
-      answers: response.answers,
+      answers: answersByFieldName,
     };
   },
 });
@@ -103,11 +109,12 @@ export const triggerWebhooks = internalAction({
     const body = JSON.stringify(payload);
     for (const url of webhooks) {
       try {
-        await fetch(url.trim(), {
+        const request = new Request(url.trim(), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body,
         });
+        await fetch(request);
       } catch {
         // ignore per-URL failures
       }
