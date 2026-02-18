@@ -380,7 +380,7 @@ function QuestionField({
         />
       )}
 
-      {error && (
+      {type !== "star_rating" && error && (
         <p className="text-sm text-destructive" role="alert">
           {error.message}
         </p>
@@ -417,31 +417,39 @@ function StarRatingInput({
           return true;
         },
       }}
-      render={({ field }) => {
+      render={({ field, fieldState }) => {
         const selected = field.value ? parseInt(String(field.value), 10) : 0;
         return (
-          <div
-            className="flex gap-1"
-            role="group"
-            aria-label={`Rate from 1 to ${max} stars`}
-          >
-            {Array.from({ length: max }, (_, i) => i + 1).map((star) => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => field.onChange(String(star))}
-                onMouseEnter={() => setHover(star)}
-                onMouseLeave={() => setHover(0)}
-                className="text-2xl transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded p-0.5"
-                aria-label={`${star} star${star > 1 ? "s" : ""}`}
-              >
-                {(hover || selected) >= star ? (
-                  <span className="text-amber-400">★</span>
-                ) : (
-                  <span className="text-muted-foreground/50">☆</span>
-                )}
-              </button>
-            ))}
+          <div className="flex flex-col gap-1">
+            <div
+              className="flex gap-1"
+              role="group"
+              aria-label={`Rate from 1 to ${max} stars`}
+            >
+              {Array.from({ length: max }, (_, i) => i + 1).map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => field.onChange(String(star))}
+                  onBlur={field.onBlur}
+                  onMouseEnter={() => setHover(star)}
+                  onMouseLeave={() => setHover(0)}
+                  className="text-2xl transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded p-0.5"
+                  aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                >
+                  {(hover || selected) >= star ? (
+                    <span className="text-amber-400">★</span>
+                  ) : (
+                    <span className="text-muted-foreground/50">☆</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            {fieldState.error?.message && (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldState.error.message}
+              </p>
+            )}
           </div>
         );
       }}
