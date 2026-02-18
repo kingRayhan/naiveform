@@ -37,6 +37,8 @@ export default defineSchema({
   forms: defineTable({
     title: v.string(),
     description: v.optional(v.string()),
+    headerImageId: v.optional(v.id("_storage")),
+    headerImageUrl: v.optional(v.string()),
     userId: v.string(), // Clerk user id
     questions: v.array(v.object(questionValidator)),
     settings: v.optional(v.object(formSettingsValidator)),
@@ -51,7 +53,9 @@ export default defineSchema({
 
   responses: defineTable({
     formId: v.id("forms"),
-    answers: v.record(v.string(), v.union(v.string(), v.array(v.string()), v.number())), // questionId -> value
-  })
-    .index("by_form", ["formId"]),
+    answers: v.record(
+      v.string(),
+      v.union(v.string(), v.array(v.string()), v.number())
+    ), // questionId -> value
+  }).index("by_form", ["formId"]),
 });

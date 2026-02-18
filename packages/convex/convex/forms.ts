@@ -105,11 +105,12 @@ export const update = mutation({
       }
     }
     const now = Date.now();
-    await ctx.db.patch(formId, {
+    const patch: Record<string, unknown> = {
       ...updates,
       ...(updates.slug !== undefined && { slug: newSlug }),
       updatedAt: now,
-    });
+    };
+    await ctx.db.patch(formId, patch);
     return formId;
   },
 });

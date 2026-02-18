@@ -15,8 +15,7 @@ function escapeCsvCell(val: string): string {
 }
 
 function formatAnswerForCsv(
-  value: string | string[] | number | undefined,
-  questionType?: string
+  value: string | string[] | number | undefined
 ): string {
   if (value === undefined) return "";
   if (Array.isArray(value)) return value.join(", ");
@@ -35,10 +34,9 @@ function formatAnswerForCsv(
 }
 
 function formatAnswer(
-  value: string | string[] | number | undefined,
-  questionType?: string
+  value: string | string[] | number | undefined
 ): string {
-  return formatAnswerForCsv(value, questionType);
+  return formatAnswerForCsv(value);
 }
 
 function FormResponsesPage() {
@@ -66,7 +64,7 @@ function FormResponsesPage() {
         timeStyle: "short",
       }),
       ...questions.map((q) =>
-        formatAnswerForCsv(r.answers[q.id], q.type)
+        formatAnswerForCsv(r.answers[q.id])
       ),
     ]);
     const csvContent = [
@@ -133,8 +131,8 @@ function FormResponsesPage() {
                     })}
                   </td>
                   {questions.map((q) => (
-                    <td key={q.id} className="px-4 py-3 text-foreground max-w-[200px] truncate" title={formatAnswer(r.answers[q.id], q.type)}>
-                      {formatAnswer(r.answers[q.id], q.type)}
+                    <td key={q.id} className="px-4 py-3 text-foreground max-w-[200px] truncate" title={formatAnswer(r.answers[q.id])}>
+                      {formatAnswer(r.answers[q.id])}
                     </td>
                   ))}
                 </tr>
