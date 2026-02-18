@@ -1,5 +1,16 @@
 import { ConvexError, v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
+
+export const listByForm = query({
+  args: { formId: v.id("forms") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("responses")
+      .withIndex("by_form", (q) => q.eq("formId", args.formId))
+      .order("desc")
+      .collect();
+  },
+});
 
 export const submit = mutation({
   args: {
