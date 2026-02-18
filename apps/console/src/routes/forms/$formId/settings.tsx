@@ -13,7 +13,19 @@ import { FormFieldGroup } from "@repo/design-system/form/form-field-group";
 import { FormInput } from "@repo/design-system/form/form-input";
 import { FormTextarea } from "@repo/design-system/form/form-textarea";
 import { Input } from "@repo/design-system/input";
-import { Plus, Trash2 } from "lucide-react";
+import { HelpCircle, Plus, Trash2 } from "lucide-react";
+
+const WEBHOOK_PAYLOAD_EXAMPLE = {
+  answers: {
+    Email: "juqol@mailinator.com",
+    "Full name": "Sit quasi quia quos ",
+    "Phone number": "Inventore ut eos au",
+  },
+  formId: "j575b59bka9zt12b58xv2c8yfn81ddej",
+  formTitle: "Event Registration",
+  responseId: "j9703s523a2sr9kf2defzzy91581dq35",
+  submittedAt: 1771452682412.579,
+};
 
 const settingsSchema = z.object({
   title: z.string().min(1, "Form name is required"),
@@ -205,10 +217,36 @@ function FormSettingsPage() {
           description="Form will stop accepting responses after this date (optional)."
         />
 
-        <FormFieldGroup
-          title="Webhooks"
-          description="We'll POST the submission payload (form title, response ID, submitted at, answers) to each URL when someone submits the form."
-        >
+        <div className="space-y-4">
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="block text-sm font-medium text-foreground">
+                Webhooks
+              </span>
+              <span className="relative inline-flex group">
+                <button
+                  type="button"
+                  className="rounded p-0.5 text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Example webhook payload"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                </button>
+                <span className="absolute left-0 bottom-full z-50 mb-1.5 hidden w-[min(400px,90vw)] rounded-md border border-border bg-popover px-3 py-2.5 shadow-md group-hover:block">
+                  <span className="text-xs font-medium text-foreground">
+                    Example payload (POST body)
+                  </span>
+                  <pre className="mt-1.5 overflow-x-auto whitespace-pre-wrap wrap-break-word text-xs text-muted-foreground">
+                    {JSON.stringify(WEBHOOK_PAYLOAD_EXAMPLE, null, 2)}
+                  </pre>
+                </span>
+              </span>
+            </div>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              We'll POST the submission payload (form title, response ID,
+              submitted at, answers) to each URL when someone submits the form.
+            </p>
+          </div>
+          <div className="space-y-3">
           <div className="space-y-2">
             {webhookUrls.map((url, i) => (
               <div key={i} className="flex gap-2 items-start">
@@ -257,7 +295,8 @@ function FormSettingsPage() {
               Add webhook URL
             </Button>
           </div>
-        </FormFieldGroup>
+          </div>
+        </div>
 
         <FormFieldGroup title="Status">
           <FormCheckbox
