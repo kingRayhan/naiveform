@@ -90,7 +90,8 @@ function FormSettingsPage() {
     }
     if (hasSyncedRef.current) return;
     hasSyncedRef.current = true;
-    setWebhookUrls((Array.isArray(form.settings?.webhooks) ? form.settings.webhooks : []) as string[]);
+    const urls = (Array.isArray(form.settings?.webhooks) ? form.settings.webhooks : []) as string[];
+    queueMicrotask(() => setWebhookUrls(urls));
     const s = form.settings;
     const closeAt = s?.closeAt;
     const closeAtDate =
