@@ -3,10 +3,13 @@ import { useState } from "react";
 import { useQuery } from "@repo/convex/react";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
+import { ExternalLink } from "lucide-react";
 import { FormEditor } from "../../../components/form-builder/FormEditor";
 import { FormPreview } from "../../../components/form-builder/FormPreview";
 import { useFormBuilder } from "@/components/form-builder/form-builder-context";
 import { Button } from "@repo/design-system/button";
+
+const FORM_APP_URL = import.meta.env.VITE_FORM_APP_URL ?? "";
 
 export const Route = createFileRoute("/forms/$formId/")({
   component: FormEditorPage,
@@ -74,7 +77,20 @@ function FormEditorPage() {
         <FormEditor />
       </div>
       <div className="lg:sticky lg:top-6 lg:self-start">
-        <h2 className="text-lg font-semibold text-foreground mb-2">Preview</h2>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <h2 className="text-lg font-semibold text-foreground">Preview</h2>
+          {FORM_APP_URL && (
+            <a
+              href={`${FORM_APP_URL.replace(/\/$/, "")}/${form?.slug?.trim() || formId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+            >
+              Open form
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          )}
+        </div>
         <p className="text-muted-foreground text-sm mb-4">
           How respondents will see the form.
         </p>
