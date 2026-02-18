@@ -12,21 +12,43 @@ export const Route = createFileRoute("/forms/$formId/")({
   component: FormEditorPage,
 });
 
+function formatLastSaved(ms: number): string {
+  const d = new Date(ms);
+  const now = new Date();
+  const isToday =
+    d.getDate() === now.getDate() &&
+    d.getMonth() === now.getMonth() &&
+    d.getFullYear() === now.getFullYear();
+  return isToday
+    ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+    : d.toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      });
+}
+
 function FormEditorPage() {
   const { formId } = useParams({ from: "/forms/$formId/" });
   const formIdTyped = formId as Id<"forms">;
   const form = useQuery(api.forms.get, { formId: formIdTyped });
   const { questions, saveForm } = useFormBuilder();
   const [isSaving, setIsSaving] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
       await saveForm();
+      setLastSavedAt(Date.now());
     } finally {
       setIsSaving(false);
     }
   };
+
+  const savedAt = lastSavedAt ?? form?.updatedAt;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 xl:gap-8">
@@ -38,9 +60,16 @@ function FormEditorPage() {
               Drag the handle to reorder. Edit title and options inline.
             </p>
           </div>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "Saving…" : "Save"}
-          </Button>
+          <div className="flex items-center gap-3 shrink-0">
+            {savedAt != null && (
+              <span className="text-xs text-muted-foreground">
+                Last saved at {formatLastSaved(savedAt)}
+              </span>
+            )}
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? "Saving…" : "Save"}
+            </Button>
+          </div>
         </div>
         <FormEditor />
       </div>
