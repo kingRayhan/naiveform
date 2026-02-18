@@ -1,29 +1,45 @@
-import { Outlet, createRootRoute, Link } from "@tanstack/react-router";
+import {
+  Outlet,
+  createRootRoute,
+  Link,
+  useLocation,
+  Navigate,
+} from "@tanstack/react-router";
 import { UserButton, useAuth } from "@clerk/clerk-react";
-import { useEffect } from "react";
 
 export const Route = createRootRoute({
   component: RootComponent,
 });
 
+const AUTH_ROUTES = ["/sign-in", "/sign-up"];
+
 const mainNav = [
   { to: "/", label: "Dashboard" },
   { to: "/templates", label: "Templates" },
-  { to: "/settings", label: "Settings" },
 ];
 
 function RootComponent() {
-  const { isSignedIn } = useAuth();
-  const isAuthRoute = window.location.pathname === "/sign-in";
+  const { isSignedIn, isLoaded } = useAuth();
+  const { pathname } = useLocation();
+  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
 
-  useEffect(() => {
-    if (!isSignedIn && !isAuthRoute) {
-      window.location.href = "/sign-in";
-    }
-  }, [isSignedIn, isAuthRoute]);
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-muted-foreground">Loading…</div>
+      </div>
+    );
+  }
 
   if (!isSignedIn) {
-    return null;
+    if (isAuthRoute) {
+      return <Outlet />;
+    }
+    return <Navigate to="/sign-in" />;
+  }
+
+  if (isAuthRoute) {
+    return <Navigate to="/" />;
   }
 
   return (
@@ -52,7 +68,7 @@ function RootComponent() {
             ))}
           </div>
         </nav>
-        <UserButton afterSignOutUrl="/" />
+        <UserButton afterSignOutUrl="/sign-in" />
       </header>
       <main className="flex-1 p-6">
         <Outlet />
