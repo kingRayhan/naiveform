@@ -1,4 +1,5 @@
 import { ConvexError, v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 const questionValidator = {
@@ -80,15 +81,15 @@ export const getBySlug = query({
       .withIndex("by_slug", (q) => q.eq("slug", args.slug.trim()))
       .first();
     if (!form) return null;
-    // Remove secret key from public-facing query
+    // Remove secret key from public-facing query (same shape as Doc<"forms"> for type compatibility)
     const { settings, ...rest } = form;
     const publicSettings = settings
-      ? {
-          ...settings,
-          recaptchaSecretKey: undefined,
-        }
+      ? (() => {
+          const { recaptchaSecretKey: _, ...s } = settings;
+          return s;
+        })()
       : undefined;
-    return { ...rest, settings: publicSettings };
+    return { ...rest, settings: publicSettings } as Doc<"forms">;
   },
 });
 
