@@ -31,7 +31,10 @@ declare global {
   interface Window {
     grecaptcha?: {
       ready: (callback: () => void) => void;
-      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+      execute: (
+        siteKey: string,
+        options: { action: string }
+      ) => Promise<string>;
     };
   }
 }
@@ -192,7 +195,10 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
       if (question?.type === "star_rating" && typeof value === "string") {
         const n = parseInt(value, 10);
         if (!Number.isNaN(n)) answers[key] = n;
-      } else if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      } else if (
+        typeof value === "string" &&
+        /^\d{4}-\d{2}-\d{2}$/.test(value)
+      ) {
         answers[key] = new Date(value).getTime();
       } else {
         answers[key] = value;
@@ -216,7 +222,9 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
         });
       } catch (error) {
         console.error("reCAPTCHA error:", error);
-        setSubmitError("Unable to verify you're human. Please refresh the page and try again.");
+        setSubmitError(
+          "Unable to verify you're human. Please refresh the page and try again."
+        );
         return;
       }
     }
@@ -230,20 +238,25 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
       setSubmitted(true);
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "An error occurred while submitting your response.";
-      
+        error instanceof Error
+          ? error.message
+          : "An error occurred while submitting your response.";
+
       // Humanize common error messages
       let humanizedMessage = errorMessage;
       if (errorMessage.toLowerCase().includes("recaptcha")) {
-        humanizedMessage = "Spam protection verification failed. Please try again.";
+        humanizedMessage =
+          "Spam protection verification failed. Please try again.";
       } else if (errorMessage.toLowerCase().includes("closed")) {
         humanizedMessage = "This form is no longer accepting responses.";
       } else if (errorMessage.toLowerCase().includes("not found")) {
-        humanizedMessage = "This form could not be found. It may have been deleted.";
+        humanizedMessage =
+          "This form could not be found. It may have been deleted.";
       } else if (errorMessage.toLowerCase().includes("secret key")) {
-        humanizedMessage = "Form configuration error. Please contact the form owner.";
+        humanizedMessage =
+          "Form configuration error. Please contact the form owner.";
       }
-      
+
       setSubmitError(humanizedMessage);
     }
   };
