@@ -32,6 +32,8 @@ const formSettingsValidator = {
   closeAt: v.optional(v.number()),
   redirectUrl: v.optional(v.string()),
   webhooks: v.optional(v.array(v.string())),
+  recaptchaSiteKey: v.optional(v.string()),
+  recaptchaSecretKey: v.optional(v.string()),
 };
 
 export const create = mutation({
@@ -73,10 +75,20 @@ export const getBySlug = query({
   args: { slug: v.string() },
   handler: async (ctx, args) => {
     if (!args.slug.trim()) return null;
-    return await ctx.db
+    const form = await ctx.db
       .query("forms")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug.trim()))
       .first();
+    if (!form) return null;
+    // Remove secret key from public-facing query
+    const { settings, ...rest } = form;
+    const publicSettings = settings
+      ? {
+          ...settings,
+          recaptchaSecretKey: undefined,
+        }
+      : undefined;
+    return { ...rest, settings: publicSettings };
   },
 });
 

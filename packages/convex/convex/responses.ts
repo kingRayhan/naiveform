@@ -25,6 +25,7 @@ export const submit = mutation({
       v.string(),
       v.union(v.string(), v.array(v.string()), v.number())
     ),
+    recaptchaToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const form = await ctx.db.get(args.formId);
@@ -35,6 +36,35 @@ export const submit = mutation({
     const closeAt = form.settings?.closeAt;
     if (closeAt != null && Date.now() > closeAt) {
       throw new ConvexError("This form has closed.");
+    }
+
+    // Verify reCAPTCHA if site key is configured
+    const recaptchaSiteKey = form.settings?.recaptchaSiteKey;
+    const recaptchaSecretKey = form.settings?.recaptchaSecretKey;
+    if (recaptchaSiteKey) {
+      if (!args.recaptchaToken) {
+        throw new ConvexError("reCAPTCHA verification failed. Please try again.");
+      }
+      if (!recaptchaSecretKey) {
+        throw new ConvexError("reCAPTCHA secret key is not configured.");
+      }
+      try {
+        const verifyResponse = await fetch(
+          `https://www.google.com/recaptcha/api/siteverify?secret=${encodeURIComponent(recaptchaSecretKey)}&response=${encodeURIComponent(args.recaptchaToken)}`,
+          { method: "POST" }
+        );
+        const verifyData = (await verifyResponse.json()) as {
+          success: boolean;
+          score?: number;
+        };
+        // For v3, require success and score >= 0.5 (adjust threshold as needed)
+        if (!verifyData.success || (verifyData.score ?? 1) < 0.5) {
+          throw new ConvexError("reCAPTCHA verification failed. Please try again.");
+        }
+      } catch (error) {
+        if (error instanceof ConvexError) throw error;
+        throw new ConvexError("reCAPTCHA verification failed. Please try again.");
+      }
     }
 
     const questionsById = new Map(form.questions.map((q) => [q.id, q]));

@@ -6,7 +6,7 @@ import type { Id } from "@repo/convex/dataModel";
 import { useForm, Controller } from "react-hook-form";
 import { Button } from "@repo/design-system/button";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 type Question = {
   id: string;
@@ -27,10 +27,21 @@ interface FormFillerProps {
 const inputClass =
   "w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
+declare global {
+  interface Window {
+    grecaptcha?: {
+      ready: (callback: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
+  }
+}
+
 export function FormFiller({ formIdOrSlug }: FormFillerProps) {
   const router = useRouter();
   const [submitted, setSubmitted] = useState(false);
   const [isPastCloseTime, setIsPastCloseTime] = useState<boolean | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const recaptchaLoadedRef = useRef(false);
 
   const formBySlug = useQuery(api.forms.getBySlug, { slug: formIdOrSlug });
   const formById = useQuery(
@@ -41,6 +52,27 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
   const form = formBySlug ?? (formBySlug === null ? formById : undefined);
 
   const submitResponse = useMutation(api.responses.submit);
+
+  // Load reCAPTCHA script if site key is configured
+  useEffect(() => {
+    const recaptchaSiteKey = form?.settings?.recaptchaSiteKey;
+    if (!recaptchaSiteKey || recaptchaLoadedRef.current) return;
+    if (window.grecaptcha) {
+      recaptchaLoadedRef.current = true;
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(recaptchaSiteKey)}`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      recaptchaLoadedRef.current = true;
+    };
+    document.head.appendChild(script);
+    return () => {
+      // Cleanup script on unmount if needed
+    };
+  }, [form?.settings?.recaptchaSiteKey]);
 
   const defaultValues: FormData = {};
   for (const q of form?.questions ?? []) {
@@ -61,6 +93,14 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
     defaultValues,
     mode: "onBlur",
   });
+
+  // Clear submit error when user interacts with the form
+  useEffect(() => {
+    if (submitError) {
+      const timer = setTimeout(() => setSubmitError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [submitError]);
 
   useEffect(() => {
     const closeAt = form?.settings?.closeAt;
@@ -159,11 +199,53 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
       }
     }
 
-    await submitResponse({
-      formId: form._id,
-      answers,
-    });
-    setSubmitted(true);
+    setSubmitError(null);
+
+    // Get reCAPTCHA token if site key is configured
+    let recaptchaToken: string | undefined;
+    const recaptchaSiteKey = form.settings?.recaptchaSiteKey;
+    if (recaptchaSiteKey && window.grecaptcha) {
+      try {
+        await new Promise<void>((resolve) => {
+          window.grecaptcha!.ready(() => {
+            resolve();
+          });
+        });
+        recaptchaToken = await window.grecaptcha.execute(recaptchaSiteKey, {
+          action: "submit",
+        });
+      } catch (error) {
+        console.error("reCAPTCHA error:", error);
+        setSubmitError("Unable to verify you're human. Please refresh the page and try again.");
+        return;
+      }
+    }
+
+    try {
+      await submitResponse({
+        formId: form._id,
+        answers,
+        recaptchaToken,
+      });
+      setSubmitted(true);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An error occurred while submitting your response.";
+      
+      // Humanize common error messages
+      let humanizedMessage = errorMessage;
+      if (errorMessage.toLowerCase().includes("recaptcha")) {
+        humanizedMessage = "Spam protection verification failed. Please try again.";
+      } else if (errorMessage.toLowerCase().includes("closed")) {
+        humanizedMessage = "This form is no longer accepting responses.";
+      } else if (errorMessage.toLowerCase().includes("not found")) {
+        humanizedMessage = "This form could not be found. It may have been deleted.";
+      } else if (errorMessage.toLowerCase().includes("secret key")) {
+        humanizedMessage = "Form configuration error. Please contact the form owner.";
+      }
+      
+      setSubmitError(humanizedMessage);
+    }
   };
 
   return (
@@ -190,6 +272,12 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
           />
         ))}
       </div>
+
+      {submitError && (
+        <div className="mt-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+          <p className="text-sm font-medium text-destructive">{submitError}</p>
+        </div>
+      )}
 
       <div className="mt-6 pt-6">
         <Button type="submit" disabled={isSubmitting}>
