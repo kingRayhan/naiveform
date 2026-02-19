@@ -43,14 +43,20 @@ export const submit = mutation({
     const recaptchaSecretKey = form.settings?.recaptchaSecretKey;
     if (recaptchaSiteKey) {
       if (!args.recaptchaToken) {
-        throw new ConvexError("reCAPTCHA verification failed. Please try again.");
+        throw new ConvexError(
+          "reCAPTCHA verification failed. Please try again."
+        );
       }
       if (!recaptchaSecretKey) {
         throw new ConvexError("reCAPTCHA secret key is not configured.");
       }
       try {
+        const params = new URLSearchParams({
+          secret: recaptchaSecretKey,
+          response: args.recaptchaToken!,
+        });
         const verifyResponse = await fetch(
-          `https://www.google.com/recaptcha/api/siteverify?secret=${encodeURIComponent(recaptchaSecretKey)}&response=${encodeURIComponent(args.recaptchaToken)}`,
+          `https://www.google.com/recaptcha/api/siteverify?${params.toString()}`,
           { method: "POST" }
         );
         const verifyData = (await verifyResponse.json()) as {
@@ -59,11 +65,15 @@ export const submit = mutation({
         };
         // For v3, require success and score >= 0.5 (adjust threshold as needed)
         if (!verifyData.success || (verifyData.score ?? 1) < 0.5) {
-          throw new ConvexError("reCAPTCHA verification failed. Please try again.");
+          throw new ConvexError(
+            "reCAPTCHA verification failed. Please try again."
+          );
         }
       } catch (error) {
         if (error instanceof ConvexError) throw error;
-        throw new ConvexError("reCAPTCHA verification failed. Please try again.");
+        throw new ConvexError(
+          "reCAPTCHA verification failed. Please try again."
+        );
       }
     }
 
