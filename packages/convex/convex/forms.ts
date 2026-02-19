@@ -1,5 +1,4 @@
 import { ConvexError, v } from "convex/values";
-import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 const questionValidator = {
@@ -33,8 +32,6 @@ const formSettingsValidator = {
   closeAt: v.optional(v.number()),
   redirectUrl: v.optional(v.string()),
   webhooks: v.optional(v.array(v.string())),
-  recaptchaSiteKey: v.optional(v.string()),
-  recaptchaSecretKey: v.optional(v.string()),
 };
 
 export const create = mutation({
@@ -76,20 +73,10 @@ export const getBySlug = query({
   args: { slug: v.string() },
   handler: async (ctx, args) => {
     if (!args.slug.trim()) return null;
-    const form = await ctx.db
+    return await ctx.db
       .query("forms")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug.trim()))
       .first();
-    if (!form) return null;
-    // Remove secret key from public-facing query (same shape as Doc<"forms"> for type compatibility)
-    const { settings, ...rest } = form;
-    const publicSettings = settings
-      ? (() => {
-          const { recaptchaSecretKey: _, ...s } = settings;
-          return s;
-        })()
-      : undefined;
-    return { ...rest, settings: publicSettings } as Doc<"forms">;
   },
 });
 

@@ -32,8 +32,6 @@ const formSettingsValidator = {
   closeAt: v.optional(v.number()), // timestamp
   redirectUrl: v.optional(v.string()),
   webhooks: v.optional(v.array(v.string())),
-  recaptchaSiteKey: v.optional(v.string()),
-  recaptchaSecretKey: v.optional(v.string()),
 };
 
 export default defineSchema({

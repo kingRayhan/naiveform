@@ -46,8 +46,6 @@ const settingsSchema = z.object({
       (v) => v === undefined || v === "" || /^https?:\/\/.+/.test(v),
       "Enter a valid URL or leave empty"
     ),
-  recaptchaSiteKey: z.string().optional(),
-  recaptchaSecretKey: z.string().optional(),
   closeAtDate: z.string().optional(), // YYYY-MM-DD or empty
   isClosed: z.boolean(),
   archived: z.boolean(),
@@ -74,8 +72,6 @@ function FormSettingsPage() {
       limitOneResponsePerPerson: false,
       confirmationMessage: "",
       redirectUrl: "",
-      recaptchaSiteKey: "",
-      recaptchaSecretKey: "",
       closeAtDate: "",
       isClosed: false,
       archived: false,
@@ -107,8 +103,6 @@ function FormSettingsPage() {
       limitOneResponsePerPerson: s?.limitOneResponsePerPerson ?? false,
       confirmationMessage: s?.confirmationMessage ?? "",
       redirectUrl: s?.redirectUrl ?? "",
-      recaptchaSiteKey: s?.recaptchaSiteKey ?? "",
-      recaptchaSecretKey: s?.recaptchaSecretKey ?? "",
       closeAtDate,
       isClosed: form.isClosed ?? false,
       archived: form.archived ?? false,
@@ -134,8 +128,6 @@ function FormSettingsPage() {
           limitOneResponsePerPerson: data.limitOneResponsePerPerson,
           confirmationMessage: data.confirmationMessage?.trim() || undefined,
           redirectUrl: redirectUrl || undefined,
-          recaptchaSiteKey: data.recaptchaSiteKey?.trim() || undefined,
-          recaptchaSecretKey: data.recaptchaSecretKey?.trim() || undefined,
           webhooks: webhookUrls.map((u) => u.trim()).filter((u) => u.length > 0),
           closeAt,
         },
@@ -217,37 +209,6 @@ function FormSettingsPage() {
           placeholder="https://..."
           description="Leave empty to show the confirmation message on the same page."
         />
-
-        <FormFieldGroup
-          title="Spam Protection"
-          description="Enable Google reCAPTCHA v3 to protect your form from spam submissions."
-        >
-          <FormInput
-            name="recaptchaSiteKey"
-            control={formRHF.control}
-            label="reCAPTCHA Site Key"
-            placeholder="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-            description="Public site key (visible to users)."
-          />
-          <FormInput
-            name="recaptchaSecretKey"
-            control={formRHF.control}
-            label="reCAPTCHA Secret Key"
-            type="password"
-            placeholder="6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
-            description="Secret key (kept private, used for server-side verification)."
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            <a
-              href="https://www.google.com/recaptcha/admin"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              Get reCAPTCHA keys →
-            </a>
-          </p>
-        </FormFieldGroup>
 
         <FormInput
           name="closeAtDate"
