@@ -16,6 +16,7 @@ import { Route as TemplatesIndexRouteImport } from './routes/templates/index'
 import { Route as FormsNewRouteImport } from './routes/forms/new'
 import { Route as FormsFormIdRouteImport } from './routes/forms/$formId'
 import { Route as FormsFormIdIndexRouteImport } from './routes/forms/$formId/index'
+import { Route as FormsFormIdWebhooksRouteImport } from './routes/forms/$formId/webhooks'
 import { Route as FormsFormIdShareRouteImport } from './routes/forms/$formId/share'
 import { Route as FormsFormIdSettingsRouteImport } from './routes/forms/$formId/settings'
 import { Route as FormsFormIdResponsesRouteImport } from './routes/forms/$formId/responses'
@@ -55,6 +56,11 @@ const FormsFormIdIndexRoute = FormsFormIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => FormsFormIdRoute,
 } as any)
+const FormsFormIdWebhooksRoute = FormsFormIdWebhooksRouteImport.update({
+  id: '/webhooks',
+  path: '/webhooks',
+  getParentRoute: () => FormsFormIdRoute,
+} as any)
 const FormsFormIdShareRoute = FormsFormIdShareRouteImport.update({
   id: '/share',
   path: '/share',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/forms/$formId/responses': typeof FormsFormIdResponsesRoute
   '/forms/$formId/settings': typeof FormsFormIdSettingsRoute
   '/forms/$formId/share': typeof FormsFormIdShareRoute
+  '/forms/$formId/webhooks': typeof FormsFormIdWebhooksRoute
   '/forms/$formId/': typeof FormsFormIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/forms/$formId/responses': typeof FormsFormIdResponsesRoute
   '/forms/$formId/settings': typeof FormsFormIdSettingsRoute
   '/forms/$formId/share': typeof FormsFormIdShareRoute
+  '/forms/$formId/webhooks': typeof FormsFormIdWebhooksRoute
   '/forms/$formId': typeof FormsFormIdIndexRoute
 }
 export interface FileRoutesById {
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/forms/$formId/responses': typeof FormsFormIdResponsesRoute
   '/forms/$formId/settings': typeof FormsFormIdSettingsRoute
   '/forms/$formId/share': typeof FormsFormIdShareRoute
+  '/forms/$formId/webhooks': typeof FormsFormIdWebhooksRoute
   '/forms/$formId/': typeof FormsFormIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/forms/$formId/responses'
     | '/forms/$formId/settings'
     | '/forms/$formId/share'
+    | '/forms/$formId/webhooks'
     | '/forms/$formId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/forms/$formId/responses'
     | '/forms/$formId/settings'
     | '/forms/$formId/share'
+    | '/forms/$formId/webhooks'
     | '/forms/$formId'
   id:
     | '__root__'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/forms/$formId/responses'
     | '/forms/$formId/settings'
     | '/forms/$formId/share'
+    | '/forms/$formId/webhooks'
     | '/forms/$formId/'
   fileRoutesById: FileRoutesById
 }
@@ -202,6 +214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FormsFormIdIndexRouteImport
       parentRoute: typeof FormsFormIdRoute
     }
+    '/forms/$formId/webhooks': {
+      id: '/forms/$formId/webhooks'
+      path: '/webhooks'
+      fullPath: '/forms/$formId/webhooks'
+      preLoaderRoute: typeof FormsFormIdWebhooksRouteImport
+      parentRoute: typeof FormsFormIdRoute
+    }
     '/forms/$formId/share': {
       id: '/forms/$formId/share'
       path: '/share'
@@ -242,6 +261,7 @@ interface FormsFormIdRouteChildren {
   FormsFormIdResponsesRoute: typeof FormsFormIdResponsesRoute
   FormsFormIdSettingsRoute: typeof FormsFormIdSettingsRoute
   FormsFormIdShareRoute: typeof FormsFormIdShareRoute
+  FormsFormIdWebhooksRoute: typeof FormsFormIdWebhooksRoute
   FormsFormIdIndexRoute: typeof FormsFormIdIndexRoute
 }
 
@@ -249,6 +269,7 @@ const FormsFormIdRouteChildren: FormsFormIdRouteChildren = {
   FormsFormIdResponsesRoute: FormsFormIdResponsesRoute,
   FormsFormIdSettingsRoute: FormsFormIdSettingsRoute,
   FormsFormIdShareRoute: FormsFormIdShareRoute,
+  FormsFormIdWebhooksRoute: FormsFormIdWebhooksRoute,
   FormsFormIdIndexRoute: FormsFormIdIndexRoute,
 }
 

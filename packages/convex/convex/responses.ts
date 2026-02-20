@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import {
   internalAction,
+  internalMutation,
   internalQuery,
   mutation,
   query,
@@ -90,6 +91,42 @@ export const getWebhookPayload = internalQuery({
   },
 });
 
+export const insertWebhookLog = internalMutation({
+  args: {
+    formId: v.id("forms"),
+    responseId: v.id("responses"),
+    url: v.string(),
+    success: v.boolean(),
+    statusCode: v.optional(v.number()),
+    errorMessage: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("webhookLogs", {
+      formId: args.formId,
+      responseId: args.responseId,
+      url: args.url,
+      success: args.success,
+      statusCode: args.statusCode,
+      errorMessage: args.errorMessage,
+    });
+  },
+});
+
+export const listWebhookLogsByForm = query({
+  args: {
+    formId: v.id("forms"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = Math.min(args.limit ?? 50, 100);
+    return await ctx.db
+      .query("webhookLogs")
+      .withIndex("by_form", (q) => q.eq("formId", args.formId))
+      .order("desc")
+      .take(limit);
+  },
+});
+
 export const triggerWebhooks = internalAction({
   args: {
     responseId: v.id("responses"),
@@ -108,15 +145,31 @@ export const triggerWebhooks = internalAction({
     if (!webhooks?.length) return;
     const body = JSON.stringify(payload);
     for (const url of webhooks) {
+      const trimmedUrl = url.trim();
       try {
-        const request = new Request(url.trim(), {
+        const request = new Request(trimmedUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body,
         });
-        await fetch(request);
-      } catch {
-        // ignore per-URL failures
+        const response = await fetch(request);
+        await ctx.runMutation(internal.responses.insertWebhookLog, {
+          formId: args.formId,
+          responseId: args.responseId,
+          url: trimmedUrl,
+          success: response.ok,
+          statusCode: response.status,
+        });
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : String(err);
+        await ctx.runMutation(internal.responses.insertWebhookLog, {
+          formId: args.formId,
+          responseId: args.responseId,
+          url: trimmedUrl,
+          success: false,
+          errorMessage: errorMessage,
+        });
       }
     }
   },

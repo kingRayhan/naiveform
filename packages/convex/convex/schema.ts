@@ -32,6 +32,9 @@ const formSettingsValidator = {
   closeAt: v.optional(v.number()), // timestamp
   redirectUrl: v.optional(v.string()),
   webhooks: v.optional(v.array(v.string())),
+  // Deprecated: kept so existing documents with these fields still validate
+  recaptchaSiteKey: v.optional(v.string()),
+  recaptchaSecretKey: v.optional(v.string()),
 };
 
 export default defineSchema({
@@ -58,5 +61,14 @@ export default defineSchema({
       v.string(),
       v.union(v.string(), v.array(v.string()), v.number())
     ), // questionId -> value
+  }).index("by_form", ["formId"]),
+
+  webhookLogs: defineTable({
+    formId: v.id("forms"),
+    responseId: v.id("responses"),
+    url: v.string(),
+    success: v.boolean(),
+    statusCode: v.optional(v.number()),
+    errorMessage: v.optional(v.string()),
   }).index("by_form", ["formId"]),
 });

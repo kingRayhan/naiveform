@@ -12,6 +12,7 @@ const formNav: { to: string; label: string }[] = [
   { to: "/forms/$formId/", label: "Editor" },
   { to: "/forms/$formId/settings", label: "Settings" },
   { to: "/forms/$formId/responses", label: "Responses" },
+  { to: "/forms/$formId/webhooks", label: "Webhooks" },
   { to: "/forms/$formId/share", label: "Share" },
 ];
 
