@@ -1,5 +1,5 @@
-import { api } from "@repo/convex";
-import type { Id } from "@repo/convex/dataModel";
+// import { api } from "@repo/convex";
+// import type { Id } from "@repo/convex/dataModel";
 import { ConvexHttpClient } from "convex/browser";
 import { Hono } from "hono";
 
@@ -16,16 +16,17 @@ app.post("/f/:formId", async (c) => {
   try {
     const formId = c.req.param("formId");
     const client = new ConvexHttpClient(process.env.CONVEX_URL!);
-    const form = await client.query(api.forms.get, {
-      formId: formId as Id<"forms">,
-    });
+    // const form = await client.query(api.forms.get, {
+    //   formId: formId as Id<"forms">,
+    // });
     const body = await c.req.json();
     return c.json({
       ok: true,
       message: "Response saved successfully",
       body,
       formId,
-      form,
+      client,
+      // form,
       comvexUrl: process.env.CONVEX_URL,
     });
   } catch {
