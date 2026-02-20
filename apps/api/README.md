@@ -19,7 +19,11 @@ Hono API app. Serves the headless form endpoint (POST /f/:formIdOrSlug) and depl
 
 ## Deploy to Vercel
 
-1. Create a new project from the same Git repo.
-2. Set **Root Directory** to `apps/api`.
-3. Add **CONVEX_URL** in the project’s environment variables.
-4. Deploy. Vercel detects Hono and uses the default export from `src/index.ts`.
+The app is ready for Vercel (zero-config Hono):
+
+1. **New project** — Import your Git repo and create a new project.
+2. **Root Directory** — Set to `apps/api`.
+3. **Environment variables** — Add `CONVEX_URL` (e.g. `https://your-deployment.convex.cloud`) in Project Settings → Environment Variables.
+4. **Deploy** — Vercel will detect Hono, use the default export from `src/index.ts`, and deploy. No custom build output required.
+
+**Monorepo:** If you use Turborepo, Vercel will run install from the repo root; workspace deps (`@repo/convex`, etc.) will resolve. No extra config needed.

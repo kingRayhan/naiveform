@@ -1,14 +1,23 @@
 import { ConvexHttpClient } from "convex/browser";
 
-const CONVEX_URL = process.env.CONVEX_URL;
-if (!CONVEX_URL) {
-  throw new Error(
-    "CONVEX_URL environment variable is not set.\n" +
-      "Create a .env file in apps/api/ with:\n" +
-      "CONVEX_URL=https://your-deployment.convex.cloud\n" +
-      "\n" +
-      "Or set it in your deployment environment (e.g. Vercel project settings)."
-  );
+let _client: ConvexHttpClient | null = null;
+
+function getClient(): ConvexHttpClient {
+  if (!_client) {
+    const url = process.env.CONVEX_URL;
+    if (!url) {
+      throw new Error(
+        "CONVEX_URL environment variable is not set. Set it in Vercel project settings or in .env locally."
+      );
+    }
+    _client = new ConvexHttpClient(url);
+  }
+  return _client;
 }
 
-export const convexClient = new ConvexHttpClient(CONVEX_URL);
+export const convexClient = {
+  query: (fn: Parameters<ConvexHttpClient["query"]>[0], args: Parameters<ConvexHttpClient["query"]>[1]) =>
+    getClient().query(fn, args),
+  mutation: (fn: Parameters<ConvexHttpClient["mutation"]>[0], args: Parameters<ConvexHttpClient["mutation"]>[1]) =>
+    getClient().mutation(fn, args),
+};
