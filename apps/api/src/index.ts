@@ -1,8 +1,7 @@
-import { Hono } from "hono";
-import { getClient } from "./clients";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
 import { ConvexHttpClient } from "convex/browser";
+import { Hono } from "hono";
 
 const app = new Hono();
 
