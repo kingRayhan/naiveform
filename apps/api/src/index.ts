@@ -20,16 +20,13 @@ app.post("/f/:formId", async (c) => {
     const form = await client.query(api.forms.get, {
       formId: formId as Id<"forms">,
     });
-    // const body = await c.req.json();
+    const body = await c.req.json();
     return c.json({
       form,
-      // ok: true,
-      // message: "Response saved successfully",
-      // body,
-      // formId,
-      // client,
-      // form: form ?? null,
-      // comvexUrl: process.env.CONVEX_URL,
+      body,
+      formId,
+      client,
+      comvexUrl: process.env.CONVEX_URL,
     });
   } catch {
     return c.json({ error: "Failed to save response" }, 500);
