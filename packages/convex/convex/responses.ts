@@ -65,6 +65,20 @@ export const submit = mutation({
   },
 });
 
+// Save response to database
+export const saveResponse = mutation({
+  args: {
+    formId: v.id("forms"),
+    answers: v.record(v.string(), v.string()),
+  },
+  handler: (ctx, args) => {
+    return ctx.db.insert("responses", {
+      formId: args.formId,
+      answers: args.answers,
+    });
+  },
+});
+
 export const getWebhookPayload = internalQuery({
   args: {
     responseId: v.id("responses"),
@@ -161,8 +175,7 @@ export const triggerWebhooks = internalAction({
           statusCode: response.status,
         });
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : String(err);
+        const errorMessage = err instanceof Error ? err.message : String(err);
         await ctx.runMutation(internal.responses.insertWebhookLog, {
           formId: args.formId,
           responseId: args.responseId,

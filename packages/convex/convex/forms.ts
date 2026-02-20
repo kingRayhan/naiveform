@@ -97,7 +97,8 @@ export const update = mutation({
     const { formId, ...updates } = args;
     const form = await ctx.db.get(formId);
     if (!form) throw new ConvexError("Form not found.");
-    const newSlug = updates.slug !== undefined ? updates.slug.trim() || undefined : undefined;
+    const newSlug =
+      updates.slug !== undefined ? updates.slug.trim() || undefined : undefined;
     if (newSlug && newSlug !== (form.slug ?? "")) {
       const existing = await ctx.db
         .query("forms")

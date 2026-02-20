@@ -1,6 +1,7 @@
 "use client";
 
-import { useQuery, useMutation } from "@repo/convex/react";
+import { useMutation } from "@tanstack/react-query";
+import { useQuery } from "@repo/convex/react";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
 import { useForm, Controller } from "react-hook-form";
@@ -41,7 +42,53 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
 
   const form = formBySlug ?? (formBySlug === null ? formById : undefined);
 
-  const submitResponse = useMutation(api.responses.submit);
+  const apiBase = (process.env.NEXT_PUBLIC_HEADLESS_FORM_URL ?? "").replace(
+    /\/$/,
+    ""
+  );
+
+  const submitMutation = useMutation({
+    mutationFn: async ({
+      payload,
+      formIdOrSlug,
+      apiBase: base,
+    }: {
+      payload: Record<string, string | string[]>;
+      formIdOrSlug: string;
+      apiBase: string;
+    }) => {
+      const body = new URLSearchParams();
+      for (const [id, value] of Object.entries(payload)) {
+        if (value === undefined || value === "") continue;
+        if (Array.isArray(value)) {
+          for (const v of value) body.append(id, String(v));
+        } else {
+          body.append(id, String(value));
+        }
+      }
+      const res = await fetch(`${base}/f/${formIdOrSlug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+        redirect: "manual",
+      });
+      if (res.status === 302) {
+        const location = res.headers.get("Location");
+        return { redirect: location ?? undefined };
+      }
+      if (res.status === 200 || res.status === 201) {
+        return {};
+      }
+      const text = await res.text();
+      let msg = text || "Submission failed.";
+      if (text.toLowerCase().includes("closed")) {
+        msg = "This form is no longer accepting responses.";
+      } else if (text.toLowerCase().includes("not found")) {
+        msg = "This form could not be found. It may have been deleted.";
+      }
+      throw new Error(msg);
+    },
+  });
 
   const defaultValues: FormData = {};
   for (const q of form?.questions ?? []) {
@@ -153,47 +200,38 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
         }
       }
     }
-    const answers: Record<string, string | string[] | number> = {};
-    for (const [key, value] of Object.entries(data)) {
-      if (value === undefined || value === "") continue;
-      if (Array.isArray(value) && value.length === 0) continue;
-      const question = form.questions.find((q) => q.id === key);
-      if (question?.type === "star_rating" && typeof value === "string") {
-        const n = parseInt(value, 10);
-        if (!Number.isNaN(n)) answers[key] = n;
-      } else if (
-        typeof value === "string" &&
-        /^\d{4}-\d{2}-\d{2}$/.test(value)
-      ) {
-        answers[key] = new Date(value).getTime();
-      } else {
-        answers[key] = value;
-      }
-    }
 
     setSubmitError(null);
 
+    if (!apiBase) {
+      setSubmitError(
+        "Form submission is not configured. Set NEXT_PUBLIC_HEADLESS_FORM_URL to your API URL."
+      );
+      return;
+    }
+
     try {
-      await submitResponse({
-        formId: form._id,
-        answers,
+      const result = await submitMutation.mutateAsync({
+        payload: data,
+        formIdOrSlug,
+        apiBase,
       });
       setSubmitted(true);
+      if (result.redirect) {
+        window.location.assign(result.redirect);
+      }
     } catch (error) {
-      const errorMessage =
+      const message =
         error instanceof Error
           ? error.message
           : "An error occurred while submitting your response.";
-
-      let humanizedMessage = errorMessage;
-      if (errorMessage.toLowerCase().includes("closed")) {
-        humanizedMessage = "This form is no longer accepting responses.";
-      } else if (errorMessage.toLowerCase().includes("not found")) {
-        humanizedMessage =
-          "This form could not be found. It may have been deleted.";
+      let humanized = message;
+      if (message.toLowerCase().includes("closed")) {
+        humanized = "This form is no longer accepting responses.";
+      } else if (message.toLowerCase().includes("not found")) {
+        humanized = "This form could not be found. It may have been deleted.";
       }
-
-      setSubmitError(humanizedMessage);
+      setSubmitError(humanized);
     }
   };
 
@@ -229,8 +267,11 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
       )}
 
       <div className="mt-6 pt-6">
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Submitting…" : "Submit"}
+        <Button
+          type="submit"
+          disabled={isSubmitting || submitMutation.isPending}
+        >
+          {isSubmitting || submitMutation.isPending ? "Submitting…" : "Submit"}
         </Button>
       </div>
       <p className="mt-8 pt-4 text-center text-xs text-muted-foreground/60">
