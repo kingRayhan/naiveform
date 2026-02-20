@@ -1,8 +1,7 @@
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
-// import type { Id } from "@repo/convex/dataModel";
-import { ConvexHttpClient } from "convex/browser";
 import { Hono } from "hono";
+import { getClient } from "./clients.js";
 
 const app = new Hono();
 
@@ -16,7 +15,7 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 app.post("/f/:formId", async (c) => {
   try {
     const formId = c.req.param("formId");
-    const client = new ConvexHttpClient(process.env.CONVEX_URL!);
+    const client = getClient();
     const form = await client.query(api.forms.get, {
       formId: formId as Id<"forms">,
     });
@@ -25,7 +24,6 @@ app.post("/f/:formId", async (c) => {
       form,
       body,
       formId,
-      client,
       comvexUrl: process.env.CONVEX_URL,
     });
   } catch {
