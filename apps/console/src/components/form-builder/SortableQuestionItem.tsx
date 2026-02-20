@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type {
@@ -42,10 +42,9 @@ export function SortableQuestionItem({
     transition,
   };
 
-  const [fieldIdInput, setFieldIdInput] = useState(question.id);
-  useEffect(() => {
-    setFieldIdInput(question.id);
-  }, [question.id]);
+  const [isEditingFieldId, setIsEditingFieldId] = useState(false);
+  const [fieldIdDraft, setFieldIdDraft] = useState(question.id);
+  const fieldIdValue = isEditingFieldId ? fieldIdDraft : question.id;
 
   const hasOptions =
     question.type === "multiple_choice" ||
@@ -142,9 +141,16 @@ export function SortableQuestionItem({
             </span>
             <input
               type="text"
-              value={fieldIdInput}
-              onChange={(e) => setFieldIdInput(e.target.value)}
-              onBlur={() => onUpdate(question.id, { id: fieldIdInput })}
+              value={fieldIdValue}
+              onFocus={() => {
+                setFieldIdDraft(question.id);
+                setIsEditingFieldId(true);
+              }}
+              onChange={(e) => setFieldIdDraft(e.target.value)}
+              onBlur={() => {
+                onUpdate(question.id, { id: fieldIdDraft });
+                setIsEditingFieldId(false);
+              }}
               placeholder="e.g. email, full_name"
               className={`${inputClass} max-w-[200px] font-mono text-sm`}
             />
@@ -158,7 +164,10 @@ export function SortableQuestionItem({
               </button>
               <span className="absolute left-0 bottom-full z-50 mb-1.5 hidden w-[min(280px,90vw)] rounded-md border border-border bg-popover px-3 py-2 shadow-md group-hover:block">
                 <span className="text-xs text-foreground">
-                  Stable key for this field. Used in headless HTML/API submissions and when you change the question title later. Use lowercase letters, numbers, and underscores; duplicates get -2, -3.
+                  Stable key for this field. Used in headless HTML/API
+                  submissions and when you change the question title later. Use
+                  lowercase letters, numbers, and underscores; duplicates get
+                  -2, -3.
                 </span>
               </span>
             </span>
