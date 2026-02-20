@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type {
@@ -10,6 +11,7 @@ import {
   SHORT_TEXT_INPUT_TYPES,
   getDefaultOptions,
 } from "../../lib/form-builder-types";
+import { HelpCircle } from "lucide-react";
 import { Button } from "@repo/design-system/button";
 
 interface SortableQuestionItemProps {
@@ -39,6 +41,11 @@ export function SortableQuestionItem({
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  const [fieldIdInput, setFieldIdInput] = useState(question.id);
+  useEffect(() => {
+    setFieldIdInput(question.id);
+  }, [question.id]);
 
   const hasOptions =
     question.type === "multiple_choice" ||
@@ -128,6 +135,33 @@ export function SortableQuestionItem({
                 </option>
               ))}
             </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground text-sm whitespace-nowrap">
+              Field ID:
+            </span>
+            <input
+              type="text"
+              value={fieldIdInput}
+              onChange={(e) => setFieldIdInput(e.target.value)}
+              onBlur={() => onUpdate(question.id, { id: fieldIdInput })}
+              placeholder="e.g. email, full_name"
+              className={`${inputClass} max-w-[200px] font-mono text-sm`}
+            />
+            <span className="relative flex group">
+              <button
+                type="button"
+                className="rounded p-0.5 text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Why Field ID is needed"
+              >
+                <HelpCircle className="h-4 w-4" />
+              </button>
+              <span className="absolute left-0 bottom-full z-50 mb-1.5 hidden w-[min(280px,90vw)] rounded-md border border-border bg-popover px-3 py-2 shadow-md group-hover:block">
+                <span className="text-xs text-foreground">
+                  Stable key for this field. Used in headless HTML/API submissions and when you change the question title later. Use lowercase letters, numbers, and underscores; duplicates get -2, -3.
+                </span>
+              </span>
+            </span>
           </div>
 
           {hasOptions && (

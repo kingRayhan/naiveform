@@ -5,7 +5,7 @@ import { FormBuilderContext } from "./form-builder-context";
 import type { FormQuestion } from "../../lib/form-builder-types";
 import {
   createEmptyQuestion,
-  normalizeQuestionIds,
+  slugify,
   uniqueSlug,
 } from "../../lib/form-builder-types";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -33,10 +33,11 @@ export function FormBuilderProvider({
     if (!formId || initialQuestions === undefined) return;
     if (lastFormId.current !== formId) {
       lastFormId.current = formId;
-      const normalized = initialQuestions?.length
-        ? normalizeQuestionIds(initialQuestions)
-        : [createEmptyQuestion(uniqueSlug("field", []))];
-      setQuestions(normalized);
+      setQuestions(
+        initialQuestions?.length
+          ? initialQuestions
+          : [createEmptyQuestion(uniqueSlug("field", []))]
+      );
     }
   }, [formId, initialQuestions]);
 
@@ -49,13 +50,14 @@ export function FormBuilderProvider({
     setQuestions((prev) => {
       const others = prev.filter((q) => q.id !== id);
       const otherIds = others.map((q) => q.id);
-      const newId =
-        updates.title !== undefined
-          ? uniqueSlug(updates.title, otherIds)
-          : undefined;
+      let resolvedId: string | undefined;
+      if (updates.id !== undefined) {
+        const slug = slugify(updates.id);
+        resolvedId = uniqueSlug(slug, otherIds);
+      }
       return prev.map((q) =>
         q.id === id
-          ? { ...q, ...updates, ...(newId != null ? { id: newId } : {}) }
+          ? { ...q, ...updates, ...(resolvedId != null ? { id: resolvedId } : {}) }
           : q
       );
     });
