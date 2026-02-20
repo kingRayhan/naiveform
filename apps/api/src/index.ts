@@ -1,4 +1,5 @@
-// import { api } from "@repo/convex";
+import { api } from "@repo/convex";
+import type { Id } from "@repo/convex/dataModel";
 // import type { Id } from "@repo/convex/dataModel";
 import { ConvexHttpClient } from "convex/browser";
 import { Hono } from "hono";
@@ -16,18 +17,19 @@ app.post("/f/:formId", async (c) => {
   try {
     const formId = c.req.param("formId");
     const client = new ConvexHttpClient(process.env.CONVEX_URL!);
-    // const form = await client.query(api.forms.get, {
-    //   formId: formId as Id<"forms">,
-    // });
-    const body = await c.req.json();
+    const form = await client.query(api.forms.get, {
+      formId: formId as Id<"forms">,
+    });
+    // const body = await c.req.json();
     return c.json({
-      ok: true,
-      message: "Response saved successfully",
-      body,
-      formId,
-      client,
-      // form,
-      comvexUrl: process.env.CONVEX_URL,
+      form,
+      // ok: true,
+      // message: "Response saved successfully",
+      // body,
+      // formId,
+      // client,
+      // form: form ?? null,
+      // comvexUrl: process.env.CONVEX_URL,
     });
   } catch {
     return c.json({ error: "Failed to save response" }, 500);
