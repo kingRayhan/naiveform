@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { getClient } from "./clients";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
+import { ConvexHttpClient } from "convex/browser";
 
 const app = new Hono();
 
@@ -15,7 +16,7 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 app.post("/f/:formId", async (c) => {
   try {
     const formId = c.req.param("formId");
-    const client = getClient();
+    const client = new ConvexHttpClient(process.env.CONVEX_URL!);
     const form = await client.query(api.forms.get, {
       formId: formId as Id<"forms">,
     });
@@ -26,6 +27,7 @@ app.post("/f/:formId", async (c) => {
       body,
       formId,
       form,
+      comvexUrl: process.env.CONVEX_URL,
     });
   } catch {
     return c.json({ error: "Failed to save response" }, 500);
