@@ -2,7 +2,7 @@ import { ConvexHttpClient } from "convex/browser";
 
 let _client: ConvexHttpClient | null = null;
 
-function getClient(): ConvexHttpClient {
+export function getClient(): ConvexHttpClient {
   if (!_client) {
     const url = process.env.CONVEX_URL;
     if (!url) {
@@ -14,10 +14,3 @@ function getClient(): ConvexHttpClient {
   }
   return _client;
 }
-
-export const convexClient = {
-  query: (fn: Parameters<ConvexHttpClient["query"]>[0], args: Parameters<ConvexHttpClient["query"]>[1]) =>
-    getClient().query(fn, args),
-  mutation: (fn: Parameters<ConvexHttpClient["mutation"]>[0], args: Parameters<ConvexHttpClient["mutation"]>[1]) =>
-    getClient().mutation(fn, args),
-};

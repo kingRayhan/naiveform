@@ -1,4 +1,7 @@
 import { Hono } from "hono";
+import { getClient } from "./clients";
+import { api } from "@repo/convex";
+import type { Id } from "@repo/convex/dataModel";
 
 const app = new Hono();
 
@@ -12,12 +15,17 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 app.post("/f/:formId", async (c) => {
   try {
     const formId = c.req.param("formId");
+    const client = getClient();
+    const form = await client.query(api.forms.get, {
+      formId: formId as Id<"forms">,
+    });
     const body = await c.req.json();
     return c.json({
       ok: true,
       message: "Response saved successfully",
       body,
       formId,
+      form,
     });
   } catch {
     return c.json({ error: "Failed to save response" }, 500);
