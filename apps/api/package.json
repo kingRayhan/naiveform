@@ -4,12 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "bun run --watch src/index.ts",
     "build": "tsc --noEmit",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@repo/convex": "*",
+    "convex": "^1.31.7",
     "hono": "^4.11.4"
   },
   "devDependencies": {

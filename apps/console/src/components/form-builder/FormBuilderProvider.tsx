@@ -3,12 +3,12 @@ import { useMutation } from "@repo/convex/react";
 import { api } from "@repo/convex";
 import { FormBuilderContext } from "./form-builder-context";
 import type { FormQuestion } from "../../lib/form-builder-types";
-import { createEmptyQuestion } from "../../lib/form-builder-types";
+import {
+  createEmptyQuestion,
+  normalizeQuestionIds,
+  uniqueSlug,
+} from "../../lib/form-builder-types";
 import { arrayMove } from "@dnd-kit/sortable";
-
-function generateId() {
-  return `q-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
 
 import type { Id } from "@repo/convex/dataModel";
 
@@ -25,7 +25,7 @@ export function FormBuilderProvider({
 }: FormBuilderProviderProps) {
   const updateForm = useMutation(api.forms.update);
   const [questions, setQuestions] = useState<FormQuestion[]>(() => [
-    createEmptyQuestion(generateId()),
+    createEmptyQuestion(uniqueSlug("field", [])),
   ]);
   const lastFormId = useRef<string | null>(null);
 
@@ -33,11 +33,10 @@ export function FormBuilderProvider({
     if (!formId || initialQuestions === undefined) return;
     if (lastFormId.current !== formId) {
       lastFormId.current = formId;
-      setQuestions(
-        initialQuestions?.length
-          ? initialQuestions
-          : [createEmptyQuestion(generateId())]
-      );
+      const normalized = initialQuestions?.length
+        ? normalizeQuestionIds(initialQuestions)
+        : [createEmptyQuestion(uniqueSlug("field", []))];
+      setQuestions(normalized);
     }
   }, [formId, initialQuestions]);
 
@@ -47,9 +46,19 @@ export function FormBuilderProvider({
   }, [formId, questions, updateForm]);
 
   const updateQuestion = useCallback((id: string, updates: Partial<FormQuestion>) => {
-    setQuestions((prev) =>
-      prev.map((q) => (q.id === id ? { ...q, ...updates } : q))
-    );
+    setQuestions((prev) => {
+      const others = prev.filter((q) => q.id !== id);
+      const otherIds = others.map((q) => q.id);
+      const newId =
+        updates.title !== undefined
+          ? uniqueSlug(updates.title, otherIds)
+          : undefined;
+      return prev.map((q) =>
+        q.id === id
+          ? { ...q, ...updates, ...(newId != null ? { id: newId } : {}) }
+          : q
+      );
+    });
   }, []);
 
   const removeQuestion = useCallback((id: string) => {
@@ -57,7 +66,10 @@ export function FormBuilderProvider({
   }, []);
 
   const addQuestion = useCallback(() => {
-    setQuestions((prev) => [...prev, createEmptyQuestion(generateId())]);
+    setQuestions((prev) => {
+      const nextId = uniqueSlug("field", prev.map((q) => q.id));
+      return [...prev, createEmptyQuestion(nextId)];
+    });
   }, []);
 
   const reorderQuestions = useCallback((oldIndex: number, newIndex: number) => {

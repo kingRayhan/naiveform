@@ -11,7 +11,7 @@ import { Button } from "@repo/design-system/button";
 import type { FormQuestion } from "@/lib/form-builder-types";
 
 const FORM_APP_URL = import.meta.env.VITE_FORM_APP_URL ?? "";
-const CONVEX_SITE_URL = (import.meta.env.VITE_CONVEX_SITE_URL ?? "").replace(/\/$/, "");
+const HEADLESS_FORM_URL = (import.meta.env.VITE_HEADLESS_FORM_URL ?? "").replace(/\/$/, "");
 
 function buildHeadlessHtml(
   questions: FormQuestion[],
@@ -132,7 +132,7 @@ function FormEditorPage() {
 
   const savedAt = lastSavedAt ?? form?.updatedAt;
   const formIdOrSlug = form?.slug?.trim() || formId;
-  const headlessActionUrl = CONVEX_SITE_URL ? `${CONVEX_SITE_URL}/f/${formIdOrSlug}` : "";
+  const headlessActionUrl = HEADLESS_FORM_URL ? `${HEADLESS_FORM_URL}/f/${formIdOrSlug}` : "";
   const headlessHtml = headlessActionUrl ? buildHeadlessHtml(questions, headlessActionUrl) : "";
 
   return (
@@ -211,10 +211,10 @@ function FormEditorPage() {
         )}
         {previewTab === "headless" && (
           <div className="rounded-lg border border-border bg-card overflow-hidden">
-            {!CONVEX_SITE_URL ? (
+            {!HEADLESS_FORM_URL ? (
               <p className="p-4 text-sm text-muted-foreground">
-                Set <code className="bg-muted px-1 rounded">VITE_CONVEX_SITE_URL</code> in .env (e.g.{" "}
-                <code className="bg-muted px-1 rounded">https://your-deployment.convex.site</code>) to generate the form action URL.
+                Set <code className="bg-muted px-1 rounded">VITE_HEADLESS_FORM_URL</code> in .env to your API base URL (e.g.{" "}
+                <code className="bg-muted px-1 rounded">https://your-api.vercel.app</code>).
               </p>
             ) : (
               <>
@@ -230,7 +230,7 @@ function FormEditorPage() {
                   </Button>
                 </div>
                 <pre className="p-4 overflow-x-auto text-xs text-foreground font-mono bg-muted/30 max-h-[480px] overflow-y-auto">
-                  <code>{headlessHtml || "Add questions and set VITE_CONVEX_SITE_URL to see HTML."}</code>
+                  <code>{headlessHtml || "Add questions and set VITE_HEADLESS_FORM_URL to see HTML."}</code>
                 </pre>
               </>
             )}

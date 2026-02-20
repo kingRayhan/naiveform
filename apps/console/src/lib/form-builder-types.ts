@@ -29,6 +29,36 @@ export interface FormQuestion {
   ratingMax?: number; // for star_rating, default 5
 }
 
+/** Slug from title for use as question id: lowercase, alphanumeric + underscores. */
+export function slugify(title: string): string {
+  const s = title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
+  return s || "field";
+}
+
+/** Return a slug for the title that is unique among existingIds (append -2, -3 if needed). */
+export function uniqueSlug(title: string, existingIds: string[]): string {
+  const base = slugify(title);
+  const set = new Set(existingIds);
+  if (!set.has(base)) return base;
+  let n = 2;
+  while (set.has(`${base}-${n}`)) n++;
+  return `${base}-${n}`;
+}
+
+/** Normalize question ids to slug-from-title; handles collisions and empty titles. */
+export function normalizeQuestionIds(questions: FormQuestion[]): FormQuestion[] {
+  const used = new Set<string>();
+  return questions.map((q) => {
+    const id = uniqueSlug(q.title || "field", [...used]);
+    used.add(id);
+    return { ...q, id };
+  });
+}
+
 export function createEmptyQuestion(id: string): FormQuestion {
   return {
     id,
