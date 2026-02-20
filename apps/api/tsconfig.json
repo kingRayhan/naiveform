@@ -9,7 +9,11 @@
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "outDir": "./dist",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "paths": {
+      "@repo/convex": ["../../packages/convex"],
+      "@repo/convex/*": ["../../packages/convex/*"]
+    }
   },
   "exclude": ["node_modules"]
 }
