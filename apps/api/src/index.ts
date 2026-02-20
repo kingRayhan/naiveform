@@ -80,7 +80,4 @@ app.post("/f/:formId", async (c) => {
   }
 });
 
-export default {
-  port: 5001,
-  fetch: app.fetch,
-};
+export default app;
