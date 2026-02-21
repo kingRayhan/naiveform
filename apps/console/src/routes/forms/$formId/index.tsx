@@ -11,7 +11,9 @@ import { Button } from "@repo/design-system/button";
 import type { FormQuestion } from "@/lib/form-builder-types";
 
 const FORM_APP_URL = import.meta.env.VITE_FORM_APP_URL ?? "";
-const HEADLESS_FORM_URL = (import.meta.env.VITE_HEADLESS_FORM_URL ?? "").replace(/\/$/, "");
+const HEADLESS_FORM_ACTION_URL = (
+  import.meta.env.VITE_HEADLESS_FORM_ACTION_URL ?? ""
+).replace(/\/$/, "");
 
 function buildHeadlessHtml(
   questions: FormQuestion[],
@@ -19,12 +21,11 @@ function buildHeadlessHtml(
 ): string {
   const attr = (name: string, value: string) =>
     value ? ` ${name}="${value.replace(/"/g, "&quot;")}"` : "";
-  const lines: string[] = [
-    `<form action="${actionUrl}" method="post">`,
-  ];
+  const lines: string[] = [`<form action="${actionUrl}" method="post">`];
   for (const q of questions) {
     const title = q.title || "Untitled";
     const id = `q-${q.id}`;
+    const name = escapeHtml(q.id);
     const req = q.required ? " required" : "";
     if (q.type === "short_text") {
       const type =
@@ -39,42 +40,68 @@ function buildHeadlessHtml(
           : q.inputType === "phone"
             ? "+1 (555) 000-0000"
             : "Your answer";
-      lines.push(`  <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`);
-      lines.push(`  <input name="${escapeHtml(title)}" id="${id}" type="${type}"${attr("placeholder", placeholder)}${req}>`);
+      lines.push(
+        `  <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`
+      );
+      lines.push(
+        `  <input name="${name}" id="${id}" type="${type}"${attr("placeholder", placeholder)}${req}>`
+      );
     } else if (q.type === "long_text") {
-      lines.push(`  <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`);
-      lines.push(`  <textarea name="${escapeHtml(title)}" id="${id}" rows="3"${req}></textarea>`);
+      lines.push(
+        `  <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`
+      );
+      lines.push(
+        `  <textarea name="${name}" id="${id}" rows="3"${req}></textarea>`
+      );
     } else if (q.type === "multiple_choice") {
       lines.push(`  <fieldset>`);
-      lines.push(`    <legend>${escapeHtml(title)}${q.required ? " *" : ""}</legend>`);
+      lines.push(
+        `    <legend>${escapeHtml(title)}${q.required ? " *" : ""}</legend>`
+      );
       for (const opt of q.options ?? []) {
         const v = opt || "Option";
-        lines.push(`    <label><input type="radio" name="${escapeHtml(title)}" value="${escapeHtml(v)}"${req}> ${escapeHtml(v)}</label>`);
+        lines.push(
+          `    <label><input type="radio" name="${name}" value="${escapeHtml(v)}"${req}> ${escapeHtml(v)}</label>`
+        );
       }
       lines.push(`  </fieldset>`);
     } else if (q.type === "checkboxes") {
       lines.push(`  <fieldset>`);
-      lines.push(`    <legend>${escapeHtml(title)}${q.required ? " *" : ""}</legend>`);
+      lines.push(
+        `    <legend>${escapeHtml(title)}${q.required ? " *" : ""}</legend>`
+      );
       for (const opt of q.options ?? []) {
         const v = opt || "Option";
-        lines.push(`    <label><input type="checkbox" name="${escapeHtml(title)}" value="${escapeHtml(v)}"> ${escapeHtml(v)}</label>`);
+        lines.push(
+          `    <label><input type="checkbox" name="${name}" value="${escapeHtml(v)}"> ${escapeHtml(v)}</label>`
+        );
       }
       lines.push(`  </fieldset>`);
     } else if (q.type === "dropdown") {
-      lines.push(`  <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`);
-      lines.push(`  <select name="${escapeHtml(title)}" id="${id}"${req}>`);
+      lines.push(
+        `  <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`
+      );
+      lines.push(`  <select name="${name}" id="${id}"${req}>`);
       lines.push(`    <option value="">Choose</option>`);
       for (const opt of q.options ?? []) {
-        lines.push(`    <option value="${escapeHtml(opt || "Option")}">${escapeHtml(opt || "Option")}</option>`);
+        lines.push(
+          `    <option value="${escapeHtml(opt || "Option")}">${escapeHtml(opt || "Option")}</option>`
+        );
       }
       lines.push(`  </select>`);
     } else if (q.type === "date") {
-      lines.push(`  <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`);
-      lines.push(`  <input name="${escapeHtml(title)}" id="${id}" type="date"${req}>`);
+      lines.push(
+        `  <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`
+      );
+      lines.push(`  <input name="${name}" id="${id}" type="date"${req}>`);
     } else if (q.type === "star_rating") {
       const max = Math.min(10, Math.max(1, q.ratingMax ?? 5));
-      lines.push(`  <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`);
-      lines.push(`  <input name="${escapeHtml(title)}" id="${id}" type="number" min="1" max="${max}"${req}>`);
+      lines.push(
+        `  <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`
+      );
+      lines.push(
+        `  <input name="${name}" id="${id}" type="number" min="1" max="${max}"${req}>`
+      );
     }
   }
   lines.push(`  <button type="submit">Submit</button>`);
@@ -118,7 +145,9 @@ function FormEditorPage() {
   const { questions, saveForm } = useFormBuilder();
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
-  const [previewTab, setPreviewTab] = useState<"preview" | "headless">("preview");
+  const [previewTab, setPreviewTab] = useState<"preview" | "headless">(
+    "preview"
+  );
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -132,8 +161,12 @@ function FormEditorPage() {
 
   const savedAt = lastSavedAt ?? form?.updatedAt;
   const formIdOrSlug = form?.slug?.trim() || formId;
-  const headlessActionUrl = HEADLESS_FORM_URL ? `${HEADLESS_FORM_URL}/f/${formIdOrSlug}` : "";
-  const headlessHtml = headlessActionUrl ? buildHeadlessHtml(questions, headlessActionUrl) : "";
+  const headlessActionUrl = HEADLESS_FORM_ACTION_URL
+    ? `${HEADLESS_FORM_ACTION_URL}/html-action/${form?._id as Id<"forms">}`
+    : "";
+  const headlessHtml = headlessActionUrl
+    ? buildHeadlessHtml(questions, headlessActionUrl)
+    : "";
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 xl:gap-8">
@@ -211,26 +244,45 @@ function FormEditorPage() {
         )}
         {previewTab === "headless" && (
           <div className="rounded-lg border border-border bg-card overflow-hidden">
-            {!HEADLESS_FORM_URL ? (
+            {!HEADLESS_FORM_ACTION_URL ? (
               <p className="p-4 text-sm text-muted-foreground">
-                Set <code className="bg-muted px-1 rounded">VITE_HEADLESS_FORM_URL</code> in .env to your API base URL (e.g.{" "}
-                <code className="bg-muted px-1 rounded">https://your-api.vercel.app</code>).
+                Set{" "}
+                <code className="bg-muted px-1 rounded">
+                  VITE_HEADLESS_FORM_ACTION_URL
+                </code>{" "}
+                in .env to your API base URL (e.g.{" "}
+                <code className="bg-muted px-1 rounded">
+                  https://api.naiveform.com
+                </code>
+                ). Form action:{" "}
+                <code className="bg-muted px-1 rounded">
+                  {"{base}"}/html-action/{"{formId}"}
+                </code>
+                .
               </p>
             ) : (
               <>
                 <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/50">
-                  <span className="text-xs font-medium text-foreground">HTML (copy & paste)</span>
+                  <span className="text-xs font-medium text-foreground">
+                    HTML (copy & paste)
+                  </span>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => headlessHtml && navigator.clipboard?.writeText(headlessHtml)}
+                    onClick={() =>
+                      headlessHtml &&
+                      navigator.clipboard?.writeText(headlessHtml)
+                    }
                     disabled={!headlessHtml}
                   >
                     Copy
                   </Button>
                 </div>
                 <pre className="p-4 overflow-x-auto text-xs text-foreground font-mono bg-muted/30 max-h-[480px] overflow-y-auto">
-                  <code>{headlessHtml || "Add questions and set VITE_HEADLESS_FORM_URL to see HTML."}</code>
+                  <code>
+                    {headlessHtml ||
+                      "Add questions and set VITE_HEADLESS_FORM_ACTION_URL to see HTML."}
+                  </code>
                 </pre>
               </>
             )}
