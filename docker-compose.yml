@@ -9,32 +9,32 @@ services:
       - "4000:4000"
     restart: unless-stopped
   
-  naiveform-console:
-    build:
-      context: .
-      dockerfile: Dockerfile.console
-    ports:
-      - "3003:80"
-    env_file:
-      - .env.docker
-    restart: unless-stopped
+  # naiveform-console:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.console
+  #   ports:
+  #     - "3003:80"
+  #   env_file:
+  #     - .env.docker
+  #   restart: unless-stopped
   
-  naiveform-form:
-    build:
-      context: .
-      dockerfile: Dockerfile.form
-    ports:
-      - "3002:3000"
-    env_file:
-      - .env.docker
-    restart: unless-stopped
+  # naiveform-form:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.form
+  #   ports:
+  #     - "3002:3000"
+  #   env_file:
+  #     - .env.docker
+  #   restart: unless-stopped
 
-  naiveform-landing:
-    build:
-      context: .
-      dockerfile: Dockerfile.landing
-    ports:
-      - "3001:3000"
-    env_file:
-      - .env.docker
-    restart: unless-stopped
+  # naiveform-landing:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.landing
+  #   ports:
+  #     - "3001:3000"
+  #   env_file:
+  #     - .env.docker
+  #   restart: unless-stopped
