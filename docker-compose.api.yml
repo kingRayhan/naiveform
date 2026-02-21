@@ -3,8 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
-    env_file:
-      - .env
+    environment:
+      - CONVEX_URL=https://adept-badger-863.convex.cloud
     ports:
       - "4000:4000"
     restart: unless-stopped
