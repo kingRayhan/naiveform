@@ -1,0 +1,29 @@
+# Build stage
+FROM oven/bun:1.3.9 AS builder
+
+WORKDIR /app
+
+COPY package.json .
+COPY packages ./packages
+COPY apps ./apps
+RUN bun install
+
+WORKDIR /app/apps/form
+RUN bun run build
+
+# Production stage: run Next.js standalone server
+FROM node:22-alpine
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+
+COPY --from=builder /app/apps/form/.next/standalone ./
+COPY --from=builder /app/apps/form/.next/static ./apps/form/.next/static
+COPY --from=builder /app/apps/form/public ./apps/form/public
+
+EXPOSE 3000
+
+CMD ["node", "apps/form/server.js"]
