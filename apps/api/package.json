@@ -8,8 +8,7 @@
     "dev": "PORT=4000 bun run --watch src/index.ts",
     "build": "bun build src/index.ts --outdir dist",
     "lint": "eslint .",
-    "check-types": "tsc --noEmit",
-    "test": "bun test"
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.6",
