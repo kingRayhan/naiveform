@@ -3,8 +3,13 @@ import { useQuery } from "@repo/convex/react";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
 import { Button } from "@repo/design-system/button";
+import { buildHeadlessHtml } from "@/lib/headlessHtml";
+import type { FormQuestion } from "@/lib/form-builder-types";
 
 const FORM_APP_URL = import.meta.env.VITE_FORM_APP_URL ?? "";
+const HEADLESS_FORM_ACTION_URL = (
+  import.meta.env.VITE_HEADLESS_FORM_ACTION_URL ?? ""
+).replace(/\/$/, "");
 
 export const Route = createFileRoute("/forms/$formId/share")({
   component: FormSharePage,
@@ -14,11 +19,22 @@ function FormSharePage() {
   const { formId } = useParams({ from: "/forms/$formId/share" });
   const form = useQuery(api.forms.get, { formId: formId as Id<"forms"> });
   const formIdOrSlug = form?.slug?.trim() || formId;
-  const formUrl = FORM_APP_URL ? `${FORM_APP_URL.replace(/\/$/, "")}/${formIdOrSlug}` : "";
-  const embedUrl = FORM_APP_URL ? `${FORM_APP_URL.replace(/\/$/, "")}/embed/${formIdOrSlug}` : "";
+  const formUrl = FORM_APP_URL
+    ? `${FORM_APP_URL.replace(/\/$/, "")}/${formIdOrSlug}`
+    : "";
+  const embedUrl = FORM_APP_URL
+    ? `${FORM_APP_URL.replace(/\/$/, "")}/embed/${formIdOrSlug}`
+    : "";
 
-  const headlessBase = (import.meta.env.VITE_HEADLESS_FORM_URL ?? "").replace(/\/$/, "");
-  const headlessActionUrl = headlessBase && formIdOrSlug ? `${headlessBase}/f/${formIdOrSlug}` : "";
+  const headlessActionUrl =
+    HEADLESS_FORM_ACTION_URL && form?._id
+      ? `${HEADLESS_FORM_ACTION_URL}/html-action/${form._id}`
+      : "";
+  const questions = (form?.questions ?? []) as FormQuestion[];
+  const headlessHtml =
+    headlessActionUrl && questions.length > 0
+      ? buildHeadlessHtml(questions, headlessActionUrl)
+      : "";
 
   return (
     <div>
@@ -28,7 +44,9 @@ function FormSharePage() {
       </p>
       <div className="space-y-6 max-w-lg">
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Form link</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Form link
+          </label>
           <div className="flex gap-2">
             <input
               type="text"
@@ -46,36 +64,48 @@ function FormSharePage() {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Embed code</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Embed code
+          </label>
           <textarea
             readOnly
             rows={3}
-            value={embedUrl ? `<iframe src="${embedUrl}" width="640" height="480" frameborder="0"></iframe>` : "Set VITE_FORM_APP_URL in .env"}
+            value={
+              embedUrl
+                ? `<iframe src="${embedUrl}" width="640" height="480" frameborder="0"></iframe>`
+                : "Set VITE_FORM_APP_URL in .env"
+            }
             className="w-full px-3 py-2 border border-input rounded-md bg-muted text-foreground text-sm font-mono"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Headless form (Formspree-style)</label>
-          <p className="text-sm text-muted-foreground mb-2">
-            Use a plain HTML form and POST to our API. Set <code className="text-xs bg-muted px-1 rounded">VITE_HEADLESS_FORM_URL</code> to your API base URL (e.g. <code className="text-xs bg-muted px-1 rounded">https://your-api.vercel.app</code>).
-          </p>
-          <textarea
-            readOnly
-            rows={8}
-            value={
-              headlessActionUrl
-                ? `<form action="${headlessActionUrl}" method="post">
-  <label for="email">Your Email</label>
-  <input name="Email" id="email" type="email" required>
-  <button type="submit">Submit</button>
-</form>`
-                : "Set VITE_HEADLESS_FORM_URL in .env (e.g. https://your-api.vercel.app)"
-            }
-            className="w-full px-3 py-2 border border-input rounded-md bg-muted text-foreground text-sm font-mono"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Field <code className="bg-muted px-0.5 rounded">name</code> values should match your form question titles (e.g. &quot;Email&quot;, &quot;Full name&quot;).
-          </p>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Headless HTML
+          </label>
+
+          <div className="flex gap-2">
+            <textarea
+              readOnly
+              rows={14}
+              value={
+                headlessHtml ||
+                (HEADLESS_FORM_ACTION_URL
+                  ? "Save the form with at least one question to see the snippet."
+                  : "Set VITE_HEADLESS_FORM_ACTION_URL in .env")
+              }
+              className="flex-1 px-3 py-2 border border-input rounded-md bg-muted text-foreground text-sm font-mono min-h-[200px]"
+            />
+            <Button
+              variant="secondary"
+              onClick={() =>
+                headlessHtml && navigator.clipboard?.writeText(headlessHtml)
+              }
+              disabled={!headlessHtml}
+              className="shrink-0"
+            >
+              Copy
+            </Button>
+          </div>
         </div>
       </div>
     </div>
