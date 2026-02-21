@@ -1,0 +1,29 @@
+info:
+  name: submit-form-api
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{host}}/form-submission/:formid"
+  params:
+    - name: formid
+      value: j5750yf4hmd9qvr18g1jw73thh81hfbh
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "values": {
+          "name": "Rayhan",
+          "email": "rayhan@gmail.com",
+          "age": "16"
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

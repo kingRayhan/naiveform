@@ -86,6 +86,21 @@ app.post("/f/:formId", async (c) => {
     return submitErrorToResponse(c, error);
   }
 });
+app.post("/form-submission/:formId", async (c) => {
+  try {
+    const formId = c.req.param("formId");
+    const body = await z.parseAsync(formBodySchema, await c.req.json());
+    const values = body.values as Record<string, string | string[]>;
+    const result = await submitFormResponse(formId, values);
+    if (result.redirectUrl) return c.redirect(result.redirectUrl);
+    return c.json({
+      message: "Response saved successfully",
+      responseId: result.responseId,
+    } satisfies SubmitFormSuccess);
+  } catch (error) {
+    return submitErrorToResponse(c, error);
+  }
+});
 
 /** Headless HTML form endpoint (Formspree-style). POST with application/x-www-form-urlencoded; input names = form question ids. */
 app.post("/html-action/:formId", async (c) => {
