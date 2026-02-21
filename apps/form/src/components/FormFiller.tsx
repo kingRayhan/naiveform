@@ -1,19 +1,15 @@
 "use client";
 
-import type {
-  SubmitFormError,
-  SubmitFormSuccess,
-  SubmitFormValidationError,
-} from "@repo/types";
-import axios, { AxiosError } from "axios";
-import { useMutation } from "@tanstack/react-query";
-import { useQuery } from "@repo/convex/react";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
-import { useForm, Controller } from "react-hook-form";
+import { useQuery } from "@repo/convex/react";
 import { Button } from "@repo/design-system/button";
+import type { SubmitFormSuccess } from "@repo/types";
+import { useMutation } from "@tanstack/react-query";
+import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 
 type Question = {
   id: string;
@@ -47,12 +43,6 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
   );
 
   const form = formBySlug ?? (formBySlug === null ? formById : undefined);
-
-  const apiBase = (
-    process.env.NEXT_PUBLIC_HEADLESS_FORM_URL ??
-    process.env.NEXT_PUBLIC_FORM_API_URL ??
-    "https://api.naiveform.com"
-  ).replace(/\/$/, "");
 
   const submitMutation = useMutation({
     mutationFn: async ({
@@ -202,7 +192,7 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
     try {
       const result = await submitMutation.mutateAsync({
         payload: data,
-        formId: (form as { _id: string })._id,
+        formId: form._id as Id<"forms">,
       });
       setSubmitted(true);
       if (result?.redirect) {
