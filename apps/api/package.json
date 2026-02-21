@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.6",
+    "@repo/types": "*",
     "@repo/convex": "*",
     "convex": "^1.31.7",
     "hono": "^4.11.4",

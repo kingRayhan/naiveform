@@ -1,5 +1,11 @@
 "use client";
 
+import type {
+  SubmitFormError,
+  SubmitFormSuccess,
+  SubmitFormValidationError,
+} from "@repo/types";
+import axios, { AxiosError } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { useQuery } from "@repo/convex/react";
 import { api } from "@repo/convex";
@@ -42,51 +48,41 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
 
   const form = formBySlug ?? (formBySlug === null ? formById : undefined);
 
-  const apiBase = (process.env.NEXT_PUBLIC_HEADLESS_FORM_URL ?? "").replace(
-    /\/$/,
-    ""
-  );
+  const apiBase = (
+    process.env.NEXT_PUBLIC_HEADLESS_FORM_URL ??
+    process.env.NEXT_PUBLIC_FORM_API_URL ??
+    "https://api.naiveform.com"
+  ).replace(/\/$/, "");
 
   const submitMutation = useMutation({
     mutationFn: async ({
       payload,
-      formIdOrSlug,
-      apiBase: base,
+      formId,
     }: {
       payload: Record<string, string | string[]>;
-      formIdOrSlug: string;
-      apiBase: string;
+      formId: string;
     }) => {
-      const body = new URLSearchParams();
-      for (const [id, value] of Object.entries(payload)) {
-        if (value === undefined || value === "") continue;
-        if (Array.isArray(value)) {
-          for (const v of value) body.append(id, String(v));
-        } else {
-          body.append(id, String(value));
+      try {
+        const res = await axios.post<SubmitFormSuccess>(
+          `${process.env.NEXT_PUBLIC_FORM_API_URL}/f/${formId}`,
+          { values: payload },
+          {
+            headers: { "Content-Type": "application/json" },
+            maxRedirects: 0,
+            validateStatus: (status: number) =>
+              status === 200 || status === 201 || status === 302,
+          }
+        );
+        if (res.status === 302) {
+          const location = res.headers.location ?? res.headers["location"];
+          return { redirect: Array.isArray(location) ? location[0] : location };
+        }
+        return { success: res.data };
+      } catch (err: unknown) {
+        if (err instanceof AxiosError) {
+          console.log(JSON.stringify(err.response?.data, null, 2));
         }
       }
-      const res = await fetch(`${base}/f/${formIdOrSlug}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
-        redirect: "manual",
-      });
-      if (res.status === 302) {
-        const location = res.headers.get("Location");
-        return { redirect: location ?? undefined };
-      }
-      if (res.status === 200 || res.status === 201) {
-        return {};
-      }
-      const text = await res.text();
-      let msg = text || "Submission failed.";
-      if (text.toLowerCase().includes("closed")) {
-        msg = "This form is no longer accepting responses.";
-      } else if (text.toLowerCase().includes("not found")) {
-        msg = "This form could not be found. It may have been deleted.";
-      }
-      throw new Error(msg);
     },
   });
 
@@ -203,21 +199,13 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
 
     setSubmitError(null);
 
-    if (!apiBase) {
-      setSubmitError(
-        "Form submission is not configured. Set NEXT_PUBLIC_HEADLESS_FORM_URL to your API URL."
-      );
-      return;
-    }
-
     try {
       const result = await submitMutation.mutateAsync({
         payload: data,
-        formIdOrSlug,
-        apiBase,
+        formId: (form as { _id: string })._id,
       });
       setSubmitted(true);
-      if (result.redirect) {
+      if (result?.redirect) {
         window.location.assign(result.redirect);
       }
     } catch (error) {
@@ -417,10 +405,8 @@ function QuestionField({
         <CheckboxGroup
           name={id}
           options={options}
-          required={required}
           setValue={setValue}
           watch={watch}
-          setError={setError}
           clearErrors={clearErrors}
         />
       )}
@@ -538,18 +524,14 @@ function StarRatingInput({
 function CheckboxGroup({
   name,
   options,
-  required,
   setValue,
   watch,
-  setError,
   clearErrors,
 }: {
   name: string;
   options: string[];
-  required: boolean;
   setValue: ReturnType<typeof useForm<FormData>>["setValue"];
   watch: ReturnType<typeof useForm<FormData>>["watch"];
-  setError: ReturnType<typeof useForm<FormData>>["setError"];
   clearErrors: ReturnType<typeof useForm<FormData>>["clearErrors"];
 }) {
   const value = watch(name) as string[] | undefined;

@@ -1,13 +1,22 @@
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
-import { Hono } from "hono";
-import { getClient } from "./clients";
-import z, { ZodError } from "zod";
-import { escapeHtml } from "./utils";
-import { ConvexError } from "convex/values";
 import { getErrorMessage } from "@repo/convex/error";
+import type {
+  SubmitFormError,
+  SubmitFormSuccess,
+  SubmitFormValidationError,
+} from "@repo/types";
+import { ConvexError } from "convex/values";
+import type { MiddlewareHandler } from "hono";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import z, { ZodError } from "zod";
+import { getClient } from "./clients";
+import { escapeHtml } from "./utils";
 
 const app = new Hono();
+
+app.use(cors() as unknown as MiddlewareHandler);
 
 app.get("/", (c) => c.json({ ok: true, message: "Naiveform API" }));
 app.get("/health", (c) => c.json({ status: "ok" }));
@@ -33,17 +42,30 @@ app.post("/f/:formId", async (c) => {
     // ------------------------------------------------------------
 
     // 1. Form not found
-    if (!form) return c.json({ error: "Form not found" }, 404);
+    if (!form) {
+      return c.json({ error: "Form not found" } satisfies SubmitFormError, 404);
+    }
 
     // 2. Form is closed
-    if (form.isClosed) return c.json({ error: "Form is closed" }, 410);
+    if (form.isClosed) {
+      return c.json({ error: "Form is closed" } satisfies SubmitFormError, 410);
+    }
 
     // 3. Form expired
-    if (form.settings?.closeAt != null && Date.now() > form.settings.closeAt)
-      return c.json({ error: "Form has expired" }, 410);
+    if (form.settings?.closeAt != null && Date.now() > form.settings.closeAt) {
+      return c.json(
+        { error: "Form has expired" } satisfies SubmitFormError,
+        410
+      );
+    }
 
     // 4. Form is archived
-    if (form.archived) return c.json({ error: "Form is archived" }, 410);
+    if (form.archived) {
+      return c.json(
+        { error: "Form is archived" } satisfies SubmitFormError,
+        410
+      );
+    }
 
     // Submit response - convert arrays to comma-separated strings for saveResponse
     const answers: Record<string, string> = Object.fromEntries(
@@ -60,24 +82,37 @@ app.post("/f/:formId", async (c) => {
       formId: formId as Id<"forms">,
     });
 
+    if (form.settings?.redirectUrl) {
+      return c.redirect(form.settings.redirectUrl);
+    }
+
     return c.json({
       message: "Response saved successfully",
       responseId: responseId,
-    });
+    } satisfies SubmitFormSuccess);
   } catch (error) {
     if (error instanceof ConvexError) {
-      return c.json({ error: getErrorMessage(error) }, 500);
+      return c.json(
+        { error: getErrorMessage(error) } satisfies SubmitFormError,
+        500
+      );
     }
 
     if (error instanceof ZodError) {
-      return c.json({ errors: error.issues }, 400);
+      return c.json(
+        { errors: error.issues } satisfies SubmitFormValidationError,
+        400
+      );
     }
 
     if (error instanceof Error) {
-      return c.json({ error: error.message }, 500);
+      return c.json({ error: error.message } satisfies SubmitFormError, 500);
     }
 
-    return c.json({ error: "Failed to save response" }, 500);
+    return c.json(
+      { error: "Failed to save response" } satisfies SubmitFormError,
+      500
+    );
   }
 });
 
