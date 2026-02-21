@@ -12,5 +12,8 @@ RUN bun install
 WORKDIR /app/apps/api
 
 EXPOSE 4000
-# Run source directly with Bun
-CMD ["bun", "run", "src/index.ts"]
+
+ENV PORT=4000
+
+# Run server (serves the Hono app)
+CMD ["bun", "run", "server.ts"]
