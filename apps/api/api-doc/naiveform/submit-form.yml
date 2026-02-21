@@ -16,7 +16,8 @@ http:
       {
         "values": {
           "name": "Rayhan",
-          "email": "rayhan@gmail.com"
+          "email": "rayhan@gmail.com",
+          "age": "16"
         }
       }
   auth: inherit
