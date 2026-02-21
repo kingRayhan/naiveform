@@ -1,5 +1,5 @@
 services:
-  api:
+  naiveform-api:
     build:
       context: .
       dockerfile: Dockerfile.api
