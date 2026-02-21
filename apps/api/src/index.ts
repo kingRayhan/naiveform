@@ -9,6 +9,7 @@ import type { MiddlewareHandler } from "hono";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import z, { ZodError } from "zod";
+import { FORM_SCRIPT } from "./formScript";
 import { parseFormUrlencoded, submitFormResponse } from "./services/formSubmit";
 
 const app = new Hono();
@@ -17,6 +18,13 @@ app.use(cors() as unknown as MiddlewareHandler);
 
 app.get("/", (c) => c.json({ ok: true, message: "Naiveform API" }));
 app.get("/health", (c) => c.json({ status: "ok" }));
+
+app.get("/form.js", (c) =>
+  c.body(FORM_SCRIPT, 200, {
+    "Content-Type": "application/javascript; charset=utf-8",
+    "Cache-Control": "public, max-age=3600",
+  })
+);
 
 const formBodySchema = z.object({
   values: z.record(z.string(), z.string().or(z.array(z.string()))),
@@ -95,7 +103,17 @@ app.post("/html-action/:formId", async (c) => {
     }
     const values = await parseFormUrlencoded(c.req);
     const result = await submitFormResponse(formId, values);
-    if (result.redirectUrl) return c.redirect(result.redirectUrl);
+    const isScriptRequest =
+      c.req.header("X-Requested-With") === "XMLHttpRequest";
+    if (result.redirectUrl) {
+      if (isScriptRequest)
+        return c.json({
+          message: "Response saved successfully",
+          responseId: result.responseId,
+          redirectUrl: result.redirectUrl,
+        } satisfies SubmitFormSuccess & { redirectUrl?: string });
+      return c.redirect(result.redirectUrl);
+    }
     return c.json({
       message: "Response saved successfully",
       responseId: result.responseId,
