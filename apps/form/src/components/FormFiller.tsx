@@ -128,7 +128,7 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
     return (
       <div className="mx-auto max-w-2xl rounded-lg border border-border bg-card p-8 text-center">
         <h1 className="text-xl font-semibold text-foreground">
-          Form not found
+          Form not found ❌
         </h1>
         <p className="mt-2 text-muted-foreground">
           This form may have been deleted or the link may be incorrect.
