@@ -65,8 +65,75 @@ export async function submitFormResponse(
     formId: formId as Id<"forms">,
   });
 
+  await triggerWebhooksFromApi(convexClient, {
+    form,
+    formId: formId as Id<"forms">,
+    responseId,
+    answers,
+  });
+
   return {
     responseId,
     redirectUrl: form.settings?.redirectUrl,
   };
+}
+
+/** Build webhook payload and POST to each URL; log results via Convex. */
+async function triggerWebhooksFromApi(
+  convexClient: ReturnType<typeof getClient>,
+  ctx: {
+    form: Awaited<ReturnType<typeof convexClient.query<typeof api.forms.get>>>;
+    formId: Id<"forms">;
+    responseId: string;
+    answers: Record<string, string>;
+  }
+): Promise<void> {
+  const form = ctx.form;
+  if (!form) return;
+  const webhooks = form.settings?.webhooks?.filter(
+    (url): url is string => typeof url === "string" && url.trim().length > 0
+  );
+  if (!webhooks?.length) return;
+
+  const questionsById = new Map((form.questions ?? []).map((q) => [q.id, q]));
+  const answersByFieldName: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(ctx.answers)) {
+    const q = questionsById.get(key);
+    answersByFieldName[q?.title ?? key] = value;
+  }
+  const payload = {
+    formId: form._id,
+    formTitle: form.title,
+    responseId: ctx.responseId,
+    submittedAt: Date.now(),
+    answers: answersByFieldName,
+  };
+  const body = JSON.stringify(payload);
+
+  for (const url of webhooks) {
+    const trimmedUrl = url.trim();
+    try {
+      const res = await fetch(trimmedUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+      await convexClient.mutation(api.responses.logWebhookDelivery, {
+        formId: ctx.formId,
+        responseId: ctx.responseId as Id<"responses">,
+        url: trimmedUrl,
+        success: res.ok,
+        statusCode: res.status,
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      await convexClient.mutation(api.responses.logWebhookDelivery, {
+        formId: ctx.formId,
+        responseId: ctx.responseId as Id<"responses">,
+        url: trimmedUrl,
+        success: false,
+        errorMessage,
+      });
+    }
+  }
 }

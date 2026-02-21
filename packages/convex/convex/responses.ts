@@ -126,6 +126,28 @@ export const insertWebhookLog = internalMutation({
   },
 });
 
+/** Public mutation for the API to log webhook delivery (webhooks triggered from API). */
+export const logWebhookDelivery = mutation({
+  args: {
+    formId: v.id("forms"),
+    responseId: v.id("responses"),
+    url: v.string(),
+    success: v.boolean(),
+    statusCode: v.optional(v.number()),
+    errorMessage: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("webhookLogs", {
+      formId: args.formId,
+      responseId: args.responseId,
+      url: args.url,
+      success: args.success,
+      statusCode: args.statusCode,
+      errorMessage: args.errorMessage,
+    });
+  },
+});
+
 export const listWebhookLogsByForm = query({
   args: {
     formId: v.id("forms"),
