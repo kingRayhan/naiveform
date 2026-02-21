@@ -21,6 +21,9 @@ request:
     - name: host
       value: https://api.naiveform.com
       disabled: true
+    - name: host
+      value: https://api.naiveform.com
+      disabled: true
 bundled: false
 extensions:
   bruno:
