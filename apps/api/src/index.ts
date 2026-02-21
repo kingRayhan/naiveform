@@ -67,6 +67,19 @@ app.post("/f/:formId", async (c) => {
       );
     }
 
+    // 5. Only allow keys that are form question ids
+    const allowedKeys = new Set((form.questions ?? []).map((q) => q.id));
+    const submittedKeys = Object.keys(values);
+    const invalidKeys = submittedKeys.filter((key) => !allowedKeys.has(key));
+    if (invalidKeys.length > 0) {
+      return c.json(
+        {
+          error: `Invalid or unknown field(s): ${invalidKeys.join(", ")}`,
+        } satisfies SubmitFormError,
+        400
+      );
+    }
+
     // Submit response - convert arrays to comma-separated strings for saveResponse
     const answers: Record<string, string> = Object.fromEntries(
       Object.entries(values).map(([key, value]) => [
