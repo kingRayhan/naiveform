@@ -18,12 +18,9 @@ request:
   variables:
     - name: host
       value: http://localhost:4000
-    - name: host
-      value: https://api.naiveform.com
       disabled: true
     - name: host
       value: https://api.naiveform.com
-      disabled: true
 bundled: false
 extensions:
   bruno:
