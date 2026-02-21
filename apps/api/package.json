@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "PORT=4000 bun run --watch src/index.ts",
-    "build": "tsc --noEmit",
+    "build": "bun build src/index.ts --outdir dist",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
