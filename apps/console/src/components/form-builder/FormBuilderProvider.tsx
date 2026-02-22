@@ -2,89 +2,107 @@ import { useState, useCallback, useEffect, useRef, type ReactNode } from "react"
 import { useMutation } from "@repo/convex/react";
 import { api } from "@repo/convex";
 import { FormBuilderContext } from "./form-builder-context";
-import type { FormQuestion } from "../../lib/form-builder-types";
+import type { FormBlock } from "@repo/types";
 import {
-  createEmptyQuestion,
-  slugify,
-  uniqueSlug,
-} from "../../lib/form-builder-types";
+  createEmptyInputBlock,
+  createEmptyContentBlock,
+  INPUT_BLOCK_TYPES,
+  CONTENT_BLOCK_TYPES,
+} from "@repo/types";
+import type { InputBlock, ContentBlock } from "@repo/types";
 import { arrayMove } from "@dnd-kit/sortable";
-
 import type { Id } from "@repo/convex/dataModel";
+
+function uniqueBlockId(prefix: string, existingIds: string[]): string {
+  const set = new Set(existingIds);
+  if (!set.has(prefix)) return prefix;
+  let n = 2;
+  while (set.has(`${prefix}-${n}`)) n++;
+  return `${prefix}-${n}`;
+}
 
 interface FormBuilderProviderProps {
   children: ReactNode;
   formId?: Id<"forms"> | null;
-  initialQuestions?: FormQuestion[] | null;
+  initialBlocks?: FormBlock[] | null;
 }
 
 export function FormBuilderProvider({
   children,
   formId,
-  initialQuestions,
+  initialBlocks,
 }: FormBuilderProviderProps) {
   const updateForm = useMutation(api.forms.update);
-  const [questions, setQuestions] = useState<FormQuestion[]>(() => [
-    createEmptyQuestion(uniqueSlug("field", [])),
+  const [blocks, setBlocks] = useState<FormBlock[]>(() => [
+    createEmptyInputBlock(uniqueBlockId("field", [])),
   ]);
   const lastFormId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!formId || initialQuestions === undefined) return;
+    if (!formId || initialBlocks === undefined) return;
     if (lastFormId.current !== formId) {
       lastFormId.current = formId;
-      setQuestions(
-        initialQuestions?.length
-          ? initialQuestions
-          : [createEmptyQuestion(uniqueSlug("field", []))]
+      setBlocks(
+        initialBlocks?.length
+          ? initialBlocks
+          : [createEmptyInputBlock(uniqueBlockId("field", []))]
       );
     }
-  }, [formId, initialQuestions]);
+  }, [formId, initialBlocks]);
 
   const saveForm = useCallback(async () => {
     if (!formId) return;
-    await updateForm({ formId, questions });
-  }, [formId, questions, updateForm]);
+    await updateForm({ formId, blocks });
+  }, [formId, blocks, updateForm]);
 
-  const updateQuestion = useCallback((id: string, updates: Partial<FormQuestion>) => {
-    setQuestions((prev) => {
-      const others = prev.filter((q) => q.id !== id);
-      const otherIds = others.map((q) => q.id);
-      let resolvedId: string | undefined;
-      if (updates.id !== undefined) {
-        const slug = slugify(updates.id);
-        resolvedId = uniqueSlug(slug, otherIds);
-      }
-      return prev.map((q) =>
-        q.id === id
-          ? { ...q, ...updates, ...(resolvedId != null ? { id: resolvedId } : {}) }
-          : q
-      );
+  const updateBlock = useCallback((id: string, updates: Partial<FormBlock>) => {
+    setBlocks((prev): FormBlock[] => {
+      const otherIds = prev.map((b) => b.id).filter((oid) => oid !== id);
+      const newId =
+        updates.id !== undefined
+          ? uniqueBlockId(updates.id, otherIds)
+          : undefined;
+      const resolved = newId !== undefined ? { ...updates, id: newId } : updates;
+      return prev.map((b) => (b.id === id ? { ...b, ...resolved } : b)) as FormBlock[];
     });
   }, []);
 
-  const removeQuestion = useCallback((id: string) => {
-    setQuestions((prev) => prev.filter((q) => q.id !== id));
+  const removeBlock = useCallback((id: string) => {
+    setBlocks((prev) => prev.filter((b) => b.id !== id));
   }, []);
 
-  const addQuestion = useCallback(() => {
-    setQuestions((prev) => {
-      const nextId = uniqueSlug("field", prev.map((q) => q.id));
-      return [...prev, createEmptyQuestion(nextId)];
+  const addInputBlock = useCallback((type?: InputBlock["type"]) => {
+    const inputType =
+      type && INPUT_BLOCK_TYPES.some((t) => t.type === type) ? type : "text";
+    setBlocks((prev) => {
+      const nextId = uniqueBlockId("field", prev.map((b) => b.id));
+      return [...prev, createEmptyInputBlock(nextId, inputType)];
     });
   }, []);
 
-  const reorderQuestions = useCallback((oldIndex: number, newIndex: number) => {
-    setQuestions((prev) => arrayMove(prev, oldIndex, newIndex));
+  const addContentBlock = useCallback((type?: ContentBlock["type"]) => {
+    const contentType =
+      type && CONTENT_BLOCK_TYPES.some((t) => t.type === type)
+        ? type
+        : "paragraph";
+    setBlocks((prev) => {
+      const nextId = uniqueBlockId("content", prev.map((b) => b.id));
+      return [...prev, createEmptyContentBlock(nextId, contentType)];
+    });
+  }, []);
+
+  const reorderBlocks = useCallback((oldIndex: number, newIndex: number) => {
+    setBlocks((prev) => arrayMove(prev, oldIndex, newIndex));
   }, []);
 
   const value = {
-    questions,
-    setQuestions,
-    updateQuestion,
-    removeQuestion,
-    addQuestion,
-    reorderQuestions,
+    blocks,
+    setBlocks,
+    updateBlock,
+    removeBlock,
+    addInputBlock,
+    addContentBlock,
+    reorderBlocks,
     saveForm,
   };
 

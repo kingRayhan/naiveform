@@ -1,31 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-const questionValidator = {
-  id: v.string(),
-  type: v.union(
-    v.literal("short_text"),
-    v.literal("long_text"),
-    v.literal("multiple_choice"),
-    v.literal("checkboxes"),
-    v.literal("dropdown"),
-    v.literal("date"),
-    v.literal("star_rating")
-  ),
-  title: v.string(),
-  required: v.boolean(),
-  options: v.optional(v.array(v.string())),
-  inputType: v.optional(
-    v.union(
-      v.literal("text"),
-      v.literal("email"),
-      v.literal("phone"),
-      v.literal("number")
-    )
-  ),
-  ratingMax: v.optional(v.number()),
-};
-
 const formSettingsValidator = {
   limitOneResponsePerPerson: v.optional(v.boolean()),
   confirmationMessage: v.optional(v.string()),
@@ -41,7 +16,7 @@ export const create = mutation({
     title: v.string(),
     description: v.optional(v.string()),
     userId: v.string(),
-    questions: v.optional(v.array(v.object(questionValidator))),
+    blocks: v.optional(v.array(v.any())),
     slug: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -57,7 +32,7 @@ export const create = mutation({
       title: args.title,
       description: args.description,
       userId: args.userId,
-      questions: args.questions ?? [],
+      blocks: args.blocks ?? [],
       slug: args.slug?.trim() || undefined,
       updatedAt: now,
     });
@@ -87,7 +62,7 @@ export const update = mutation({
     formId: v.id("forms"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
-    questions: v.optional(v.array(v.object(questionValidator))),
+    blocks: v.optional(v.array(v.any())),
     slug: v.optional(v.string()),
     isClosed: v.optional(v.boolean()),
     archived: v.optional(v.boolean()),

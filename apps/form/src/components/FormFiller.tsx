@@ -5,21 +5,13 @@ import type { Id } from "@repo/convex/dataModel";
 import { useQuery } from "@repo/convex/react";
 import { Button } from "@repo/design-system/button";
 import type { SubmitFormSuccess } from "@repo/types";
+import { getFormBlocks, isInputBlock } from "@repo/types";
+import type { FormBlock, InputBlock } from "@repo/types";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-
-type Question = {
-  id: string;
-  type: string;
-  title: string;
-  required: boolean;
-  options?: string[];
-  inputType?: "text" | "email" | "phone" | "number";
-  ratingMax?: number;
-};
 
 type FormData = Record<string, string | string[]>;
 
@@ -76,10 +68,13 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
     },
   });
 
+  const blocks = form ? getFormBlocks(form) : [];
+  const inputBlocks = blocks.filter(isInputBlock);
+
   const defaultValues: FormData = {};
-  for (const q of form?.questions ?? []) {
-    if (q.type === "checkboxes") defaultValues[q.id] = [];
-    else defaultValues[q.id] = "";
+  for (const b of inputBlocks) {
+    if (b.type === "checkbox") defaultValues[b.id] = [];
+    else defaultValues[b.id] = "";
   }
 
   const {
@@ -177,11 +172,11 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
   }
 
   const onSubmit = async (data: FormData) => {
-    for (const q of form.questions) {
-      if (q.type === "checkboxes" && q.required) {
-        const val = data[q.id];
+    for (const b of inputBlocks) {
+      if (b.type === "checkbox" && b.settings?.required) {
+        const val = data[b.id];
         if (!Array.isArray(val) || val.length === 0) {
-          setError(q.id, { message: "Select at least one" });
+          setError(b.id, { message: "Select at least one" });
           return;
         }
       }
@@ -223,19 +218,76 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
       </div>
 
       <div className="space-y-6">
-        {form.questions.map((q) => (
-          <QuestionField
-            key={q.id}
-            question={q}
-            register={register}
-            control={control}
-            setValue={setValue}
-            watch={watch}
-            setError={setError}
-            clearErrors={clearErrors}
-            error={errors[q.id]}
-          />
-        ))}
+        {blocks.map((block) => {
+          if (block.kind === "content") {
+            if (block.type === "heading") {
+              const level = "settings" in block && block.settings?.level ? block.settings.level : 2;
+              const sizeClass =
+                level === 1 ? "text-2xl" :
+                level === 2 ? "text-xl" :
+                level === 3 ? "text-lg" :
+                level === 4 ? "text-base" :
+                level === 5 ? "text-sm" : "text-xs";
+              const text = "text" in block ? block.text : "";
+              return React.createElement(
+                `h${level}`,
+                { key: block.id, className: `${sizeClass} font-semibold ${text ? "text-foreground" : "text-muted-foreground"}` },
+                text || "Heading text"
+              );
+            }
+            if (block.type === "paragraph") {
+              const align = "settings" in block && block.settings?.align ? block.settings.align : "left";
+              const fontSize = "settings" in block && block.settings?.fontSize ? block.settings.fontSize : "medium";
+              const alignClass = align === "left" ? "text-left" : align === "center" ? "text-center" : "text-right";
+              const sizeClass = fontSize === "small" ? "text-sm" : fontSize === "large" ? "text-lg" : "text-base";
+              const content = "content" in block ? block.content : "";
+              return (
+                <p key={block.id} className={`whitespace-pre-wrap ${alignClass} ${sizeClass} ${content ? "text-foreground" : "text-muted-foreground"}`}>
+                  {content || "Paragraph content"}
+                </p>
+              );
+            }
+            if (block.type === "image") {
+              const url = "imageUrl" in block ? block.imageUrl : "";
+              if (!url) return <div key={block.id} className="text-muted-foreground text-sm">Image</div>;
+              const alt = "settings" in block && block.settings?.alt ? block.settings.alt : "";
+              return (
+                <img key={block.id} src={url} alt={alt} className="max-w-full h-auto rounded-md" />
+              );
+            }
+            if (block.type === "youtube_embed") {
+              const vid = "youtubeVideoId" in block ? block.youtubeVideoId : "";
+              if (!vid) return <div key={block.id} className="text-muted-foreground text-sm">YouTube video</div>;
+              return (
+                <div key={block.id} className="aspect-video rounded-md overflow-hidden bg-muted">
+                  <iframe
+                    title="YouTube"
+                    src={`https://www.youtube.com/embed/${vid}`}
+                    className="w-full h-full"
+                    allowFullScreen
+                  />
+                </div>
+              );
+            }
+            if (block.type === "divider") {
+              return <hr key={block.id} className="border-border" />;
+            }
+            return null;
+          }
+          return (
+            <InputBlockField
+              key={block.id}
+              block={block}
+              register={register}
+              control={control}
+              setValue={setValue}
+              watch={watch}
+              setError={setError}
+              clearErrors={clearErrors}
+              error={errors[block.id]}
+            />
+          );
+        })}
       </div>
 
       {submitError && (
@@ -273,12 +325,14 @@ function ShortTextInput({
   required,
   register,
   error,
+  placeholder: placeholderProp,
 }: {
   id: string;
   inputType: "text" | "email" | "phone" | "number";
   required: boolean;
   register: ReturnType<typeof useForm<FormData>>["register"];
   error: { message?: string } | undefined;
+  placeholder?: string;
 }) {
   const htmlType =
     inputType === "email"
@@ -286,12 +340,13 @@ function ShortTextInput({
       : inputType === "number"
         ? "number"
         : "text";
-  const placeholder =
+  const defaultPlaceholder =
     inputType === "email"
       ? "you@example.com"
       : inputType === "phone"
         ? "+1 (555) 000-0000"
         : "Your answer";
+  const placeholder = placeholderProp ?? defaultPlaceholder;
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phoneRegex = /^[\d\s\-+()]{10,}$/;
@@ -311,6 +366,7 @@ function ShortTextInput({
 
   return (
     <input
+      id={id}
       {...register(id, { validate })}
       type={htmlType}
       placeholder={placeholder}
@@ -320,8 +376,8 @@ function ShortTextInput({
   );
 }
 
-function QuestionField({
-  question,
+function InputBlockField({
+  block,
   register,
   control,
   setValue,
@@ -330,7 +386,7 @@ function QuestionField({
   clearErrors,
   error,
 }: {
-  question: Question;
+  block: InputBlock;
   register: ReturnType<typeof useForm<FormData>>["register"];
   control: ReturnType<typeof useForm<FormData>>["control"];
   setValue: ReturnType<typeof useForm<FormData>>["setValue"];
@@ -339,10 +395,14 @@ function QuestionField({
   clearErrors: ReturnType<typeof useForm<FormData>>["clearErrors"];
   error: { message?: string } | undefined;
 }) {
-  const { id, type, title, required, options = [] } = question;
+  const { id, type, title, options = [] } = block;
+  const required = block.settings?.required ?? false;
+  const labelId = `${id}-label`;
+  const singleInputTypes = ["text", "phone", "url", "email", "long_text", "dropdown", "date", "time", "datetime", "number"];
+  const hasSingleInput = singleInputTypes.includes(type) || (type === "linear_scale" && "settings" in block);
 
   const label = (
-    <label className="block text-sm font-medium text-foreground">
+    <label id={labelId} htmlFor={hasSingleInput ? id : undefined} className="block text-sm font-medium text-foreground">
       {title || "(Untitled question)"}
       {required && <span className="text-destructive ml-0.5">*</span>}
     </label>
@@ -351,49 +411,73 @@ function QuestionField({
   return (
     <div className="space-y-2">
       {label}
+      {block.description && (
+        <p className="text-sm text-muted-foreground">{block.description}</p>
+      )}
 
-      {type === "short_text" && (
+      {(type === "text" || type === "phone" || type === "url") && (
+        <input
+          id={id}
+          {...register(id, { required: required ? "This field is required" : false })}
+          type={type === "url" ? "url" : "text"}
+          placeholder={
+            block.settings?.placeholder ??
+            (type === "phone" ? "+1 (555) 000-0000" : "Your answer")
+          }
+          className={inputClass}
+          aria-invalid={!!error}
+        />
+      )}
+
+      {type === "email" && (
         <ShortTextInput
           id={id}
-          inputType={question.inputType ?? "text"}
+          inputType="email"
           required={required}
           register={register}
           error={error}
+          placeholder={block.settings?.placeholder}
         />
       )}
 
       {type === "long_text" && (
         <textarea
+          id={id}
           {...register(id, {
             required: required ? "This field is required" : false,
           })}
-          rows={3}
-          placeholder="Your answer"
+          rows={block.settings?.rows ?? 3}
+          placeholder={block.settings?.placeholder ?? "Your answer"}
           className={inputClass}
         />
       )}
 
-      {type === "multiple_choice" && (
-        <div className="space-y-2">
-          {options.map((opt, i) => (
-            <label key={i} className="flex items-center gap-2 text-foreground">
-              <input
-                type="radio"
-                {...register(id, {
-                  required: required ? "Select an option" : false,
-                })}
-                value={opt}
-                className="rounded-full border-input"
-              />
-              <span>{opt || `Option ${i + 1}`}</span>
-            </label>
-          ))}
+      {type === "radio" && (
+        <div className="space-y-2" role="group" aria-labelledby={labelId}>
+          {options.map((opt, i) => {
+            const optionId = `${id}-option-${i}`;
+            return (
+              <label key={i} htmlFor={optionId} className="flex items-center gap-2 text-foreground">
+                <input
+                  id={optionId}
+                  type="radio"
+                  {...register(id, {
+                    required: required ? "Select an option" : false,
+                  })}
+                  value={opt}
+                  className="rounded-full border-input"
+                />
+                <span>{opt || `Option ${i + 1}`}</span>
+              </label>
+            );
+          })}
         </div>
       )}
 
-      {type === "checkboxes" && (
+      {type === "checkbox" && (
         <CheckboxGroup
           name={id}
+          fieldId={id}
           options={options}
           setValue={setValue}
           watch={watch}
@@ -403,10 +487,11 @@ function QuestionField({
 
       {type === "dropdown" && (
         <select
+          id={id}
           {...register(id, { required: required ? "Choose an option" : false })}
           className={inputClass}
         >
-          <option value="">Choose</option>
+          <option value="">{block.settings?.placeholder ?? "Choose"}</option>
           {options.map((opt, i) => (
             <option key={i} value={opt}>
               {opt || `Option ${i + 1}`}
@@ -415,12 +500,25 @@ function QuestionField({
         </select>
       )}
 
-      {type === "date" && (
+      {(type === "date" || type === "time" || type === "datetime") && (
         <input
+          id={id}
           {...register(id, {
             required: required ? "This field is required" : false,
           })}
-          type="date"
+          type={type === "datetime" ? "datetime-local" : type}
+          className={inputClass}
+        />
+      )}
+
+      {type === "number" && (
+        <input
+          id={id}
+          {...register(id, {
+            required: required ? "This field is required" : false,
+          })}
+          type="number"
+          placeholder={block.settings?.placeholder}
           className={inputClass}
         />
       )}
@@ -428,10 +526,49 @@ function QuestionField({
       {type === "star_rating" && (
         <StarRatingInput
           id={id}
-          max={Math.min(10, Math.max(3, question.ratingMax ?? 5))}
+          max={Math.min(10, Math.max(3, block.settings?.ratingMax ?? 5))}
           required={required}
           control={control}
         />
+      )}
+
+      {type === "linear_scale" && "settings" in block && block.settings && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm text-muted-foreground">{block.settings.minLabel ?? block.settings.min}</span>
+          <input
+            type="number"
+            min={block.settings.min}
+            max={block.settings.max}
+            {...register(id, {
+              required: block.settings.required ? "This field is required" : false,
+            })}
+            className={`${inputClass} w-20`}
+          />
+          <span className="text-sm text-muted-foreground">{block.settings.maxLabel ?? block.settings.max}</span>
+        </div>
+      )}
+
+      {type === "yes_no" && (
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              {...register(id, { required: required ? "Select an option" : false })}
+              value="yes"
+              className="rounded-full border-input"
+            />
+            <span>Yes</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              {...register(id)}
+              value="no"
+              className="rounded-full border-input"
+            />
+            <span>No</span>
+          </label>
+        </div>
       )}
 
       {type !== "star_rating" && error && (

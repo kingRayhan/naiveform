@@ -4,7 +4,7 @@ import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
 import { Button } from "@repo/design-system/button";
 import { buildHeadlessHtml } from "@/lib/headlessHtml";
-import type { FormQuestion } from "@/lib/form-builder-types";
+import { getFormBlocks } from "@repo/types";
 
 const FORM_APP_URL = import.meta.env.VITE_FORM_APP_URL ?? "";
 const HEADLESS_FORM_ACTION_URL = (
@@ -30,10 +30,10 @@ function FormSharePage() {
     HEADLESS_FORM_ACTION_URL && form?._id
       ? `${HEADLESS_FORM_ACTION_URL}/html-action/${form._id}`
       : "";
-  const questions = (form?.questions ?? []) as FormQuestion[];
+  const blocks = getFormBlocks(form ?? {});
   const headlessHtml =
-    headlessActionUrl && questions.length > 0
-      ? buildHeadlessHtml(questions, headlessActionUrl)
+    headlessActionUrl && blocks.length > 0
+      ? buildHeadlessHtml(blocks, headlessActionUrl)
       : "";
 
   return (

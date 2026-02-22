@@ -74,7 +74,7 @@ function TemplatesPage() {
               <FormPreview
                 formTitle={previewTemplate.form.title}
                 formDescription={previewTemplate.form.description}
-                questions={previewTemplate.form.questions}
+                blocks={previewTemplate.form.blocks}
               />
             </div>
             <DialogFooter className="shrink-0 border-t border-border px-4 py-3">

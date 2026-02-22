@@ -2,9 +2,9 @@
 // Base
 // --------------------
 
-type BlockKind = "input" | "content";
+export type BlockKind = "input" | "content";
 
-interface BaseBlock {
+export interface BaseBlock {
   id: string;
   kind: BlockKind;
   type: string;
@@ -14,7 +14,7 @@ interface BaseBlock {
 // Input blocks
 // --------------------
 
-interface CommonInputBlock extends BaseBlock {
+export interface CommonInputBlock extends BaseBlock {
   kind: "input";
   title: string;
   description?: string;
@@ -26,7 +26,7 @@ interface CommonInputBlock extends BaseBlock {
 }
 
 /** Short text: one line. */
-interface TextBlock extends CommonInputBlock {
+export interface TextBlock extends CommonInputBlock {
   type: "text";
   settings?: CommonInputBlock["settings"] & {
     minLength?: number;
@@ -35,7 +35,7 @@ interface TextBlock extends CommonInputBlock {
 }
 
 /** Email address. */
-interface EmailBlock extends CommonInputBlock {
+export interface EmailBlock extends CommonInputBlock {
   type: "email";
   settings?: CommonInputBlock["settings"] & {
     minLength?: number;
@@ -44,13 +44,13 @@ interface EmailBlock extends CommonInputBlock {
 }
 
 /** Phone number. */
-interface PhoneBlock extends CommonInputBlock {
+export interface PhoneBlock extends CommonInputBlock {
   type: "phone";
   settings?: CommonInputBlock["settings"];
 }
 
 /** URL. */
-interface UrlBlock extends CommonInputBlock {
+export interface UrlBlock extends CommonInputBlock {
   type: "url";
   settings?: CommonInputBlock["settings"] & {
     minLength?: number;
@@ -59,7 +59,7 @@ interface UrlBlock extends CommonInputBlock {
 }
 
 /** Paragraph: multi-line text. */
-interface LongTextBlock extends CommonInputBlock {
+export interface LongTextBlock extends CommonInputBlock {
   type: "long_text";
   settings?: CommonInputBlock["settings"] & {
     rows?: number;
@@ -69,13 +69,13 @@ interface LongTextBlock extends CommonInputBlock {
 }
 
 /** Single choice from a list — rendered as radio buttons. */
-interface RadioInputBlock extends CommonInputBlock {
+export interface RadioInputBlock extends CommonInputBlock {
   type: "radio";
   options: string[];
 }
 
 /** Multiple choices from a list (checkboxes). */
-interface CheckboxesBlock extends CommonInputBlock {
+export interface CheckboxesBlock extends CommonInputBlock {
   type: "checkbox";
   options: string[];
   settings?: CommonInputBlock["settings"] & {
@@ -86,13 +86,13 @@ interface CheckboxesBlock extends CommonInputBlock {
 }
 
 /** Single choice from a dropdown. */
-interface DropdownBlock extends CommonInputBlock {
+export interface DropdownBlock extends CommonInputBlock {
   type: "dropdown";
   options: string[];
 }
 
 /** Date picker. */
-interface DateBlock extends CommonInputBlock {
+export interface DateBlock extends CommonInputBlock {
   type: "date";
   settings?: CommonInputBlock["settings"] & {
     minDate?: string; // ISO date
@@ -101,12 +101,12 @@ interface DateBlock extends CommonInputBlock {
 }
 
 /** Time of day. */
-interface TimeBlock extends CommonInputBlock {
+export interface TimeBlock extends CommonInputBlock {
   type: "time";
 }
 
 /** Date and time. */
-interface DateTimeBlock extends CommonInputBlock {
+export interface DateTimeBlock extends CommonInputBlock {
   type: "datetime";
   settings?: CommonInputBlock["settings"] & {
     minDate?: string;
@@ -115,7 +115,7 @@ interface DateTimeBlock extends CommonInputBlock {
 }
 
 /** Numeric value with optional min/max/step. */
-interface NumberBlock extends CommonInputBlock {
+export interface NumberBlock extends CommonInputBlock {
   type: "number";
   settings?: CommonInputBlock["settings"] & {
     min?: number;
@@ -125,7 +125,7 @@ interface NumberBlock extends CommonInputBlock {
 }
 
 /** Star rating (e.g. 1–5). */
-interface StarRatingBlock extends CommonInputBlock {
+export interface StarRatingBlock extends CommonInputBlock {
   type: "star_rating";
   settings?: CommonInputBlock["settings"] & {
     ratingMax?: number; // default 5
@@ -133,7 +133,7 @@ interface StarRatingBlock extends CommonInputBlock {
 }
 
 /** Linear scale (e.g. 1–5 or 0–10, NPS-style). */
-interface LinearScaleBlock extends CommonInputBlock {
+export interface LinearScaleBlock extends CommonInputBlock {
   type: "linear_scale";
   settings: {
     required?: boolean;
@@ -145,12 +145,12 @@ interface LinearScaleBlock extends CommonInputBlock {
 }
 
 /** Yes/No or similar binary choice. */
-interface YesNoBlock extends CommonInputBlock {
+export interface YesNoBlock extends CommonInputBlock {
   type: "yes_no";
   settings?: CommonInputBlock["settings"];
 }
 
-type InputBlock =
+export type InputBlock =
   | TextBlock
   | EmailBlock
   | PhoneBlock
@@ -171,11 +171,11 @@ type InputBlock =
 // Content blocks
 // --------------------
 
-interface ContentBlockBase extends BaseBlock {
+export interface ContentBlockBase extends BaseBlock {
   kind: "content";
 }
 
-interface HeadingBlock extends ContentBlockBase {
+export interface HeadingBlock extends ContentBlockBase {
   type: "heading";
   text: string;
   settings?: {
@@ -183,7 +183,7 @@ interface HeadingBlock extends ContentBlockBase {
   };
 }
 
-interface ParagraphBlock extends ContentBlockBase {
+export interface ParagraphBlock extends ContentBlockBase {
   type: "paragraph";
   content: string;
   settings?: {
@@ -192,7 +192,7 @@ interface ParagraphBlock extends ContentBlockBase {
   };
 }
 
-interface ImageBlock extends ContentBlockBase {
+export interface ImageBlock extends ContentBlockBase {
   type: "image";
   imageUrl: string;
   settings?: {
@@ -200,12 +200,12 @@ interface ImageBlock extends ContentBlockBase {
   };
 }
 
-interface YouTubeEmbedBlock extends ContentBlockBase {
+export interface YouTubeEmbedBlock extends ContentBlockBase {
   type: "youtube_embed";
   youtubeVideoId: string;
 }
 
-interface DividerBlock extends ContentBlockBase {
+export interface DividerBlock extends ContentBlockBase {
   type: "divider";
   settings?: {
     color?: "light" | "dark";
@@ -213,7 +213,7 @@ interface DividerBlock extends ContentBlockBase {
   };
 }
 
-type ContentBlock =
+export type ContentBlock =
   | HeadingBlock
   | ParagraphBlock
   | ImageBlock
@@ -224,11 +224,91 @@ type ContentBlock =
 // Union & responses
 // --------------------
 
-type FormBlock = InputBlock | ContentBlock;
+export type FormBlock = InputBlock | ContentBlock;
 
-type AnswerValue = string | string[] | number;
+export type AnswerValue = string | string[] | number;
 
-interface FormResponse {
+export interface FormResponse {
   formId: string;
   answers: Record<string, AnswerValue>; // key = input block id
 }
+
+// --------------------
+// Helpers
+// --------------------
+
+export function isInputBlock(block: FormBlock): block is InputBlock {
+  return block.kind === "input";
+}
+
+export function isContentBlock(block: FormBlock): block is ContentBlock {
+  return block.kind === "content";
+}
+
+/** Returns form blocks for editor/filler. */
+export function getFormBlocks(form: { blocks?: FormBlock[] }): FormBlock[] {
+  return form.blocks ?? [];
+}
+
+const INPUT_BLOCK_TYPES: { type: InputBlock["type"]; label: string }[] = [
+  { type: "text", label: "Text" },
+  { type: "email", label: "Email" },
+  { type: "phone", label: "Phone" },
+  { type: "url", label: "URL" },
+  { type: "long_text", label: "Paragraph" },
+  { type: "radio", label: "Radio" },
+  { type: "checkbox", label: "Checkboxes" },
+  { type: "dropdown", label: "Dropdown" },
+  { type: "date", label: "Date" },
+  { type: "time", label: "Time" },
+  { type: "datetime", label: "Date & time" },
+  { type: "number", label: "Number" },
+  { type: "star_rating", label: "Star rating" },
+  { type: "linear_scale", label: "Linear scale" },
+  { type: "yes_no", label: "Yes/No" },
+];
+
+const CONTENT_BLOCK_TYPES: { type: ContentBlock["type"]; label: string }[] = [
+  { type: "heading", label: "Heading" },
+  { type: "paragraph", label: "Paragraph" },
+  { type: "image", label: "Image" },
+  { type: "youtube_embed", label: "YouTube" },
+  { type: "divider", label: "Divider" },
+];
+
+export { INPUT_BLOCK_TYPES, CONTENT_BLOCK_TYPES };
+
+/** Create a new input block with defaults. */
+export function createEmptyInputBlock(
+  id: string,
+  type: InputBlock["type"] = "text"
+): InputBlock {
+  const base = {
+    id,
+    kind: "input" as const,
+    type,
+    title: "",
+    settings: { required: false },
+  };
+  if (type === "radio" || type === "checkbox" || type === "dropdown") {
+    return { ...base, options: ["Option 1", "Option 2"] } as InputBlock;
+  }
+  if (type === "linear_scale") {
+    return { ...base, settings: { required: false, min: 1, max: 5 } } as InputBlock;
+  }
+  return base as InputBlock;
+}
+
+/** Create a new content block with defaults. */
+export function createEmptyContentBlock(
+  id: string,
+  type: ContentBlock["type"] = "paragraph"
+): ContentBlock {
+  const base = { id, kind: "content" as const, type };
+  if (type === "heading") return { ...base, text: "" } as ContentBlock;
+  if (type === "paragraph") return { ...base, content: "" } as ContentBlock;
+  if (type === "image") return { ...base, imageUrl: "" } as ContentBlock;
+  if (type === "youtube_embed") return { ...base, youtubeVideoId: "" } as ContentBlock;
+  return base as ContentBlock;
+}
+

@@ -1,38 +1,12 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-const questionValidator = {
-  id: v.string(),
-  type: v.union(
-    v.literal("short_text"),
-    v.literal("long_text"),
-    v.literal("multiple_choice"),
-    v.literal("checkboxes"),
-    v.literal("dropdown"),
-    v.literal("date"),
-    v.literal("star_rating")
-  ),
-  title: v.string(),
-  required: v.boolean(),
-  options: v.optional(v.array(v.string())),
-  inputType: v.optional(
-    v.union(
-      v.literal("text"),
-      v.literal("email"),
-      v.literal("phone"),
-      v.literal("number")
-    )
-  ),
-  ratingMax: v.optional(v.number()),
-};
-
 const formSettingsValidator = {
   limitOneResponsePerPerson: v.optional(v.boolean()),
   confirmationMessage: v.optional(v.string()),
   closeAt: v.optional(v.number()), // timestamp
   redirectUrl: v.optional(v.string()),
   webhooks: v.optional(v.array(v.string())),
-  // Deprecated: kept so existing documents with these fields still validate
   recaptchaSiteKey: v.optional(v.string()),
   recaptchaSecretKey: v.optional(v.string()),
 };
@@ -44,7 +18,7 @@ export default defineSchema({
     headerImageId: v.optional(v.id("_storage")),
     headerImageUrl: v.optional(v.string()),
     userId: v.string(), // Clerk user id
-    questions: v.array(v.object(questionValidator)),
+    blocks: v.optional(v.array(v.any())), // Block shape from @repo/types (id, kind, type, ...)
     settings: v.optional(v.object(formSettingsValidator)),
     slug: v.optional(v.string()), // for /f/:slug URLs
     isClosed: v.optional(v.boolean()),
@@ -60,7 +34,7 @@ export default defineSchema({
     answers: v.record(
       v.string(),
       v.union(v.string(), v.array(v.string()), v.number())
-    ), // questionId -> value
+    ), // input block id -> value
   }).index("by_form", ["formId"]),
 
   webhookLogs: defineTable({
