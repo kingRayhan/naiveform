@@ -533,9 +533,10 @@ function InputBlockField({
       )}
 
       {type === "linear_scale" && "settings" in block && block.settings && (
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap" role="group" aria-labelledby={labelId}>
           <span className="text-sm text-muted-foreground">{block.settings.minLabel ?? block.settings.min}</span>
           <input
+            id={id}
             type="number"
             min={block.settings.min}
             max={block.settings.max}
@@ -549,9 +550,10 @@ function InputBlockField({
       )}
 
       {type === "yes_no" && (
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2">
+        <div className="flex gap-4" role="group" aria-labelledby={labelId}>
+          <label htmlFor={`${id}-yes`} className="flex items-center gap-2">
             <input
+              id={`${id}-yes`}
               type="radio"
               {...register(id, { required: required ? "Select an option" : false })}
               value="yes"
@@ -559,8 +561,9 @@ function InputBlockField({
             />
             <span>Yes</span>
           </label>
-          <label className="flex items-center gap-2">
+          <label htmlFor={`${id}-no`} className="flex items-center gap-2">
             <input
+              id={`${id}-no`}
               type="radio"
               {...register(id)}
               value="no"
@@ -615,7 +618,7 @@ function StarRatingInput({
             <div
               className="flex gap-1"
               role="group"
-              aria-label={`Rate from 1 to ${max} stars`}
+              aria-labelledby={`${id}-label`}
             >
               {Array.from({ length: max }, (_, i) => i + 1).map((star) => (
                 <button
@@ -650,12 +653,14 @@ function StarRatingInput({
 
 function CheckboxGroup({
   name,
+  fieldId,
   options,
   setValue,
   watch,
   clearErrors,
 }: {
   name: string;
+  fieldId: string;
   options: string[];
   setValue: ReturnType<typeof useForm<FormData>>["setValue"];
   watch: ReturnType<typeof useForm<FormData>>["watch"];
@@ -673,18 +678,22 @@ function CheckboxGroup({
   };
 
   return (
-    <div className="space-y-2">
-      {options.map((opt, i) => (
-        <label key={i} className="flex items-center gap-2 text-foreground">
-          <input
-            type="checkbox"
-            checked={arr.includes(opt)}
-            onChange={() => toggle(opt)}
-            className="rounded border-input"
-          />
-          <span>{opt || `Option ${i + 1}`}</span>
-        </label>
-      ))}
+    <div className="space-y-2" role="group" aria-labelledby={`${fieldId}-label`}>
+      {options.map((opt, i) => {
+        const optionId = `${fieldId}-option-${i}`;
+        return (
+          <label key={i} htmlFor={optionId} className="flex items-center gap-2 text-foreground">
+            <input
+              id={optionId}
+              type="checkbox"
+              checked={arr.includes(opt)}
+              onChange={() => toggle(opt)}
+              className="rounded border-input"
+            />
+            <span>{opt || `Option ${i + 1}`}</span>
+          </label>
+        );
+      })}
     </div>
   );
 }
