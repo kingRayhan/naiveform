@@ -10,7 +10,7 @@ import type { FormBlock, InputBlock } from "@repo/types";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 type FormData = Record<string, string | string[]>;
@@ -74,13 +74,20 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
   const defaultValues: FormData = {};
   for (const b of inputBlocks) {
     if (b.type === "checkbox") defaultValues[b.id] = [];
-    else defaultValues[b.id] = "";
+    else {
+      const defaultValue =
+        "settings" in b
+          ? (b.settings as { defaultValue?: string })?.defaultValue
+          : undefined;
+      defaultValues[b.id] = defaultValue ?? "";
+    }
   }
 
   const {
     register,
     control,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
     setValue,
     watch,
@@ -90,6 +97,28 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
     defaultValues,
     mode: "onBlur",
   });
+
+  // Apply default values once when form/blocks first load (e.g. after async fetch)
+  const defaultsAppliedRef = useRef(false);
+  useEffect(() => {
+    if (inputBlocks.length > 0 && !defaultsAppliedRef.current) {
+      defaultsAppliedRef.current = true;
+      const initial: FormData = {};
+      for (const b of inputBlocks) {
+        if (b.type === "checkbox") initial[b.id] = [];
+        else {
+          const v =
+            "settings" in b
+              ? (b.settings as { defaultValue?: string })?.defaultValue
+              : undefined;
+          initial[b.id] = v ?? "";
+        }
+      }
+      reset(initial);
+    }
+    // Only run when we first get blocks; inputBlocks intentionally omitted to avoid reset on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputBlocks.length, reset]);
 
   // Clear submit error when user interacts with the form
   useEffect(() => {
@@ -458,7 +487,7 @@ function InputBlockField({
   error: { message?: string } | undefined;
 }) {
   const { id, type, title } = block;
-  const options = "options" in block ? block.options ?? [] : [];
+  const options = "options" in block ? (block.options ?? []) : [];
   const required = block.settings?.required ?? false;
   const labelId = `${id}-label`;
   const singleInputTypes = [
