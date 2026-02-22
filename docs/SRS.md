@@ -91,42 +91,47 @@ NaiveForm is a web-based form builder with:
 
 ### 3.3 Block Model
 
-A **block** is the atomic unit of form content. The system supports two kinds of blocks:
+A **block** is the atomic unit of form content. Every block has a **kind** (`"input"` or `"non_input"`), a **type** (discriminant for the concrete block shape), and a unique **id**. The system models blocks as follows.
 
-| Kind | Purpose | Contributes to `answers`? |
-|------|---------|---------------------------|
-| **Input block** | Collects a value from the respondent | Yes — one entry per input block id |
-| **Non-input block** | Displays content only; no user input | No |
+#### Base block
 
-#### Input blocks (collect an answer)
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique identifier (within the form). |
+| `kind` | `"input"` \| `"non_input"` | Discriminator: input blocks collect a value; non-input blocks are content only. |
+| `type` | string | Discriminant for the concrete block type (e.g. `short_text`, `paragraph`). |
 
-Each input block has: `id`, `type`, `title`, `required`, and type-specific fields. Only input blocks appear in submission payloads and in `responses.answers`.
+#### Input blocks (`kind: "input"`)
+
+Input blocks extend the base with `title` and `required`. Only input blocks appear in submission payloads and in `responses.answers`. Answer value type: `AnswerValue = string | string[] | number`.
 
 | Type | Label | Type-specific fields | Answer shape |
 |------|--------|----------------------|--------------|
-| `short_text` | Short answer | `inputType`?: text, email, phone, number | string |
-| `long_text` | Paragraph | — | string |
+| `short_text` | Short answer | `inputType`?: `"text"` \| `"email"` \| `"phone"` \| `"number"` | string |
+| `long_text` | Long text / paragraph | — | string |
 | `multiple_choice` | Multiple choice | `options`: string[] | string |
 | `checkboxes` | Checkboxes | `options`: string[] | string[] |
 | `dropdown` | Dropdown | `options`: string[] | string |
 | `date` | Date | — | string |
 | `star_rating` | Star rating | `ratingMax`?: number (default 5) | number |
 
-#### Non-input blocks (content only)
+#### Non-input blocks (`kind: "non_input"`)
 
-Non-input blocks have: `id`, `type`, and type-specific content. They are not required and do not appear in `answers`.
+Non-input blocks extend the base with no `title`/`required`; they have only type-specific content and do not appear in `answers`.
 
 | Type | Label | Type-specific fields |
 |------|--------|----------------------|
-| `image` | Image | `imageUrl` (or storage id) |
-| `paragraph` | Paragraph text | `content`: string (rich text / markdown as implemented) |
+| `heading` | Heading | `text`: string |
+| `paragraph` | Paragraph text | `content`: string |
+| `image` | Image | `imageUrl`: string |
 | `youtube_embed` | YouTube embed | `youtubeVideoId`: string |
+| `divider` | Divider | — (no extra fields) |
 
-#### Block ordering and storage
+#### Block union and responses
 
-- A form’s blocks are stored in an ordered array (e.g. `blocks` or `questions` in the schema; see §6).
-- Order determines display and tab order for respondents.
-- Input and non-input blocks may be interleaved in any order.
+- **FormBlock** = InputBlock | NonInputBlock (union of all block types).
+- A form’s blocks are stored in an ordered array; order determines display and tab order. Input and non-input blocks may be interleaved.
+- **FormResponse**: `formId`, `answers`: `Record<string, AnswerValue>` where keys are **input block** ids only.
 
 ---
 
@@ -148,8 +153,8 @@ Non-input blocks have: `id`, `type`, and type-specific content. They are not req
 | FB-2 | The user shall be able to create a new form (blank or from template) with title and optional description, then be redirected to the form editor. | Must |
 | FB-3 | The form editor shall support adding, editing, removing, and reordering **blocks** (input and non-input) via a drag-and-drop interface. | Must |
 | FB-4 | The system shall support all **input block** types defined in §3.3: short text, long text (paragraph), multiple choice, checkboxes, dropdown, date, star rating. Short text may be configured as text, email, phone, or number. | Must |
-| FB-5 | The system shall support all **non-input block** types defined in §3.3: image, paragraph, YouTube embed. | Must |
-| FB-6 | Each **block** shall have a unique `id` and `type`. Input blocks shall have `title` and `required`; type-specific fields shall follow the block model (§3.3). Non-input blocks shall have only type-specific content fields. | Must |
+| FB-5 | The system shall support all **non-input block** types defined in §3.3: heading, paragraph, image, YouTube embed, divider. | Must |
+| FB-6 | Each **block** shall have `id`, `kind` (`"input"` or `"non_input"`), and `type`. Input blocks shall have `title` and `required`; type-specific fields shall follow the block model (§3.3). Non-input blocks shall have only type-specific content fields (e.g. `text`, `content`, `imageUrl`, `youtubeVideoId`; divider has none). | Must |
 | FB-7 | The user shall be able to duplicate a form. | Must |
 | FB-8 | The user shall have access to a real-time preview of the form as respondents will see it. | Must |
 | FB-9 | The user shall be able to set a custom slug for the form for shareable URLs (e.g. `/f/my-survey`). | Must |
@@ -256,16 +261,16 @@ Non-input blocks have: `id`, `type`, and type-specific content. They are not req
 ### 6.1 Forms and blocks
 
 - **forms** (Convex table): `title`, `description`, `userId` (Clerk), `slug`, `isClosed`, `archived`, `updatedAt`, `headerImageId`/`headerImageUrl` (optional).  
-- **blocks** (array; schema may use field name `questions` or `blocks` for backward compatibility): ordered list of blocks. Each block has:
-  - **Common:** `id`, `type`.
-  - **Input blocks:** `title`, `required`, plus type-specific fields per §3.3 (`options`, `inputType`, `ratingMax`, etc.).
-  - **Non-input blocks:** type-specific fields only (`imageUrl`, `content`, `youtubeVideoId`).
+- **blocks** (array; schema may use field name `questions` or `blocks` for backward compatibility): ordered list of **FormBlock** (see §3.3). Each block has:
+  - **Base:** `id`, `kind` (`"input"` | `"non_input"`), `type`.
+  - **Input blocks** (`kind: "input"`): `title`, `required`, plus type-specific fields (`inputType`, `options`, `ratingMax`, etc.).
+  - **Non-input blocks** (`kind: "non_input"`): type-specific fields only (`text` for heading, `content` for paragraph, `imageUrl`, `youtubeVideoId`; `divider` has none).
 - **settings** (optional): `limitOneResponsePerPerson`, `confirmationMessage`, `closeAt`, `redirectUrl`, `webhooks[]`.  
 - Indexes: by user, by slug, by user + updated.
 
 ### 6.2 Responses
 
-- **responses**: `formId`, `answers` (record: **input block** id → string | string[] | number). Non-input blocks have no entry.  
+- **responses** (FormResponse): `formId`, `answers`: `Record<string, AnswerValue>` where keys are **input block** ids and **AnswerValue** = `string | string[] | number`. Non-input blocks have no entry.  
 - Index: by form.
 
 ### 6.3 Webhook Logs
