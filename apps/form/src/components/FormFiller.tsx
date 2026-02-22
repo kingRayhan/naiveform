@@ -457,7 +457,8 @@ function InputBlockField({
   clearErrors: ReturnType<typeof useForm<FormData>>["clearErrors"];
   error: { message?: string } | undefined;
 }) {
-  const { id, type, title, options = [] } = block;
+  const { id, type, title } = block;
+  const options = "options" in block ? block.options ?? [] : [];
   const required = block.settings?.required ?? false;
   const labelId = `${id}-label`;
   const singleInputTypes = [
