@@ -37,10 +37,11 @@ NaiveForm allows authenticated users to create, configure, and manage forms (sur
 
 | Term | Definition |
 |------|------------|
-| **Form** | A configurable container of questions/blocks and settings, owned by a user. |
-| **Block** | A single unit in a form: either an input (question) or content-only (image, paragraph, YouTube). |
-| **Question** | Input block that collects an answer (short text, long text, multiple choice, etc.). |
-| **Response** | One submission of a form: a set of answers keyed by question/block id. |
+| **Form** | A configurable container of **blocks** and settings, owned by a user. |
+| **Block** | The single unit of form content. Every block is either an **input block** (collects an answer) or a **non-input block** (content only). See §3.3 Block model. |
+| **Input block** | A block that collects a response value (e.g. short text, multiple choice). Stored in `answers` per response. |
+| **Non-input block** | A block that only displays content (image, paragraph, YouTube); no value is submitted. |
+| **Response** | One submission of a form: a set of answers keyed by **input block** id (non-input blocks have no entry in `answers`). |
 | **Console** | The form-builder SPA where creators manage forms. |
 | **Form app** | The public Next.js app where respondents fill and submit forms. |
 | **API** | The Hono/Bun service that handles form submission and webhook delivery. |
@@ -88,6 +89,45 @@ NaiveForm is a web-based form builder with:
 - **Backend:** Convex (queries, mutations, actions); Clerk for auth.
 - **Deployment:** Docker support for API, console, form, landing; env-driven configuration.
 
+### 3.3 Block Model
+
+A **block** is the atomic unit of form content. The system supports two kinds of blocks:
+
+| Kind | Purpose | Contributes to `answers`? |
+|------|---------|---------------------------|
+| **Input block** | Collects a value from the respondent | Yes — one entry per input block id |
+| **Non-input block** | Displays content only; no user input | No |
+
+#### Input blocks (collect an answer)
+
+Each input block has: `id`, `type`, `title`, `required`, and type-specific fields. Only input blocks appear in submission payloads and in `responses.answers`.
+
+| Type | Label | Type-specific fields | Answer shape |
+|------|--------|----------------------|--------------|
+| `short_text` | Short answer | `inputType`?: text, email, phone, number | string |
+| `long_text` | Paragraph | — | string |
+| `multiple_choice` | Multiple choice | `options`: string[] | string |
+| `checkboxes` | Checkboxes | `options`: string[] | string[] |
+| `dropdown` | Dropdown | `options`: string[] | string |
+| `date` | Date | — | string |
+| `star_rating` | Star rating | `ratingMax`?: number (default 5) | number |
+
+#### Non-input blocks (content only)
+
+Non-input blocks have: `id`, `type`, and type-specific content. They are not required and do not appear in `answers`.
+
+| Type | Label | Type-specific fields |
+|------|--------|----------------------|
+| `image` | Image | `imageUrl` (or storage id) |
+| `paragraph` | Paragraph text | `content`: string (rich text / markdown as implemented) |
+| `youtube_embed` | YouTube embed | `youtubeVideoId`: string |
+
+#### Block ordering and storage
+
+- A form’s blocks are stored in an ordered array (e.g. `blocks` or `questions` in the schema; see §6).
+- Order determines display and tab order for respondents.
+- Input and non-input blocks may be interleaved in any order.
+
 ---
 
 ## 4. Functional Requirements
@@ -106,10 +146,10 @@ NaiveForm is a web-based form builder with:
 |----|-------------|----------|
 | FB-1 | The system shall provide a dashboard listing all forms owned by the current user, with search/filter and “Create form” action. | Must |
 | FB-2 | The user shall be able to create a new form (blank or from template) with title and optional description, then be redirected to the form editor. | Must |
-| FB-3 | The form editor shall support adding, editing, removing, and reordering questions/blocks via a drag-and-drop interface. | Must |
-| FB-4 | The system shall support the following **input block types:** short text, paragraph (long text), multiple choice, checkboxes, dropdown, date, star rating. Short text may be configured as text, email, phone, or number. | Must |
-| FB-5 | The system shall support **content blocks** (display only): image, paragraph text, YouTube embed. | Must |
-| FB-6 | Each question shall have: unique id, type, title, required flag; type-specific fields (e.g. options for multiple choice/checkboxes/dropdown, `ratingMax` for star rating). | Must |
+| FB-3 | The form editor shall support adding, editing, removing, and reordering **blocks** (input and non-input) via a drag-and-drop interface. | Must |
+| FB-4 | The system shall support all **input block** types defined in §3.3: short text, long text (paragraph), multiple choice, checkboxes, dropdown, date, star rating. Short text may be configured as text, email, phone, or number. | Must |
+| FB-5 | The system shall support all **non-input block** types defined in §3.3: image, paragraph, YouTube embed. | Must |
+| FB-6 | Each **block** shall have a unique `id` and `type`. Input blocks shall have `title` and `required`; type-specific fields shall follow the block model (§3.3). Non-input blocks shall have only type-specific content fields. | Must |
 | FB-7 | The user shall be able to duplicate a form. | Must |
 | FB-8 | The user shall have access to a real-time preview of the form as respondents will see it. | Must |
 | FB-9 | The user shall be able to set a custom slug for the form for shareable URLs (e.g. `/f/my-survey`). | Must |
@@ -129,7 +169,7 @@ NaiveForm is a web-based form builder with:
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| RC-1 | The system shall store each submission as a response with `formId` and `answers` (map of block id to value: string, string[], or number). | Must |
+| RC-1 | The system shall store each submission as a response with `formId` and `answers` (map of **input block** id to value: string, string[], or number). Non-input blocks do not appear in `answers`. | Must |
 | RC-2 | The console shall provide a responses view listing all responses for a form (e.g. table). | Must |
 | RC-3 | The user shall be able to export responses to CSV. | Must |
 | RC-4 | The console shall provide a webhooks page showing configured URLs and delivery logs (success/failure, status code, error message). | Must |
@@ -139,7 +179,7 @@ NaiveForm is a web-based form builder with:
 | ID | Requirement | Priority |
 |----|-------------|----------|
 | PF-1 | The system shall serve a public form page by form ID or slug (e.g. `/[formId]` or `/f/:slug` as implemented). | Must |
-| PF-2 | Required questions shall be validated before submit; errors shall be shown inline. | Must |
+| PF-2 | Required **input blocks** shall be validated before submit; errors shall be shown inline. | Must |
 | PF-3 | On successful submit, the system shall show the confirmation message or redirect to the configured URL. | Must |
 | PF-4 | If the form is closed (manual or past close date), the system shall not accept submissions and shall show an appropriate message. | Must |
 | PF-5 | The form page shall support embedding (e.g. embed route or iframe) and headless usage. | Should |
@@ -148,10 +188,10 @@ NaiveForm is a web-based form builder with:
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| API-1 | The system shall expose `POST /f/:formId` (and/or `POST /form-submission/:formId`) accepting JSON body `{ values: { [blockId]: string \| string[] } }` and shall validate form is open and keys match form blocks. | Must |
+| API-1 | The system shall expose `POST /f/:formId` (and/or `POST /form-submission/:formId`) accepting JSON body `{ values: { [blockId]: string \| string[] } }` (keys = input block ids only) and shall validate form is open and keys match form **input** blocks. | Must |
 | API-2 | On success, the API shall return 200 with JSON `{ message, responseId }` unless a redirect URL is set, in which case it shall return 302. | Must |
 | API-3 | On validation or business logic error, the API shall return appropriate 4xx with JSON error payload. | Must |
-| API-4 | The system shall support `POST /html-action/:formId` with `application/x-www-form-urlencoded` (Formspree-style; input names = block ids). | Must |
+| API-4 | The system shall support `POST /html-action/:formId` with `application/x-www-form-urlencoded` (Formspree-style; input names = input block ids). | Must |
 | API-5 | The API shall provide a script endpoint (e.g. `GET /form.js`) for headless form integration (cacheable). | Should |
 | API-6 | After storing a response, the API shall trigger webhook delivery to all configured URLs and log results. | Must |
 
@@ -213,16 +253,19 @@ NaiveForm is a web-based form builder with:
 
 ## 6. Data Model (Summary)
 
-### 6.1 Forms
+### 6.1 Forms and blocks
 
 - **forms** (Convex table): `title`, `description`, `userId` (Clerk), `slug`, `isClosed`, `archived`, `updatedAt`, `headerImageId`/`headerImageUrl` (optional).  
-- **questions** (array): each item has `id`, `type`, `title`, `required`, and type-specific fields (`options`, `inputType`, `ratingMax`, etc.).  
+- **blocks** (array; schema may use field name `questions` or `blocks` for backward compatibility): ordered list of blocks. Each block has:
+  - **Common:** `id`, `type`.
+  - **Input blocks:** `title`, `required`, plus type-specific fields per §3.3 (`options`, `inputType`, `ratingMax`, etc.).
+  - **Non-input blocks:** type-specific fields only (`imageUrl`, `content`, `youtubeVideoId`).
 - **settings** (optional): `limitOneResponsePerPerson`, `confirmationMessage`, `closeAt`, `redirectUrl`, `webhooks[]`.  
 - Indexes: by user, by slug, by user + updated.
 
 ### 6.2 Responses
 
-- **responses**: `formId`, `answers` (record: block id → string | string[] | number).  
+- **responses**: `formId`, `answers` (record: **input block** id → string | string[] | number). Non-input blocks have no entry.  
 - Index: by form.
 
 ### 6.3 Webhook Logs
@@ -243,7 +286,7 @@ NaiveForm is a web-based form builder with:
 | GET | `/form.js` | Script for headless forms |
 | POST | `/f/:formId` | Submit by form ID or slug; JSON body `values`; 302 if redirectUrl set |
 | POST | `/form-submission/:formId` | Same as above |
-| POST | `/html-action/:formId` | Form-urlencoded; input names = block ids |
+| POST | `/html-action/:formId` | Form-urlencoded; input names = input block ids |
 
 ### 7.2 Convex
 
