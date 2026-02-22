@@ -221,45 +221,97 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
         {blocks.map((block) => {
           if (block.kind === "content") {
             if (block.type === "heading") {
-              const level = "settings" in block && block.settings?.level ? block.settings.level : 2;
+              const level =
+                "settings" in block && block.settings?.level
+                  ? block.settings.level
+                  : 2;
               const sizeClass =
-                level === 1 ? "text-2xl" :
-                level === 2 ? "text-xl" :
-                level === 3 ? "text-lg" :
-                level === 4 ? "text-base" :
-                level === 5 ? "text-sm" : "text-xs";
+                level === 1
+                  ? "text-2xl"
+                  : level === 2
+                    ? "text-xl"
+                    : level === 3
+                      ? "text-lg"
+                      : level === 4
+                        ? "text-base"
+                        : level === 5
+                          ? "text-sm"
+                          : "text-xs";
               const text = "text" in block ? block.text : "";
               return React.createElement(
                 `h${level}`,
-                { key: block.id, className: `${sizeClass} font-semibold ${text ? "text-foreground" : "text-muted-foreground"}` },
+                {
+                  key: block.id,
+                  className: `${sizeClass} font-semibold ${text ? "text-foreground" : "text-muted-foreground"}`,
+                },
                 text || "Heading text"
               );
             }
             if (block.type === "paragraph") {
-              const align = "settings" in block && block.settings?.align ? block.settings.align : "left";
-              const fontSize = "settings" in block && block.settings?.fontSize ? block.settings.fontSize : "medium";
-              const alignClass = align === "left" ? "text-left" : align === "center" ? "text-center" : "text-right";
-              const sizeClass = fontSize === "small" ? "text-sm" : fontSize === "large" ? "text-lg" : "text-base";
+              const align =
+                "settings" in block && block.settings?.align
+                  ? block.settings.align
+                  : "left";
+              const fontSize =
+                "settings" in block && block.settings?.fontSize
+                  ? block.settings.fontSize
+                  : "medium";
+              const alignClass =
+                align === "left"
+                  ? "text-left"
+                  : align === "center"
+                    ? "text-center"
+                    : "text-right";
+              const sizeClass =
+                fontSize === "small"
+                  ? "text-sm"
+                  : fontSize === "large"
+                    ? "text-lg"
+                    : "text-base";
               const content = "content" in block ? block.content : "";
               return (
-                <p key={block.id} className={`whitespace-pre-wrap ${alignClass} ${sizeClass} ${content ? "text-foreground" : "text-muted-foreground"}`}>
+                <p
+                  key={block.id}
+                  className={`whitespace-pre-wrap ${alignClass} ${sizeClass} ${content ? "text-foreground" : "text-muted-foreground"}`}
+                >
                   {content || "Paragraph content"}
                 </p>
               );
             }
             if (block.type === "image") {
               const url = "imageUrl" in block ? block.imageUrl : "";
-              if (!url) return <div key={block.id} className="text-muted-foreground text-sm">Image</div>;
-              const alt = "settings" in block && block.settings?.alt ? block.settings.alt : "";
+              if (!url)
+                return (
+                  <div key={block.id} className="text-muted-foreground text-sm">
+                    Image
+                  </div>
+                );
+              const alt =
+                "settings" in block && block.settings?.alt
+                  ? block.settings.alt
+                  : "";
               return (
-                <img key={block.id} src={url} alt={alt} className="max-w-full h-auto rounded-md" />
+                <img
+                  key={block.id}
+                  src={url}
+                  alt={alt}
+                  className="max-w-full h-auto rounded-md"
+                />
               );
             }
             if (block.type === "youtube_embed") {
               const vid = "youtubeVideoId" in block ? block.youtubeVideoId : "";
-              if (!vid) return <div key={block.id} className="text-muted-foreground text-sm">YouTube video</div>;
+              if (!vid)
+                return (
+                  <div key={block.id} className="text-muted-foreground text-sm">
+                    YouTube video
+                  </div>
+                );
               return (
-                <div key={block.id} className="aspect-video rounded-md overflow-hidden bg-muted">
+                <div
+                  key={block.id}
+                  className="aspect-video rounded-md overflow-hidden bg-muted"
+                >
                   <iframe
                     title="YouTube"
                     src={`https://www.youtube.com/embed/${vid}`}
@@ -326,6 +378,8 @@ function ShortTextInput({
   register,
   error,
   placeholder: placeholderProp,
+  minLength,
+  maxLength,
 }: {
   id: string;
   inputType: "text" | "email" | "phone" | "number";
@@ -333,6 +387,8 @@ function ShortTextInput({
   register: ReturnType<typeof useForm<FormData>>["register"];
   error: { message?: string } | undefined;
   placeholder?: string;
+  minLength?: number;
+  maxLength?: number;
 }) {
   const htmlType =
     inputType === "email"
@@ -361,6 +417,10 @@ function ShortTextInput({
       return "Please enter a valid phone number";
     if (inputType === "number" && val && Number.isNaN(Number(val)))
       return "Please enter a valid number";
+    if (minLength != null && val.length < minLength)
+      return `At least ${minLength} characters`;
+    if (maxLength != null && val.length > maxLength)
+      return `At most ${maxLength} characters`;
     return true;
   };
 
@@ -370,6 +430,8 @@ function ShortTextInput({
       {...register(id, { validate })}
       type={htmlType}
       placeholder={placeholder}
+      minLength={minLength}
+      maxLength={maxLength}
       className={inputClass}
       aria-invalid={!!error}
     />
@@ -398,11 +460,28 @@ function InputBlockField({
   const { id, type, title, options = [] } = block;
   const required = block.settings?.required ?? false;
   const labelId = `${id}-label`;
-  const singleInputTypes = ["text", "phone", "url", "email", "long_text", "dropdown", "date", "time", "datetime", "number"];
-  const hasSingleInput = singleInputTypes.includes(type) || (type === "linear_scale" && "settings" in block);
+  const singleInputTypes = [
+    "text",
+    "phone",
+    "url",
+    "email",
+    "long_text",
+    "dropdown",
+    "date",
+    "time",
+    "datetime",
+    "number",
+  ];
+  const hasSingleInput =
+    singleInputTypes.includes(type) ||
+    (type === "linear_scale" && "settings" in block);
 
   const label = (
-    <label id={labelId} htmlFor={hasSingleInput ? id : undefined} className="block text-sm font-medium text-foreground">
+    <label
+      id={labelId}
+      htmlFor={hasSingleInput ? id : undefined}
+      className="block text-sm font-medium text-foreground"
+    >
       {title || "(Untitled question)"}
       {required && <span className="text-destructive ml-0.5">*</span>}
     </label>
@@ -415,19 +494,41 @@ function InputBlockField({
         <p className="text-sm text-muted-foreground">{block.description}</p>
       )}
 
-      {(type === "text" || type === "phone" || type === "url") && (
-        <input
-          id={id}
-          {...register(id, { required: required ? "This field is required" : false })}
-          type={type === "url" ? "url" : "text"}
-          placeholder={
-            block.settings?.placeholder ??
-            (type === "phone" ? "+1 (555) 000-0000" : "Your answer")
-          }
-          className={inputClass}
-          aria-invalid={!!error}
-        />
-      )}
+      {(type === "text" || type === "phone" || type === "url") &&
+        (() => {
+          const s = block.settings as
+            | { minLength?: number; maxLength?: number }
+            | undefined;
+          return (
+            <input
+              id={id}
+              {...register(id, {
+                required: required ? "This field is required" : false,
+                minLength: s?.minLength
+                  ? {
+                      value: s.minLength,
+                      message: `At least ${s.minLength} characters`,
+                    }
+                  : undefined,
+                maxLength: s?.maxLength
+                  ? {
+                      value: s.maxLength,
+                      message: `At most ${s.maxLength} characters`,
+                    }
+                  : undefined,
+              })}
+              type={type === "url" ? "url" : "text"}
+              minLength={s?.minLength}
+              maxLength={s?.maxLength}
+              placeholder={
+                block.settings?.placeholder ??
+                (type === "phone" ? "+1 (555) 000-0000" : "Your answer")
+              }
+              className={inputClass}
+              aria-invalid={!!error}
+            />
+          );
+        })()}
 
       {type === "email" && (
         <ShortTextInput
@@ -437,27 +538,53 @@ function InputBlockField({
           register={register}
           error={error}
           placeholder={block.settings?.placeholder}
+          minLength={(block.settings as { minLength?: number })?.minLength}
+          maxLength={(block.settings as { maxLength?: number })?.maxLength}
         />
       )}
 
-      {type === "long_text" && (
-        <textarea
-          id={id}
-          {...register(id, {
-            required: required ? "This field is required" : false,
-          })}
-          rows={block.settings?.rows ?? 3}
-          placeholder={block.settings?.placeholder ?? "Your answer"}
-          className={inputClass}
-        />
-      )}
+      {type === "long_text" &&
+        (() => {
+          const s = block.settings as
+            | { minLength?: number; maxLength?: number; rows?: number }
+            | undefined;
+          return (
+            <textarea
+              id={id}
+              {...register(id, {
+                required: required ? "This field is required" : false,
+                minLength: s?.minLength
+                  ? {
+                      value: s.minLength,
+                      message: `At least ${s.minLength} characters`,
+                    }
+                  : undefined,
+                maxLength: s?.maxLength
+                  ? {
+                      value: s.maxLength,
+                      message: `At most ${s.maxLength} characters`,
+                    }
+                  : undefined,
+              })}
+              rows={s?.rows ?? 3}
+              minLength={s?.minLength}
+              maxLength={s?.maxLength}
+              placeholder={block.settings?.placeholder ?? "Your answer"}
+              className={inputClass}
+            />
+          );
+        })()}
 
       {type === "radio" && (
         <div className="space-y-2" role="group" aria-labelledby={labelId}>
-          {options.map((opt, i) => {
+          {options.map((opt: string, i: number) => {
             const optionId = `${id}-option-${i}`;
             return (
-              <label key={i} htmlFor={optionId} className="flex items-center gap-2 text-foreground">
+              <label
+                key={i}
+                htmlFor={optionId}
+                className="flex items-center gap-2 text-foreground"
+              >
                 <input
                   id={optionId}
                   type="radio"
@@ -475,13 +602,33 @@ function InputBlockField({
       )}
 
       {type === "checkbox" && (
-        <CheckboxGroup
+        <Controller
           name={id}
-          fieldId={id}
-          options={options}
-          setValue={setValue}
-          watch={watch}
-          clearErrors={clearErrors}
+          control={control}
+          rules={{
+            validate: (v) => {
+              const arr = Array.isArray(v) ? v : [];
+              const minS = block.settings?.minSelections;
+              const maxS = block.settings?.maxSelections;
+              if (minS != null && arr.length < minS)
+                return `Select at least ${minS} option(s)`;
+              if (maxS != null && arr.length > maxS)
+                return `Select at most ${maxS} option(s)`;
+              return true;
+            },
+          }}
+          render={({ field }) => (
+            <CheckboxGroup
+              name={id}
+              fieldId={id}
+              options={options}
+              value={field.value as string[] | undefined}
+              onChange={field.onChange}
+              setValue={setValue}
+              watch={watch}
+              clearErrors={clearErrors}
+            />
+          )}
         />
       )}
 
@@ -492,7 +639,7 @@ function InputBlockField({
           className={inputClass}
         >
           <option value="">{block.settings?.placeholder ?? "Choose"}</option>
-          {options.map((opt, i) => (
+          {options.map((opt: string, i: number) => (
             <option key={i} value={opt}>
               {opt || `Option ${i + 1}`}
             </option>
@@ -507,6 +654,16 @@ function InputBlockField({
             required: required ? "This field is required" : false,
           })}
           type={type === "datetime" ? "datetime-local" : type}
+          min={
+            type !== "time" && "minDate" in (block.settings ?? {})
+              ? (block.settings as { minDate?: string }).minDate
+              : undefined
+          }
+          max={
+            type !== "time" && "maxDate" in (block.settings ?? {})
+              ? (block.settings as { maxDate?: string }).maxDate
+              : undefined
+          }
           className={inputClass}
         />
       )}
@@ -516,8 +673,25 @@ function InputBlockField({
           id={id}
           {...register(id, {
             required: required ? "This field is required" : false,
+            min:
+              block.settings?.min != null
+                ? {
+                    value: block.settings.min,
+                    message: `Minimum value is ${block.settings.min}`,
+                  }
+                : undefined,
+            max:
+              block.settings?.max != null
+                ? {
+                    value: block.settings.max,
+                    message: `Maximum value is ${block.settings.max}`,
+                  }
+                : undefined,
           })}
           type="number"
+          min={block.settings?.min}
+          max={block.settings?.max}
+          step={block.settings?.step}
           placeholder={block.settings?.placeholder}
           className={inputClass}
         />
@@ -533,19 +707,29 @@ function InputBlockField({
       )}
 
       {type === "linear_scale" && "settings" in block && block.settings && (
-        <div className="flex items-center gap-2 flex-wrap" role="group" aria-labelledby={labelId}>
-          <span className="text-sm text-muted-foreground">{block.settings.minLabel ?? block.settings.min}</span>
+        <div
+          className="flex items-center gap-2 flex-wrap"
+          role="group"
+          aria-labelledby={labelId}
+        >
+          <span className="text-sm text-muted-foreground">
+            {block.settings.minLabel ?? block.settings.min}
+          </span>
           <input
             id={id}
             type="number"
             min={block.settings.min}
             max={block.settings.max}
             {...register(id, {
-              required: block.settings.required ? "This field is required" : false,
+              required: block.settings.required
+                ? "This field is required"
+                : false,
             })}
             className={`${inputClass} w-20`}
           />
-          <span className="text-sm text-muted-foreground">{block.settings.maxLabel ?? block.settings.max}</span>
+          <span className="text-sm text-muted-foreground">
+            {block.settings.maxLabel ?? block.settings.max}
+          </span>
         </div>
       )}
 
@@ -555,7 +739,9 @@ function InputBlockField({
             <input
               id={`${id}-yes`}
               type="radio"
-              {...register(id, { required: required ? "Select an option" : false })}
+              {...register(id, {
+                required: required ? "Select an option" : false,
+              })}
               value="yes"
               className="rounded-full border-input"
             />
@@ -655,6 +841,8 @@ function CheckboxGroup({
   name,
   fieldId,
   options,
+  value: valueProp,
+  onChange: onChangeProp,
   setValue,
   watch,
   clearErrors,
@@ -662,27 +850,42 @@ function CheckboxGroup({
   name: string;
   fieldId: string;
   options: string[];
+  value?: string[];
+  onChange?: (value: string[]) => void;
   setValue: ReturnType<typeof useForm<FormData>>["setValue"];
   watch: ReturnType<typeof useForm<FormData>>["watch"];
   clearErrors: ReturnType<typeof useForm<FormData>>["clearErrors"];
 }) {
-  const value = watch(name) as string[] | undefined;
-  const arr = Array.isArray(value) ? value : [];
+  const watched = watch(name) as string[] | undefined;
+  const arr = Array.isArray(valueProp)
+    ? valueProp
+    : Array.isArray(watched)
+      ? watched
+      : [];
 
   const toggle = (opt: string) => {
     clearErrors(name);
     const next = arr.includes(opt)
       ? arr.filter((o) => o !== opt)
       : [...arr, opt];
-    setValue(name, next);
+    if (onChangeProp) onChangeProp(next);
+    else setValue(name, next);
   };
 
   return (
-    <div className="space-y-2" role="group" aria-labelledby={`${fieldId}-label`}>
-      {options.map((opt, i) => {
+    <div
+      className="space-y-2"
+      role="group"
+      aria-labelledby={`${fieldId}-label`}
+    >
+      {options.map((opt: string, i: number) => {
         const optionId = `${fieldId}-option-${i}`;
         return (
-          <label key={i} htmlFor={optionId} className="flex items-center gap-2 text-foreground">
+          <label
+            key={i}
+            htmlFor={optionId}
+            className="flex items-center gap-2 text-foreground"
+          >
             <input
               id={optionId}
               type="checkbox"
