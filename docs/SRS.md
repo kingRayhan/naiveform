@@ -133,6 +133,130 @@ Non-input blocks extend the base with no `title`/`required`; they have only type
 - A form’s blocks are stored in an ordered array; order determines display and tab order. Input and non-input blocks may be interleaved.
 - **FormResponse**: `formId`, `answers`: `Record<string, AnswerValue>` where keys are **input block** ids only.
 
+#### TypeScript interfaces
+
+```ts
+// --------------------
+// Base
+// --------------------
+
+type BlockKind = "input" | "non_input";
+
+interface BaseBlock {
+  id: string;
+  kind: BlockKind;
+  type: string;
+}
+
+// --------------------
+// Input blocks
+// --------------------
+
+interface InputBlockBase extends BaseBlock {
+  kind: "input";
+  title: string;
+  required: boolean;
+}
+
+interface ShortTextBlock extends InputBlockBase {
+  type: "short_text";
+  inputType?: "text" | "email" | "phone" | "number";
+}
+
+interface LongTextBlock extends InputBlockBase {
+  type: "long_text";
+}
+
+interface MultipleChoiceBlock extends InputBlockBase {
+  type: "multiple_choice";
+  options: string[];
+}
+
+interface CheckboxesBlock extends InputBlockBase {
+  type: "checkboxes";
+  options: string[];
+}
+
+interface DropdownBlock extends InputBlockBase {
+  type: "dropdown";
+  options: string[];
+}
+
+interface DateBlock extends InputBlockBase {
+  type: "date";
+}
+
+interface StarRatingBlock extends InputBlockBase {
+  type: "star_rating";
+  ratingMax?: number;
+}
+
+type InputBlock =
+  | ShortTextBlock
+  | LongTextBlock
+  | MultipleChoiceBlock
+  | CheckboxesBlock
+  | DropdownBlock
+  | DateBlock
+  | StarRatingBlock;
+
+// --------------------
+// Non-input blocks
+// --------------------
+
+interface NonInputBlockBase extends BaseBlock {
+  kind: "non_input";
+}
+
+interface HeadingBlock extends NonInputBlockBase {
+  type: "heading";
+  text: string;
+}
+
+interface ParagraphBlock extends NonInputBlockBase {
+  type: "paragraph";
+  content: string;
+}
+
+interface ImageBlock extends NonInputBlockBase {
+  type: "image";
+  imageUrl: string;
+}
+
+interface YouTubeEmbedBlock extends NonInputBlockBase {
+  type: "youtube_embed";
+  youtubeVideoId: string;
+}
+
+interface DividerBlock extends NonInputBlockBase {
+  type: "divider";
+}
+
+type NonInputBlock =
+  | HeadingBlock
+  | ParagraphBlock
+  | ImageBlock
+  | YouTubeEmbedBlock
+  | DividerBlock;
+
+// --------------------
+// Union
+// --------------------
+
+type FormBlock = InputBlock | NonInputBlock;
+
+// --------------------
+// Responses
+// --------------------
+
+type AnswerValue = string | string[] | number;
+
+interface FormResponse {
+  formId: string;
+  answers: Record<string, AnswerValue>; // key = input block id
+}
+```
+
 ---
 
 ## 4. Functional Requirements
