@@ -5,7 +5,7 @@ import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
 import { ExternalLink } from "lucide-react";
 import { FormEditor } from "../../../components/form-builder/FormEditor";
-import { FormPreview } from "../../../components/form-builder/FormPreview";
+import { FormPreview } from "@repo/blocks";
 import { useFormBuilder } from "@/components/form-builder/form-builder-context";
 import { Button } from "@repo/design-system/button";
 import type { InputBlock } from "@repo/types";

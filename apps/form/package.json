@@ -12,6 +12,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@repo/convex": "*",
     "@repo/design-system": "*",
+    "@repo/blocks": "*",
     "@repo/types": "*",
     "@tanstack/react-query": "^5.62.0",
     "axios": "^1.13.5",

@@ -10,6 +10,13 @@ import type { FormBlock, InputBlock } from "@repo/types";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
+import {
+  defaultInputClass,
+  EmailInput,
+  PhoneInput,
+  TextInput,
+  UrlInput,
+} from "@repo/blocks";
 import React, { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
@@ -19,45 +26,7 @@ interface FormFillerProps {
   formIdOrSlug: string;
 }
 
-const inputClass =
-  "w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
-
-const PhoneIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="text-muted-foreground shrink-0"
-    aria-hidden
-  >
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-  </svg>
-);
-
-const UrlIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="text-muted-foreground shrink-0"
-    aria-hidden
-  >
-    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-  </svg>
-);
+const inputClass = defaultInputClass;
 
 export function FormFiller({ formIdOrSlug }: FormFillerProps) {
   const router = useRouter();
@@ -437,73 +406,6 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
   );
 }
 
-function ShortTextInput({
-  id,
-  inputType,
-  required,
-  register,
-  error,
-  placeholder: placeholderProp,
-  minLength,
-  maxLength,
-}: {
-  id: string;
-  inputType: "text" | "email" | "phone" | "number";
-  required: boolean;
-  register: ReturnType<typeof useForm<FormData>>["register"];
-  error: { message?: string } | undefined;
-  placeholder?: string;
-  minLength?: number;
-  maxLength?: number;
-}) {
-  const htmlType =
-    inputType === "email"
-      ? "email"
-      : inputType === "number"
-        ? "number"
-        : "text";
-  const defaultPlaceholder =
-    inputType === "email"
-      ? "you@example.com"
-      : inputType === "phone"
-        ? "+1 (555) 000-0000"
-        : "Your answer";
-  const placeholder = placeholderProp ?? defaultPlaceholder;
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^[\d\s\-+()]{10,}$/;
-
-  const validate = (v: string | string[]) => {
-    const val = typeof v === "string" ? v : "";
-    if (!val && !required) return true;
-    if (required && !val) return "This field is required";
-    if (inputType === "email" && !emailRegex.test(val))
-      return "Please enter a valid email address";
-    if (inputType === "phone" && !phoneRegex.test(val))
-      return "Please enter a valid phone number";
-    if (inputType === "number" && val && Number.isNaN(Number(val)))
-      return "Please enter a valid number";
-    if (minLength != null && val.length < minLength)
-      return `At least ${minLength} characters`;
-    if (maxLength != null && val.length > maxLength)
-      return `At most ${maxLength} characters`;
-    return true;
-  };
-
-  return (
-    <input
-      id={id}
-      {...register(id, { validate })}
-      type={htmlType}
-      placeholder={placeholder}
-      minLength={minLength}
-      maxLength={maxLength}
-      className={inputClass}
-      aria-invalid={!!error}
-    />
-  );
-}
-
 function InputBlockField({
   block,
   register,
@@ -561,67 +463,64 @@ function InputBlockField({
         <p className="text-sm text-muted-foreground">{block.description}</p>
       )}
 
-      {(type === "text" || type === "phone" || type === "url") &&
-        (() => {
-          const s = block.settings as
-            | { minLength?: number; maxLength?: number }
-            | undefined;
-          const isPhone = type === "phone";
-          const isUrl = type === "url";
-          const hasIcon = isPhone || isUrl;
-          const inputEl = (
-            <input
-              id={id}
-              {...register(id, {
-                required: required ? "This field is required" : false,
-                minLength: s?.minLength
-                  ? {
-                      value: s.minLength,
-                      message: `At least ${s.minLength} characters`,
-                    }
-                  : undefined,
-                maxLength: s?.maxLength
-                  ? {
-                      value: s.maxLength,
-                      message: `At most ${s.maxLength} characters`,
-                    }
-                  : undefined,
-              })}
-              type={type === "url" ? "url" : type === "phone" ? "tel" : "text"}
-              inputMode={type === "phone" ? "tel" : undefined}
-              minLength={s?.minLength}
-              maxLength={s?.maxLength}
-              placeholder={
-                block.settings?.placeholder ??
-                (type === "phone" ? "+1 (555) 000-0000" : "Your answer")
-              }
-              className={hasIcon ? `${inputClass} pl-9` : inputClass}
-              aria-invalid={!!error}
-            />
-          );
-          if (hasIcon) {
-            return (
-              <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
-                  {isPhone ? <PhoneIcon /> : <UrlIcon />}
-                </span>
-                {inputEl}
-              </div>
-            );
-          }
-          return inputEl;
-        })()}
+      {type === "text" && (() => {
+        const s = block.settings as { minLength?: number; maxLength?: number } | undefined;
+        return (
+          <TextInput
+            id={id}
+            register={register as never}
+            required={required}
+            error={error}
+            placeholder={block.settings?.placeholder}
+            minLength={s?.minLength}
+            maxLength={s?.maxLength}
+            className={inputClass}
+          />
+        );
+      })()}
+
+      {type === "phone" && (() => {
+        const s = block.settings as { minLength?: number; maxLength?: number } | undefined;
+        return (
+          <PhoneInput
+            id={id}
+            register={register as never}
+            required={required}
+            error={error}
+            placeholder={block.settings?.placeholder}
+            minLength={s?.minLength}
+            maxLength={s?.maxLength}
+            className={inputClass}
+          />
+        );
+      })()}
+
+      {type === "url" && (() => {
+        const s = block.settings as { minLength?: number; maxLength?: number } | undefined;
+        return (
+          <UrlInput
+            id={id}
+            register={register as never}
+            required={required}
+            error={error}
+            placeholder={block.settings?.placeholder}
+            minLength={s?.minLength}
+            maxLength={s?.maxLength}
+            className={inputClass}
+          />
+        );
+      })()}
 
       {type === "email" && (
-        <ShortTextInput
+        <EmailInput
           id={id}
-          inputType="email"
+          register={register as never}
           required={required}
-          register={register}
           error={error}
           placeholder={block.settings?.placeholder}
           minLength={(block.settings as { minLength?: number })?.minLength}
           maxLength={(block.settings as { maxLength?: number })?.maxLength}
+          className={inputClass}
         />
       )}
 

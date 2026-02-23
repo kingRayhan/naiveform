@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@repo/design-system/dialog";
 import { TEMPLATES, getTemplateById } from "@/lib/templates.config";
-import { FormPreview } from "@/components/form-builder/FormPreview";
+import { FormPreview } from "@repo/blocks";
 
 export const Route = createFileRoute("/templates/")({
   component: TemplatesPage,
