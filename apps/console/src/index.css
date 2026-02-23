@@ -1,3 +1,6 @@
 @import "@repo/design-system/globals.css";
 
 @source "../../../src/**/*.tsx";
+/* Scan @repo/blocks so Tailwind generates classes used by FormPreview and inputs (e.g. icon positioning) */
+@source "../../../packages/blocks/src/**/*.tsx";
+@source "../../../packages/blocks/src/**/*.ts";

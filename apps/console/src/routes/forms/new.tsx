@@ -68,7 +68,7 @@ function NewFormPage() {
         title,
         description: data.description?.trim() || undefined,
         userId: user.id,
-        questions: template?.form.questions,
+        blocks: template?.form.blocks,
         slug: createFormSlugFromTitle(title),
       });
       navigate({ to: "/forms/$formId", params: { formId } });

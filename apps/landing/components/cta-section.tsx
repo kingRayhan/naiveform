@@ -17,11 +17,10 @@ export function CtaSection() {
 
           <div className="relative z-10 max-w-3xl mx-auto space-y-8">
             <h2 className="text-4xl md:text-6xl font-bold text-white tracking-tight">
-              Ready to build better forms?
+              Start building — free forever.
             </h2>
             <p className="text-xl text-slate-300">
-              Join thousands of creators who are already using NaiveForm to
-              gather insights.
+              No credit card. No limits. Create your first form in minutes.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Button
@@ -30,12 +29,12 @@ export function CtaSection() {
                 asChild
               >
                 <Link href={CONSOLE_APP_NEW_FORM_URL}>
-                  Get Started for Free
+                  Get started for free
                 </Link>
               </Button>
             </div>
             <p className="text-sm text-slate-400">
-              No credit card required · Free plan available
+              Free forever · No credit card required
             </p>
           </div>
         </div>

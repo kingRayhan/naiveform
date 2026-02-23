@@ -1,4 +1,5 @@
-import type { FormQuestion } from "./form-builder-types";
+import type { FormBlock } from "@repo/types";
+import { isInputBlock } from "@repo/types";
 
 function escapeHtml(s: string): string {
   return s
@@ -10,9 +11,10 @@ function escapeHtml(s: string): string {
 
 /** Build the headless HTML snippet: script, form with data-form-wrapper, data-loading, data-form-error, data-form-submitted. */
 export function buildHeadlessHtml(
-  questions: FormQuestion[],
+  blocks: FormBlock[],
   actionUrl: string
 ): string {
+  const inputBlocks = blocks.filter(isInputBlock);
   const scriptBase =
     actionUrl.indexOf("/") > 0
       ? actionUrl.replace(/\/html-action\/.*$/, "")
@@ -25,41 +27,37 @@ export function buildHeadlessHtml(
     `<form action="${actionUrl}" method="post">`,
     `  <div data-form-wrapper>`,
   ];
-  for (const q of questions) {
+  for (const q of inputBlocks) {
     const title = q.title || "Untitled";
     const id = `q-${q.id}`;
     const name = escapeHtml(q.id);
-    const req = q.required ? " required" : "";
-    if (q.type === "short_text") {
-      const type =
-        q.inputType === "email"
-          ? "email"
-          : q.inputType === "number"
-            ? "number"
-            : "text";
+    const req = (q.settings?.required ? " required" : "");
+
+    if (q.type === "text" || q.type === "email" || q.type === "phone" || q.type === "url") {
+      const type = q.type === "email" ? "email" : q.type === "phone" ? "tel" : "text";
       const placeholder =
-        q.inputType === "email"
+        q.type === "email"
           ? "you@example.com"
-          : q.inputType === "phone"
+          : q.type === "phone"
             ? "+1 (555) 000-0000"
             : "Your answer";
       lines.push(
-        `    <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`
+        `    <label for="${id}">${escapeHtml(title)}${q.settings?.required ? " *" : ""}</label>`
       );
       lines.push(
         `    <input name="${name}" id="${id}" type="${type}"${attr("placeholder", placeholder)}${req}>`
       );
     } else if (q.type === "long_text") {
       lines.push(
-        `    <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`
+        `    <label for="${id}">${escapeHtml(title)}${q.settings?.required ? " *" : ""}</label>`
       );
       lines.push(
         `    <textarea name="${name}" id="${id}" rows="3"${req}></textarea>`
       );
-    } else if (q.type === "multiple_choice") {
+    } else if (q.type === "radio") {
       lines.push(`    <fieldset>`);
       lines.push(
-        `      <legend>${escapeHtml(title)}${q.required ? " *" : ""}</legend>`
+        `      <legend>${escapeHtml(title)}${q.settings?.required ? " *" : ""}</legend>`
       );
       for (const opt of q.options ?? []) {
         const v = opt || "Option";
@@ -68,10 +66,10 @@ export function buildHeadlessHtml(
         );
       }
       lines.push(`    </fieldset>`);
-    } else if (q.type === "checkboxes") {
+    } else if (q.type === "checkbox") {
       lines.push(`    <fieldset>`);
       lines.push(
-        `      <legend>${escapeHtml(title)}${q.required ? " *" : ""}</legend>`
+        `      <legend>${escapeHtml(title)}${q.settings?.required ? " *" : ""}</legend>`
       );
       for (const opt of q.options ?? []) {
         const v = opt || "Option";
@@ -82,7 +80,7 @@ export function buildHeadlessHtml(
       lines.push(`    </fieldset>`);
     } else if (q.type === "dropdown") {
       lines.push(
-        `    <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`
+        `    <label for="${id}">${escapeHtml(title)}${q.settings?.required ? " *" : ""}</label>`
       );
       lines.push(`    <select name="${name}" id="${id}"${req}>`);
       lines.push(`      <option value="">Choose</option>`);
@@ -94,16 +92,50 @@ export function buildHeadlessHtml(
       lines.push(`    </select>`);
     } else if (q.type === "date") {
       lines.push(
-        `    <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`
+        `    <label for="${id}">${escapeHtml(title)}${q.settings?.required ? " *" : ""}</label>`
       );
       lines.push(`    <input name="${name}" id="${id}" type="date"${req}>`);
-    } else if (q.type === "star_rating") {
-      const max = Math.min(10, Math.max(1, q.ratingMax ?? 5));
+    } else if (q.type === "time") {
       lines.push(
-        `    <label for="${id}">${escapeHtml(title)}${q.required ? " *" : ""}</label>`
+        `    <label for="${id}">${escapeHtml(title)}${q.settings?.required ? " *" : ""}</label>`
+      );
+      lines.push(`    <input name="${name}" id="${id}" type="time"${req}>`);
+    } else if (q.type === "datetime") {
+      lines.push(
+        `    <label for="${id}">${escapeHtml(title)}${q.settings?.required ? " *" : ""}</label>`
+      );
+      lines.push(`    <input name="${name}" id="${id}" type="datetime-local"${req}>`);
+    } else if (q.type === "number") {
+      lines.push(
+        `    <label for="${id}">${escapeHtml(title)}${q.settings?.required ? " *" : ""}</label>`
+      );
+      lines.push(`    <input name="${name}" id="${id}" type="number"${req}>`);
+    } else if (q.type === "star_rating") {
+      const max = Math.min(10, Math.max(1, q.settings?.ratingMax ?? 5));
+      lines.push(
+        `    <label for="${id}">${escapeHtml(title)}${q.settings?.required ? " *" : ""}</label>`
       );
       lines.push(
         `    <input name="${name}" id="${id}" type="number" min="1" max="${max}"${req}>`
+      );
+    } else if (q.type === "linear_scale") {
+      const min = "settings" in q && q.settings && "min" in q.settings ? (q.settings as { min: number }).min : 1;
+      const max = "settings" in q && q.settings && "max" in q.settings ? (q.settings as { max: number }).max : 5;
+      lines.push(
+        `    <label for="${id}">${escapeHtml(title)}${q.settings?.required ? " *" : ""}</label>`
+      );
+      lines.push(
+        `    <input name="${name}" id="${id}" type="number" min="${min}" max="${max}"${req}>`
+      );
+    } else if (q.type === "yes_no") {
+      lines.push(
+        `    <label>${escapeHtml(title)}${q.settings?.required ? " *" : ""}</label>`
+      );
+      lines.push(
+        `    <label><input type="radio" name="${name}" value="yes"${req}> Yes</label>`
+      );
+      lines.push(
+        `    <label><input type="radio" name="${name}" value="no"> No</label>`
       );
     }
   }

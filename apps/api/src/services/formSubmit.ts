@@ -46,7 +46,9 @@ export async function submitFormResponse(
     throw new Error("Form has expired");
   if (form.archived) throw new Error("Form is archived");
 
-  const allowedKeys = new Set((form.questions ?? []).map((q) => q.id));
+  const inputBlockIds =
+    form.blocks?.filter((b) => b.kind === "input").map((b) => b.id) ?? [];
+  const allowedKeys = new Set(inputBlockIds);
   const invalidKeys = Object.keys(values).filter((k) => !allowedKeys.has(k));
   if (invalidKeys.length > 0)
     throw new Error(`Invalid or unknown field(s): ${invalidKeys.join(", ")}`);
@@ -95,11 +97,12 @@ async function triggerWebhooksFromApi(
   );
   if (!webhooks?.length) return;
 
-  const questionsById = new Map((form.questions ?? []).map((q) => [q.id, q]));
+  const inputBlocks = form.blocks?.filter((b) => b.kind === "input") ?? [];
+  const blocksById = new Map(inputBlocks.map((b) => [b.id, b]));
   const answersByFieldName: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(ctx.answers)) {
-    const q = questionsById.get(key);
-    answersByFieldName[q?.title ?? key] = value;
+    const block = blocksById.get(key);
+    answersByFieldName[block?.title ?? key] = value;
   }
   const payload = {
     formId: form._id,

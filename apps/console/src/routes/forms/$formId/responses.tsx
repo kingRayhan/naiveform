@@ -4,6 +4,8 @@ import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
 import { Button } from "@repo/design-system/button";
 import type { Doc } from "@repo/convex/dataModel";
+import { getFormBlocks } from "@repo/types";
+import { isInputBlock } from "@repo/types";
 
 export const Route = createFileRoute("/forms/$formId/responses")({
   component: FormResponsesPage,
@@ -54,17 +56,18 @@ function FormResponsesPage() {
     return <div className="text-destructive">Form not found.</div>;
   }
 
-  const questions = form.questions;
+  const blocks = getFormBlocks(form);
+  const inputBlocks = blocks.filter(isInputBlock);
 
   const exportCsv = () => {
-    const headers = ["Submitted", ...questions.map((q) => q.title || "(Untitled)")];
+    const headers = ["Submitted", ...inputBlocks.map((b) => b.title || "(Untitled)")];
     const rows = responses.map((r: Doc<"responses">) => [
       new Date(r._creationTime).toLocaleString(undefined, {
         dateStyle: "short",
         timeStyle: "short",
       }),
-      ...questions.map((q) =>
-        formatAnswerForCsv(r.answers[q.title] ?? r.answers[q.id])
+      ...inputBlocks.map((b) =>
+        formatAnswerForCsv(r.answers[b.title] ?? r.answers[b.id])
       ),
     ]);
     const csvContent = [
@@ -108,12 +111,12 @@ function FormResponsesPage() {
                 <th className="px-4 py-3 text-left font-medium text-foreground">
                   Submitted
                 </th>
-                {questions.map((q) => (
+                {inputBlocks.map((b) => (
                   <th
-                    key={q.id}
+                    key={b.id}
                     className="px-4 py-3 text-left font-medium text-foreground"
                   >
-                    {q.title || "(Untitled)"}
+                    {b.title || "(Untitled)"}
                   </th>
                 ))}
               </tr>
@@ -130,9 +133,9 @@ function FormResponsesPage() {
                       timeStyle: "short",
                     })}
                   </td>
-                  {questions.map((q) => (
-                    <td key={q.id} className="px-4 py-3 text-foreground max-w-[200px] truncate" title={formatAnswer(r.answers[q.title] ?? r.answers[q.id])}>
-                      {formatAnswer(r.answers[q.title] ?? r.answers[q.id])}
+                  {inputBlocks.map((b) => (
+                    <td key={b.id} className="px-4 py-3 text-foreground max-w-[200px] truncate" title={formatAnswer(r.answers[b.title] ?? r.answers[b.id])}>
+                      {formatAnswer(r.answers[b.title] ?? r.answers[b.id])}
                     </td>
                   ))}
                 </tr>

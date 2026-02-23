@@ -1,4 +1,5 @@
-import type { FormQuestion } from "./form-builder-types";
+import type { FormBlock, InputBlock } from "@repo/types";
+import { createEmptyInputBlock } from "@repo/types";
 
 export interface FormTemplate {
   id: string;
@@ -7,17 +8,26 @@ export interface FormTemplate {
   form: {
     title: string;
     description?: string;
-    questions: FormQuestion[];
+    blocks: FormBlock[];
   };
 }
 
-const q = (
+/** Create an input block for templates. */
+function b(
   id: string,
-  type: FormQuestion["type"],
+  type: InputBlock["type"],
   title: string,
   required: boolean,
   options?: string[]
-): FormQuestion => ({ id, type, title, required, options });
+): InputBlock {
+  const block = createEmptyInputBlock(id, type);
+  block.title = title;
+  block.settings = { ...block.settings, required };
+  if (options && (type === "radio" || type === "checkbox" || type === "dropdown")) {
+    (block as InputBlock & { options: string[] }).options = options;
+  }
+  return block as InputBlock;
+}
 
 export const TEMPLATES: FormTemplate[] = [
   {
@@ -27,11 +37,11 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Feedback",
       description: "We'd love to hear from you.",
-      questions: [
-        q("q1", "short_text", "Your name", false),
-        q("q2", "dropdown", "How would you rate your experience?", true, ["Excellent", "Good", "Average", "Poor"]),
-        q("q3", "long_text", "What did you like most?", false),
-        q("q4", "long_text", "What could we improve?", false),
+      blocks: [
+        b("q1", "text", "Your name", false),
+        b("q2", "dropdown", "How would you rate your experience?", true, ["Excellent", "Good", "Average", "Poor"]),
+        b("q3", "long_text", "What did you like most?", false),
+        b("q4", "long_text", "What could we improve?", false),
       ],
     },
   },
@@ -42,12 +52,12 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Event Registration",
       description: "Register for our upcoming event.",
-      questions: [
-        q("q1", "short_text", "Full name", true),
-        q("q2", "short_text", "Email", true),
-        q("q3", "short_text", "Phone number", false),
-        q("q4", "dropdown", "Dietary requirements", false, ["None", "Vegetarian", "Vegan", "Gluten-free", "Other"]),
-        q("q5", "long_text", "Any accessibility or special requirements?", false),
+      blocks: [
+        b("q1", "text", "Full name", true),
+        b("q2", "email", "Email", true),
+        b("q3", "phone", "Phone number", false),
+        b("q4", "dropdown", "Dietary requirements", false, ["None", "Vegetarian", "Vegan", "Gluten-free", "Other"]),
+        b("q5", "long_text", "Any accessibility or special requirements?", false),
       ],
     },
   },
@@ -58,10 +68,10 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Quick Quiz",
       description: "Test your knowledge.",
-      questions: [
-        q("q1", "multiple_choice", "What is the capital of France?", true, ["London", "Paris", "Berlin", "Madrid"]),
-        q("q2", "multiple_choice", "Which planet is closest to the Sun?", true, ["Venus", "Mercury", "Mars", "Earth"]),
-        q("q3", "short_text", "In one word, what is 2 + 2?", true),
+      blocks: [
+        b("q1", "radio", "What is the capital of France?", true, ["London", "Paris", "Berlin", "Madrid"]),
+        b("q2", "radio", "Which planet is closest to the Sun?", true, ["Venus", "Mercury", "Mars", "Earth"]),
+        b("q3", "text", "In one word, what is 2 + 2?", true),
       ],
     },
   },
@@ -72,11 +82,11 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Contact Us",
       description: "Send us a message and we'll get back to you.",
-      questions: [
-        q("q1", "short_text", "Name", true),
-        q("q2", "short_text", "Email", true),
-        q("q3", "dropdown", "Subject", true, ["General inquiry", "Support", "Sales", "Partnership", "Other"]),
-        q("q4", "long_text", "Message", true),
+      blocks: [
+        b("q1", "text", "Name", true),
+        b("q2", "email", "Email", true),
+        b("q3", "dropdown", "Subject", true, ["General inquiry", "Support", "Sales", "Partnership", "Other"]),
+        b("q4", "long_text", "Message", true),
       ],
     },
   },
@@ -87,14 +97,14 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Job Application",
       description: "Apply for this position.",
-      questions: [
-        q("q1", "short_text", "Full name", true),
-        q("q2", "short_text", "Email", true),
-        q("q3", "short_text", "Phone", false),
-        q("q4", "short_text", "LinkedIn or portfolio URL", false),
-        q("q5", "dropdown", "Years of experience", true, ["0–1", "1–3", "3–5", "5–10", "10+"]),
-        q("q6", "long_text", "Why do you want to join us?", true),
-        q("q7", "long_text", "Paste or describe your relevant experience", true),
+      blocks: [
+        b("q1", "text", "Full name", true),
+        b("q2", "email", "Email", true),
+        b("q3", "phone", "Phone", false),
+        b("q4", "url", "LinkedIn or portfolio URL", false),
+        b("q5", "dropdown", "Years of experience", true, ["0–1", "1–3", "3–5", "5–10", "10+"]),
+        b("q6", "long_text", "Why do you want to join us?", true),
+        b("q7", "long_text", "Paste or describe your relevant experience", true),
       ],
     },
   },
@@ -105,13 +115,13 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Order Request",
       description: "Submit your order details.",
-      questions: [
-        q("q1", "short_text", "Company or name", true),
-        q("q2", "short_text", "Email", true),
-        q("q3", "short_text", "Product or service of interest", true),
-        q("q4", "short_text", "Quantity or scope", false),
-        q("q5", "date", "Preferred delivery or completion date", false),
-        q("q6", "long_text", "Additional notes", false),
+      blocks: [
+        b("q1", "text", "Company or name", true),
+        b("q2", "email", "Email", true),
+        b("q3", "text", "Product or service of interest", true),
+        b("q4", "text", "Quantity or scope", false),
+        b("q5", "date", "Preferred delivery or completion date", false),
+        b("q6", "long_text", "Additional notes", false),
       ],
     },
   },
@@ -122,12 +132,12 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "RSVP",
       description: "Please let us know if you'll be joining us.",
-      questions: [
-        q("q1", "short_text", "Your name(s)", true),
-        q("q2", "multiple_choice", "Will you attend?", true, ["Yes, happily!", "No, I can't make it"]),
-        q("q3", "short_text", "Number of guests", false),
-        q("q4", "dropdown", "Meal preference", false, ["Chicken", "Fish", "Vegetarian", "Vegan", "Kids meal"]),
-        q("q5", "long_text", "Dietary restrictions or comments", false),
+      blocks: [
+        b("q1", "text", "Your name(s)", true),
+        b("q2", "radio", "Will you attend?", true, ["Yes, happily!", "No, I can't make it"]),
+        b("q3", "text", "Number of guests", false),
+        b("q4", "dropdown", "Meal preference", false, ["Chicken", "Fish", "Vegetarian", "Vegan", "Kids meal"]),
+        b("q5", "long_text", "Dietary restrictions or comments", false),
       ],
     },
   },
@@ -138,10 +148,10 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Subscribe to our newsletter",
       description: "Get updates and exclusive content.",
-      questions: [
-        q("q1", "short_text", "Email", true),
-        q("q2", "short_text", "First name (optional)", false),
-        q("q3", "checkboxes", "Topics you're interested in", false, ["Product updates", "Tips & tutorials", "Events", "Offers"]),
+      blocks: [
+        b("q1", "email", "Email", true),
+        b("q2", "text", "First name (optional)", false),
+        b("q3", "checkbox", "Topics you're interested in", false, ["Product updates", "Tips & tutorials", "Events", "Offers"]),
       ],
     },
   },
@@ -152,12 +162,12 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Submit a support request",
       description: "We'll respond as soon as possible.",
-      questions: [
-        q("q1", "short_text", "Name", true),
-        q("q2", "short_text", "Email", true),
-        q("q3", "dropdown", "Issue type", true, ["Technical", "Billing", "Account", "Other"]),
-        q("q4", "short_text", "Subject", true),
-        q("q5", "long_text", "Describe your issue", true),
+      blocks: [
+        b("q1", "text", "Name", true),
+        b("q2", "email", "Email", true),
+        b("q3", "dropdown", "Issue type", true, ["Technical", "Billing", "Account", "Other"]),
+        b("q4", "text", "Subject", true),
+        b("q5", "long_text", "Describe your issue", true),
       ],
     },
   },
@@ -168,11 +178,11 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Leave a review",
       description: "Your feedback helps others.",
-      questions: [
-        q("q1", "dropdown", "Overall rating", true, ["5 – Excellent", "4", "3", "2", "1 – Poor"]),
-        q("q2", "short_text", "Review title", true),
-        q("q3", "long_text", "Your review", true),
-        q("q4", "short_text", "Display name (optional)", false),
+      blocks: [
+        b("q1", "dropdown", "Overall rating", true, ["5 – Excellent", "4", "3", "2", "1 – Poor"]),
+        b("q2", "text", "Review title", true),
+        b("q3", "long_text", "Your review", true),
+        b("q4", "text", "Display name (optional)", false),
       ],
     },
   },
@@ -183,12 +193,12 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Workshop Registration",
       description: "Sign up for the workshop.",
-      questions: [
-        q("q1", "short_text", "Full name", true),
-        q("q2", "short_text", "Email", true),
-        q("q3", "multiple_choice", "Experience level", true, ["Beginner", "Intermediate", "Advanced"]),
-        q("q4", "checkboxes", "What do you want to learn?", false, ["Basics", "Best practices", "Advanced topics", "Hands-on projects"]),
-        q("q5", "long_text", "Any specific questions or goals?", false),
+      blocks: [
+        b("q1", "text", "Full name", true),
+        b("q2", "email", "Email", true),
+        b("q3", "radio", "Experience level", true, ["Beginner", "Intermediate", "Advanced"]),
+        b("q4", "checkbox", "What do you want to learn?", false, ["Basics", "Best practices", "Advanced topics", "Hands-on projects"]),
+        b("q5", "long_text", "Any specific questions or goals?", false),
       ],
     },
   },
@@ -199,13 +209,13 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Volunteer Signup",
       description: "Join us as a volunteer.",
-      questions: [
-        q("q1", "short_text", "Name", true),
-        q("q2", "short_text", "Email", true),
-        q("q3", "short_text", "Phone", false),
-        q("q4", "checkboxes", "Areas of interest", false, ["Events", "Teaching", "Admin", "Outreach", "Other"]),
-        q("q5", "dropdown", "Availability", false, ["Weekdays", "Weekends", "Both", "Flexible"]),
-        q("q6", "long_text", "Why do you want to volunteer?", false),
+      blocks: [
+        b("q1", "text", "Name", true),
+        b("q2", "email", "Email", true),
+        b("q3", "phone", "Phone", false),
+        b("q4", "checkbox", "Areas of interest", false, ["Events", "Teaching", "Admin", "Outreach", "Other"]),
+        b("q5", "dropdown", "Availability", false, ["Weekdays", "Weekends", "Both", "Flexible"]),
+        b("q6", "long_text", "Why do you want to volunteer?", false),
       ],
     },
   },
@@ -216,11 +226,11 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Membership Application",
       description: "Apply to become a member.",
-      questions: [
-        q("q1", "short_text", "Full name", true),
-        q("q2", "short_text", "Email", true),
-        q("q3", "dropdown", "Membership type", true, ["Individual", "Family", "Student", "Corporate"]),
-        q("q4", "long_text", "Tell us about yourself (optional)", false),
+      blocks: [
+        b("q1", "text", "Full name", true),
+        b("q2", "email", "Email", true),
+        b("q3", "dropdown", "Membership type", true, ["Individual", "Family", "Student", "Corporate"]),
+        b("q4", "long_text", "Tell us about yourself (optional)", false),
       ],
     },
   },
@@ -231,13 +241,13 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Booking Request",
       description: "Request a time slot or reservation.",
-      questions: [
-        q("q1", "short_text", "Name", true),
-        q("q2", "short_text", "Email", true),
-        q("q3", "short_text", "Phone", false),
-        q("q4", "date", "Preferred date", true),
-        q("q5", "dropdown", "Preferred time", false, ["Morning", "Afternoon", "Evening", "Any"]),
-        q("q6", "long_text", "Additional details", false),
+      blocks: [
+        b("q1", "text", "Name", true),
+        b("q2", "email", "Email", true),
+        b("q3", "phone", "Phone", false),
+        b("q4", "date", "Preferred date", true),
+        b("q5", "dropdown", "Preferred time", false, ["Morning", "Afternoon", "Evening", "Any"]),
+        b("q6", "long_text", "Additional details", false),
       ],
     },
   },
@@ -248,12 +258,12 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Bug Report",
       description: "Help us fix issues by reporting bugs.",
-      questions: [
-        q("q1", "short_text", "Bug title", true),
-        q("q2", "dropdown", "Severity", false, ["Critical", "High", "Medium", "Low"]),
-        q("q3", "long_text", "Steps to reproduce", true),
-        q("q4", "long_text", "Expected vs actual behavior", true),
-        q("q5", "short_text", "Browser / device (optional)", false),
+      blocks: [
+        b("q1", "text", "Bug title", true),
+        b("q2", "dropdown", "Severity", false, ["Critical", "High", "Medium", "Low"]),
+        b("q3", "long_text", "Steps to reproduce", true),
+        b("q4", "long_text", "Expected vs actual behavior", true),
+        b("q5", "text", "Browser / device (optional)", false),
       ],
     },
   },
@@ -264,10 +274,10 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Suggestion Box",
       description: "We value your ideas.",
-      questions: [
-        q("q1", "dropdown", "Category", false, ["Feature request", "Improvement", "Process", "Other"]),
-        q("q2", "short_text", "Suggestion title", true),
-        q("q3", "long_text", "Describe your suggestion", true),
+      blocks: [
+        b("q1", "dropdown", "Category", false, ["Feature request", "Improvement", "Process", "Other"]),
+        b("q2", "text", "Suggestion title", true),
+        b("q3", "long_text", "Describe your suggestion", true),
       ],
     },
   },
@@ -278,9 +288,9 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Quick Poll",
       description: "Your opinion matters.",
-      questions: [
-        q("q1", "multiple_choice", "What should we focus on next?", true, ["New features", "Performance", "Design", "Documentation"]),
-        q("q2", "dropdown", "How often do you use our product?", false, ["Daily", "Weekly", "Monthly", "Rarely"]),
+      blocks: [
+        b("q1", "radio", "What should we focus on next?", true, ["New features", "Performance", "Design", "Documentation"]),
+        b("q2", "dropdown", "How often do you use our product?", false, ["Daily", "Weekly", "Monthly", "Rarely"]),
       ],
     },
   },
@@ -291,11 +301,11 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Pre-Event Survey",
       description: "Help us tailor the event for you.",
-      questions: [
-        q("q1", "short_text", "Name", true),
-        q("q2", "multiple_choice", "What's your main goal for this event?", true, ["Learn", "Network", "Get certified", "Other"]),
-        q("q3", "checkboxes", "Topics you're most interested in", false, ["Intro", "Advanced", "Case studies", "Q&A"]),
-        q("q4", "long_text", "Questions you'd like answered", false),
+      blocks: [
+        b("q1", "text", "Name", true),
+        b("q2", "radio", "What's your main goal for this event?", true, ["Learn", "Network", "Get certified", "Other"]),
+        b("q3", "checkbox", "Topics you're most interested in", false, ["Intro", "Advanced", "Case studies", "Q&A"]),
+        b("q4", "long_text", "Questions you'd like answered", false),
       ],
     },
   },
@@ -306,11 +316,11 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Post-Event Survey",
       description: "Thanks for attending. How was it?",
-      questions: [
-        q("q1", "dropdown", "How would you rate the event?", true, ["5 – Excellent", "4", "3", "2", "1 – Poor"]),
-        q("q2", "long_text", "What did you find most valuable?", false),
-        q("q3", "long_text", "What could we improve?", false),
-        q("q4", "checkboxes", "Would you recommend this event?", false, ["Yes", "Maybe", "No"]),
+      blocks: [
+        b("q1", "dropdown", "How would you rate the event?", true, ["5 – Excellent", "4", "3", "2", "1 – Poor"]),
+        b("q2", "long_text", "What did you find most valuable?", false),
+        b("q3", "long_text", "What could we improve?", false),
+        b("q4", "checkbox", "Would you recommend this event?", false, ["Yes", "Maybe", "No"]),
       ],
     },
   },
@@ -321,12 +331,12 @@ export const TEMPLATES: FormTemplate[] = [
     form: {
       title: "Research Participation Consent",
       description: "Please read and confirm before participating.",
-      questions: [
-        q("q1", "short_text", "Full name", true),
-        q("q2", "short_text", "Email", true),
-        q("q3", "date", "Date of birth (optional, for eligibility)", false),
-        q("q4", "checkboxes", "I have read and agree to the consent form", true, ["I agree"]),
-        q("q5", "long_text", "Any questions before participating?", false),
+      blocks: [
+        b("q1", "text", "Full name", true),
+        b("q2", "email", "Email", true),
+        b("q3", "date", "Date of birth (optional, for eligibility)", false),
+        b("q4", "checkbox", "I have read and agree to the consent form", true, ["I agree"]),
+        b("q5", "long_text", "Any questions before participating?", false),
       ],
     },
   },

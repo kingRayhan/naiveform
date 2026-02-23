@@ -8,6 +8,15 @@ import {
 } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 
+/** Input blocks only (for answers). */
+function getInputBlocks(form: { blocks?: unknown[] }): Array<{ id: string; title?: string }> {
+  const blocks = form.blocks;
+  if (!blocks?.length) return [];
+  return blocks
+    .filter((b): b is { id: string; kind: string; title?: string } => typeof b === "object" && b !== null && (b as { kind?: string }).kind === "input")
+    .map((b) => ({ id: b.id, title: b.title }));
+}
+
 export const listByForm = query({
   args: { formId: v.id("forms") },
   handler: async (ctx, args) => {
@@ -38,11 +47,12 @@ export const submit = mutation({
       throw new ConvexError("This form has closed.");
     }
 
-    const questionsById = new Map(form.questions.map((q) => [q.id, q]));
+    const inputBlocks = getInputBlocks(form);
+    const blocksById = new Map(inputBlocks.map((b) => [b.id, b]));
     const answersByFieldName: Record<string, string | string[] | number> = {};
-    for (const [qId, value] of Object.entries(args.answers)) {
-      const q = questionsById.get(qId);
-      const fieldName = q?.title ?? qId;
+    for (const [blockId, value] of Object.entries(args.answers)) {
+      const block = blocksById.get(blockId);
+      const fieldName = block?.title ?? blockId;
       answersByFieldName[fieldName] = value;
     }
 
@@ -88,11 +98,12 @@ export const getWebhookPayload = internalQuery({
     const response = await ctx.db.get(args.responseId);
     const form = await ctx.db.get(args.formId);
     if (!response || !form || response.formId !== args.formId) return null;
-    const questionsById = new Map(form.questions.map((q) => [q.id, q]));
+    const inputBlocks = getInputBlocks(form);
+    const blocksById = new Map(inputBlocks.map((b) => [b.id, b]));
     const answersByFieldName: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(response.answers)) {
-      const q = questionsById.get(key);
-      const fieldName = q ? q.title : key;
+      const block = blocksById.get(key);
+      const fieldName = block?.title ?? key;
       answersByFieldName[fieldName] = value;
     }
     return {

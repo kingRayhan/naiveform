@@ -2,6 +2,7 @@ import { createFileRoute, Link, Outlet, useParams } from "@tanstack/react-router
 import { useQuery } from "@repo/convex/react";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
+import { getFormBlocks } from "@repo/types";
 import { FormBuilderProvider } from "@/components/form-builder/FormBuilderProvider";
 
 export const Route = createFileRoute("/forms/$formId")({
@@ -40,7 +41,7 @@ function FormLayoutPage() {
   return (
     <FormBuilderProvider
       formId={formIdTyped}
-      initialQuestions={form.questions}
+      initialBlocks={getFormBlocks(form)}
     >
       <div>
         <div className="flex items-center gap-4 mb-4">

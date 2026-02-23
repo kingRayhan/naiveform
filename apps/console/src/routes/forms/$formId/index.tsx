@@ -5,10 +5,11 @@ import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
 import { ExternalLink } from "lucide-react";
 import { FormEditor } from "../../../components/form-builder/FormEditor";
-import { FormPreview } from "../../../components/form-builder/FormPreview";
+import { FormPreview } from "@repo/blocks";
 import { useFormBuilder } from "@/components/form-builder/form-builder-context";
 import { Button } from "@repo/design-system/button";
-import type { FormQuestion } from "@/lib/form-builder-types";
+import type { InputBlock } from "@repo/types";
+import { isInputBlock } from "@repo/types";
 import { buildHeadlessHtml } from "@/lib/headlessHtml";
 
 const FORM_APP_URL = import.meta.env.VITE_FORM_APP_URL ?? "";
@@ -16,32 +17,50 @@ const HEADLESS_FORM_ACTION_URL = (
   import.meta.env.VITE_HEADLESS_FORM_ACTION_URL ?? ""
 ).replace(/\/$/, "");
 
-/** Sample value for a question (for curl example). */
-function sampleValue(q: FormQuestion): string {
-  switch (q.type) {
-    case "short_text":
-      return q.inputType === "email" ? "you@example.com" : "Your answer";
+/** Sample value for an input block (for curl example). */
+function sampleValue(b: InputBlock): string {
+  switch (b.type) {
+    case "text":
+    case "phone":
+    case "url":
+      return "Your answer";
+    case "email":
+      return "you@example.com";
     case "long_text":
       return "Your answer";
-    case "multiple_choice":
+    case "radio":
     case "dropdown":
-      return (q.options?.[0] as string) ?? "Option";
-    case "checkboxes":
-      return (q.options?.[0] as string) ?? "Option";
+      return (b.options?.[0] as string) ?? "Option";
+    case "checkbox":
+      return (b.options?.[0] as string) ?? "Option";
     case "date":
       return new Date().toISOString().slice(0, 10);
+    case "time":
+      return "12:00";
+    case "datetime":
+      return new Date().toISOString().slice(0, 16);
+    case "number":
+      return "0";
     case "star_rating":
       return "5";
+    case "linear_scale":
+      return "3";
+    case "yes_no":
+      return "yes";
     default:
       return "Your answer";
   }
 }
 
-function buildApiCurl(formId: string, questions: FormQuestion[], baseUrl: string): string {
+function buildApiCurl(
+  formId: string,
+  inputBlocks: InputBlock[],
+  baseUrl: string
+): string {
   const url = `${baseUrl}/form-submission/${formId}`;
   const values: Record<string, string> = {};
-  for (const q of questions) {
-    values[q.id] = sampleValue(q);
+  for (const b of inputBlocks) {
+    values[b.id] = sampleValue(b);
   }
   const body = JSON.stringify({ values }, null, 2);
   const escaped = body.replace(/'/g, "'\\''");
@@ -77,12 +96,13 @@ function FormEditorPage() {
   const { formId } = useParams({ from: "/forms/$formId/" });
   const formIdTyped = formId as Id<"forms">;
   const form = useQuery(api.forms.get, { formId: formIdTyped });
-  const { questions, saveForm } = useFormBuilder();
+  const { blocks, saveForm } = useFormBuilder();
+  const inputBlocks = blocks.filter(isInputBlock);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
-  const [previewTab, setPreviewTab] = useState<
-    "preview" | "headless" | "api"
-  >("preview");
+  const [previewTab, setPreviewTab] = useState<"preview" | "headless" | "api">(
+    "preview"
+  );
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -100,11 +120,11 @@ function FormEditorPage() {
     ? `${HEADLESS_FORM_ACTION_URL}/html-action/${form?._id as Id<"forms">}`
     : "";
   const headlessHtml = headlessActionUrl
-    ? buildHeadlessHtml(questions, headlessActionUrl)
+    ? buildHeadlessHtml(blocks, headlessActionUrl)
     : "";
   const apiCurl =
-    HEADLESS_FORM_ACTION_URL && form?._id && questions.length > 0
-      ? buildApiCurl(form._id as string, questions, HEADLESS_FORM_ACTION_URL)
+    HEADLESS_FORM_ACTION_URL && form?._id && inputBlocks.length > 0
+      ? buildApiCurl(form._id as string, inputBlocks, HEADLESS_FORM_ACTION_URL)
       : "";
 
   return (
@@ -186,7 +206,7 @@ function FormEditorPage() {
               How respondents will see the form.
             </p>
             <FormPreview
-              questions={questions}
+              blocks={blocks}
               formTitle={form?.title ?? "Untitled form"}
               formDescription={form?.description}
             />
@@ -220,7 +240,9 @@ function FormEditorPage() {
                   </Button>
                 </div>
                 <pre className="p-4 overflow-x-auto text-xs text-foreground font-mono bg-muted/30 max-h-[480px] overflow-y-auto whitespace-pre">
-                  <code>{apiCurl || "Add questions to see the cURL example."}</code>
+                  <code>
+                    {apiCurl || "Add input blocks to see the cURL example."}
+                  </code>
                 </pre>
               </>
             )}
@@ -265,7 +287,7 @@ function FormEditorPage() {
                 <pre className="p-4 overflow-x-auto text-xs text-foreground font-mono bg-muted/30 max-h-[480px] overflow-y-auto">
                   <code>
                     {headlessHtml ||
-                      "Add questions and set VITE_HEADLESS_FORM_ACTION_URL to see HTML."}
+                      "Add input blocks and set VITE_HEADLESS_FORM_ACTION_URL to see HTML."}
                   </code>
                 </pre>
               </>

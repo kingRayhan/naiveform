@@ -15,7 +15,7 @@ export const BoldFooter = () => {
         <div className="w-full flex flex-col md:flex-row justify-between items-start gap-12 mb-20">
           <div className="max-w-md">
             <h2 className="text-3xl font-bold tracking-tight text-pretty mb-6">
-              Ready to get started? Build forms in minutes.
+              Ready to get started? Build forms in minutes — free.
             </h2>
             <a
               href="mailto:hello@naiveform.com"

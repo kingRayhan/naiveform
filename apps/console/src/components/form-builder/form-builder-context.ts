@@ -1,15 +1,14 @@
 import { createContext, useContext } from "react";
-import type { FormQuestion } from "../../lib/form-builder-types";
+import type { ContentBlock, FormBlock, InputBlock } from "@repo/types";
 
 export interface FormBuilderContextValue {
-  questions: FormQuestion[];
-  setQuestions: (
-    questions: FormQuestion[] | ((prev: FormQuestion[]) => FormQuestion[])
-  ) => void;
-  updateQuestion: (id: string, updates: Partial<FormQuestion>) => void;
-  removeQuestion: (id: string) => void;
-  addQuestion: () => void;
-  reorderQuestions: (oldIndex: number, newIndex: number) => void;
+  blocks: FormBlock[];
+  setBlocks: (blocks: FormBlock[] | ((prev: FormBlock[]) => FormBlock[])) => void;
+  updateBlock: (id: string, updates: Partial<FormBlock>) => void;
+  removeBlock: (id: string) => void;
+  addInputBlock: (type?: InputBlock["type"]) => void;
+  addContentBlock: (type?: ContentBlock["type"]) => void;
+  reorderBlocks: (oldIndex: number, newIndex: number) => void;
   saveForm: () => Promise<void>;
 }
 

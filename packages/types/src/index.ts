@@ -21,3 +21,45 @@ export type SubmitFormError = {
 export type SubmitFormValidationError = {
   errors: ZodError["issues"];
 };
+
+// Block model (form builder + form filler)
+export type {
+  BlockKind,
+  BaseBlock,
+  CommonInputBlock,
+  TextBlock,
+  EmailBlock,
+  PhoneBlock,
+  UrlBlock,
+  LongTextBlock,
+  RadioInputBlock,
+  CheckboxesBlock,
+  DropdownBlock,
+  DateBlock,
+  TimeBlock,
+  DateTimeBlock,
+  NumberBlock,
+  StarRatingBlock,
+  LinearScaleBlock,
+  YesNoBlock,
+  InputBlock,
+  ContentBlockBase,
+  HeadingBlock,
+  ParagraphBlock,
+  ImageBlock,
+  YouTubeEmbedBlock,
+  DividerBlock,
+  ContentBlock,
+  FormBlock,
+  AnswerValue,
+  FormResponse,
+} from "./blocks";
+export {
+  isInputBlock,
+  isContentBlock,
+  getFormBlocks,
+  INPUT_BLOCK_TYPES,
+  CONTENT_BLOCK_TYPES,
+  createEmptyInputBlock,
+  createEmptyContentBlock,
+} from "./blocks";

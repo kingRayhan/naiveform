@@ -1,35 +1,71 @@
-export const QUESTION_TYPES = [
-  { value: "short_text", label: "Short answer" },
-  { value: "long_text", label: "Paragraph" },
-  { value: "multiple_choice", label: "Multiple choice" },
-  { value: "checkboxes", label: "Checkboxes" },
-  { value: "dropdown", label: "Dropdown" },
-  { value: "date", label: "Date" },
-  { value: "star_rating", label: "Star rating" },
-] as const;
+/**
+ * Re-export block model and helpers from @repo/types.
+ * Use FormBlock, InputBlock, ContentBlock, etc. from @repo/types in the editor.
+ */
+import { INPUT_BLOCK_TYPES } from "@repo/types";
+export {
+  INPUT_BLOCK_TYPES,
+  CONTENT_BLOCK_TYPES,
+  createEmptyInputBlock,
+  createEmptyContentBlock,
+  isInputBlock,
+  isContentBlock,
+  getFormBlocks,
+} from "@repo/types";
+export type {
+  FormBlock,
+  InputBlock,
+  ContentBlock,
+} from "@repo/types";
 
-export type QuestionType = (typeof QUESTION_TYPES)[number]["value"];
+/** Legacy alias for SortableQuestionItem: input block type union plus legacy names. */
+export type QuestionType =
+  | import("@repo/types").InputBlock["type"]
+  | "multiple_choice"
+  | "checkboxes"
+  | "short_text";
 
-export const SHORT_TEXT_INPUT_TYPES = [
-  { value: "text" as const, label: "Text" },
-  { value: "email" as const, label: "Email" },
-  { value: "phone" as const, label: "Phone" },
-  { value: "number" as const, label: "Number" },
+/** Legacy alias: InputBlock with optional top-level inputType, ratingMax, required, options and legacy type names. */
+export type FormQuestion = Omit<import("@repo/types").InputBlock, "type"> & {
+  type: QuestionType;
+  options?: string[];
+  inputType?: "text" | "email" | "phone" | "url";
+  ratingMax?: number;
+  required?: boolean;
+};
+
+export type ShortTextInputType = "text" | "email" | "phone" | "url";
+
+/** Legacy: question type options for dropdown (value + label). */
+export const QUESTION_TYPES: { value: QuestionType; label: string }[] = [
+  ...INPUT_BLOCK_TYPES.map((t) => ({ value: t.type as QuestionType, label: t.label })),
+  { value: "multiple_choice" as const, label: "Multiple choice" },
+  { value: "checkboxes" as const, label: "Checkboxes" },
+  { value: "short_text" as const, label: "Short text" },
+].filter(
+  (t, i, arr) => arr.findIndex((x) => x.value === t.value) === i
+) as { value: QuestionType; label: string }[];
+
+export const SHORT_TEXT_INPUT_TYPES: { value: ShortTextInputType; label: string }[] = [
+  { value: "text", label: "Text" },
+  { value: "email", label: "Email" },
+  { value: "phone", label: "Phone" },
+  { value: "url", label: "URL" },
 ];
 
-export type ShortTextInputType = (typeof SHORT_TEXT_INPUT_TYPES)[number]["value"];
-
-export interface FormQuestion {
-  id: string;
-  type: QuestionType;
-  title: string;
-  required: boolean;
-  options?: string[]; // for multiple_choice, checkboxes, dropdown
-  inputType?: ShortTextInputType; // for short_text
-  ratingMax?: number; // for star_rating, default 5
+/** Default options for option-based question types. */
+export function getDefaultOptions(type: QuestionType): string[] {
+  const withOptions: QuestionType[] = [
+    "radio",
+    "checkbox",
+    "dropdown",
+    "multiple_choice",
+    "checkboxes",
+  ];
+  return withOptions.includes(type) ? ["Option 1"] : [];
 }
 
-/** Slug from title for use as question id: lowercase, alphanumeric + underscores. */
+/** Slug from title for block id: lowercase, alphanumeric + underscores. */
 export function slugify(title: string): string {
   const s = title
     .trim()
@@ -39,7 +75,7 @@ export function slugify(title: string): string {
   return s || "field";
 }
 
-/** Return a slug for the title that is unique among existingIds (append -2, -3 if needed). */
+/** Return a slug unique among existingIds (append -2, -3 if needed). */
 export function uniqueSlug(title: string, existingIds: string[]): string {
   const base = slugify(title);
   const set = new Set(existingIds);
@@ -47,30 +83,4 @@ export function uniqueSlug(title: string, existingIds: string[]): string {
   let n = 2;
   while (set.has(`${base}-${n}`)) n++;
   return `${base}-${n}`;
-}
-
-/** Normalize question ids to slug-from-title; handles collisions and empty titles. */
-export function normalizeQuestionIds(questions: FormQuestion[]): FormQuestion[] {
-  const used = new Set<string>();
-  return questions.map((q) => {
-    const id = uniqueSlug(q.title || "field", [...used]);
-    used.add(id);
-    return { ...q, id };
-  });
-}
-
-export function createEmptyQuestion(id: string): FormQuestion {
-  return {
-    id,
-    type: "short_text",
-    title: "",
-    required: false,
-  };
-}
-
-export function getDefaultOptions(type: QuestionType): string[] | undefined {
-  if (type === "multiple_choice" || type === "checkboxes" || type === "dropdown") {
-    return ["Option 1", "Option 2"];
-  }
-  return undefined;
 }

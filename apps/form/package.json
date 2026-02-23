@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 4001",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -12,6 +12,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@repo/convex": "*",
     "@repo/design-system": "*",
+    "@repo/blocks": "*",
     "@repo/types": "*",
     "@tanstack/react-query": "^5.62.0",
     "axios": "^1.13.5",
