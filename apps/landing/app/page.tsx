@@ -1,9 +1,11 @@
 import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
 import { Features } from "@/components/features";
+import { UseCases } from "@/components/use-cases";
+import { HowItWorks } from "@/components/how-it-works";
+import { EverythingIncluded } from "@/components/everything-included";
 import { CtaSection } from "@/components/cta-section";
 import { BoldFooter } from "@/components/footer-bold";
-import { GrowthPlans } from "@/components/growth-plans";
 
 export default function Home() {
   return (
@@ -11,7 +13,9 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Features />
-      <GrowthPlans />
+      <UseCases />
+      <HowItWorks />
+      <EverythingIncluded />
       <CtaSection />
       <BoldFooter />
     </main>

@@ -45,10 +45,10 @@ export function Navbar() {
             Features
           </Link>
           <Link
-            href="#pricing"
+            href="#included"
             className="text-sm font-medium text-zinc-600 hover:text-black transition-colors"
           >
-            Pricing
+            What&apos;s included
           </Link>
           <Link
             href="#"

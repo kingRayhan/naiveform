@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NaiveForm - Simple, Powerful Form Builder",
+  title: "NaiveForm - Free Form Builder",
   description:
-    "Create beautiful forms in minutes. NaiveForm makes form building simple with an intuitive drag-and-drop interface, powerful features, and seamless integrations.",
+    "Create beautiful forms in minutes — free forever. Drag-and-drop builder, unlimited forms & responses, CSV export, webhooks, and API. No credit card required.",
 };
 
 export default function RootLayout({
