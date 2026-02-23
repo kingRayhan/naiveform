@@ -10,7 +10,7 @@ export interface YesNoInputProps {
 export function YesNoInput({
   block,
   register,
-  error,
+  error: _error,
 }: YesNoInputProps) {
   const { id } = block;
   const required = block.settings?.required ?? false;

@@ -1,4 +1,4 @@
-import type { FormBlock, InputBlock } from "@repo/types";
+import type { FormBlock } from "@repo/types";
 import { isInputBlock } from "@repo/types";
 
 function escapeHtml(s: string): string {

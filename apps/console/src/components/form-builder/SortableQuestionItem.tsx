@@ -86,7 +86,7 @@ export function SortableQuestionItem({
   };
 
   const removeOption = (index: number) => {
-    const next = (question.options ?? []).filter((_, i) => i !== index);
+    const next = (question.options ?? []).filter((_: string, i: number) => i !== index);
     onUpdate(question.id, { options: next.length ? next : undefined });
   };
 
@@ -175,7 +175,7 @@ export function SortableQuestionItem({
 
           {hasOptions && (
             <div className="space-y-2 pl-0">
-              {options.map((opt, i) => (
+              {options.map((opt: string, i: number) => (
                 <div key={i} className="flex items-center gap-2">
                   <span className="text-muted-foreground text-sm">
                     {question.type === "multiple_choice"

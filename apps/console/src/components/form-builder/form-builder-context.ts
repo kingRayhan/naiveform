@@ -1,13 +1,13 @@
 import { createContext, useContext } from "react";
-import type { FormBlock } from "@repo/types";
+import type { ContentBlock, FormBlock, InputBlock } from "@repo/types";
 
 export interface FormBuilderContextValue {
   blocks: FormBlock[];
   setBlocks: (blocks: FormBlock[] | ((prev: FormBlock[]) => FormBlock[])) => void;
   updateBlock: (id: string, updates: Partial<FormBlock>) => void;
   removeBlock: (id: string) => void;
-  addInputBlock: (type?: FormBlock["type"]) => void;
-  addContentBlock: (type?: FormBlock["type"]) => void;
+  addInputBlock: (type?: InputBlock["type"]) => void;
+  addContentBlock: (type?: ContentBlock["type"]) => void;
   reorderBlocks: (oldIndex: number, newIndex: number) => void;
   saveForm: () => Promise<void>;
 }

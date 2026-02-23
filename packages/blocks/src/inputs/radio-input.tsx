@@ -10,7 +10,7 @@ export interface RadioInputProps {
 export function RadioInput({
   block,
   register,
-  error,
+  error: _error,
 }: RadioInputProps) {
   const { id, options = [] } = block;
   const required = block.settings?.required ?? false;

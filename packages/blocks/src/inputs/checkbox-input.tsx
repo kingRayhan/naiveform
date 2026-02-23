@@ -16,7 +16,7 @@ export function CheckboxInput({
   setValue,
   watch,
   clearErrors,
-  error,
+  error: _error,
 }: CheckboxInputProps) {
   const { id, options = [] } = block;
   const minSelections = block.settings?.minSelections;
