@@ -1,28 +1,49 @@
+import type { DateBlock, DateTimeBlock, TimeBlock } from "@repo/types";
+import type { UseFormRegister } from "react-hook-form";
 import { defaultInputClass } from "./constants";
 
+export type DateTimeBlockUnion = DateBlock | TimeBlock | DateTimeBlock;
+
 export interface DateTimeInputProps {
-  id: string;
-  type: "date" | "time" | "datetime";
-  placeholder?: string;
+  block: DateTimeBlockUnion;
+  register?: UseFormRegister<Record<string, unknown>>;
+  error?: { message?: string };
   className?: string;
-  disabled?: boolean;
 }
 
 export function DateTimeInput({
-  id,
-  type,
-  placeholder,
+  block,
+  register,
+  error,
   className = defaultInputClass,
-  disabled = false,
 }: DateTimeInputProps) {
+  const { id, type } = block;
+  const required = block.settings?.required ?? false;
   const inputType = type === "datetime" ? "datetime-local" : type;
+  const settings = block.settings as { minDate?: string; maxDate?: string } | undefined;
+  const min = type !== "time" ? settings?.minDate : undefined;
+  const max = type !== "time" ? settings?.maxDate : undefined;
+  const disabled = !register;
+
+  if (disabled) {
+    return (
+      <input
+        id={id}
+        type={inputType}
+        className={className}
+        disabled
+      />
+    );
+  }
   return (
     <input
       id={id}
       type={inputType}
-      placeholder={placeholder}
+      {...register(id, { required: required ? "This field is required" : false })}
+      min={min}
+      max={max}
       className={className}
-      disabled={disabled}
+      aria-invalid={!!error}
     />
   );
 }

@@ -1,32 +1,30 @@
+import type { UrlBlock } from "@repo/types";
 import type { UseFormRegister } from "react-hook-form";
 import { UrlIcon } from "./icons";
 import { defaultInputClass } from "./constants";
 
 export interface UrlInputProps {
-  id: string;
+  block: UrlBlock;
   register?: UseFormRegister<Record<string, unknown>>;
-  required?: boolean;
   error?: { message?: string };
-  placeholder?: string;
-  minLength?: number;
-  maxLength?: number;
   className?: string;
-  disabled?: boolean;
 }
 
 export function UrlInput({
-  id,
+  block,
   register,
-  required = false,
   error,
-  placeholder = "Your answer",
-  minLength,
-  maxLength,
   className = defaultInputClass,
-  disabled = false,
 }: UrlInputProps) {
+  const { id, settings } = block;
+  const required = settings?.required ?? false;
+  const placeholder = settings?.placeholder ?? "Your answer";
+  const minLength = settings?.minLength;
+  const maxLength = settings?.maxLength;
   const inputClass = `${className} pl-9`;
-  if (disabled || !register) {
+  const disabled = !register;
+
+  if (disabled) {
     return (
       <div className="relative">
         <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">

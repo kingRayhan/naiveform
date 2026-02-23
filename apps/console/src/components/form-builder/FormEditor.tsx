@@ -16,7 +16,7 @@ import {
 } from "@dnd-kit/sortable";
 import { useFormBuilder } from "./form-builder-context";
 import { SortableBlockItem } from "./SortableBlockItem";
-import { Button } from "@repo/design-system/button";
+import { AddBlockDialog } from "./AddBlockDialog";
 
 export function FormEditor() {
   const {
@@ -26,7 +26,6 @@ export function FormEditor() {
     removeBlock,
     addInputBlock,
     addContentBlock,
-    reorderBlocks,
   } = useFormBuilder();
 
   const sensors = useSensors(
@@ -76,24 +75,10 @@ export function FormEditor() {
           ))}
         </SortableContext>
 
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="border-dashed"
-            onClick={() => addInputBlock()}
-          >
-            + Add input
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="border-dashed"
-            onClick={() => addContentBlock()}
-          >
-            + Add content
-          </Button>
-        </div>
+        <AddBlockDialog
+          onAddContent={(type) => addContentBlock(type)}
+          onAddInput={(type) => addInputBlock(type)}
+        />
       </DndContext>
     </div>
   );

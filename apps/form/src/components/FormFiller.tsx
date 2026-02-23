@@ -1,24 +1,33 @@
 "use client";
 
+import {
+  CheckboxInput,
+  ContentBlockRenderer,
+  DateTimeInput,
+  defaultInputClass,
+  DropdownInput,
+  EmailInput,
+  LinearScaleInput,
+  LongTextInput,
+  NumberInput,
+  PhoneInput,
+  RadioInput,
+  StarRatingInput,
+  TextInput,
+  UrlInput,
+  YesNoInput,
+} from "@repo/blocks";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
 import { useQuery } from "@repo/convex/react";
 import { Button } from "@repo/design-system/button";
-import type { SubmitFormSuccess } from "@repo/types";
+import type { InputBlock, SubmitFormSuccess } from "@repo/types";
 import { getFormBlocks, isInputBlock } from "@repo/types";
-import type { FormBlock, InputBlock } from "@repo/types";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import {
-  defaultInputClass,
-  EmailInput,
-  PhoneInput,
-  TextInput,
-  UrlInput,
-} from "@repo/blocks";
 import React, { useEffect, useRef, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 type FormData = Record<string, string | string[]>;
 
@@ -255,111 +264,11 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
       <div className="space-y-6">
         {blocks.map((block) => {
           if (block.kind === "content") {
-            if (block.type === "heading") {
-              const level =
-                "settings" in block && block.settings?.level
-                  ? block.settings.level
-                  : 2;
-              const sizeClass =
-                level === 1
-                  ? "text-2xl"
-                  : level === 2
-                    ? "text-xl"
-                    : level === 3
-                      ? "text-lg"
-                      : level === 4
-                        ? "text-base"
-                        : level === 5
-                          ? "text-sm"
-                          : "text-xs";
-              const text = "text" in block ? block.text : "";
-              return React.createElement(
-                `h${level}`,
-                {
-                  key: block.id,
-                  className: `${sizeClass} font-semibold ${text ? "text-foreground" : "text-muted-foreground"}`,
-                },
-                text || "Heading text"
-              );
-            }
-            if (block.type === "paragraph") {
-              const align =
-                "settings" in block && block.settings?.align
-                  ? block.settings.align
-                  : "left";
-              const fontSize =
-                "settings" in block && block.settings?.fontSize
-                  ? block.settings.fontSize
-                  : "medium";
-              const alignClass =
-                align === "left"
-                  ? "text-left"
-                  : align === "center"
-                    ? "text-center"
-                    : "text-right";
-              const sizeClass =
-                fontSize === "small"
-                  ? "text-sm"
-                  : fontSize === "large"
-                    ? "text-lg"
-                    : "text-base";
-              const content = "content" in block ? block.content : "";
-              return (
-                <p
-                  key={block.id}
-                  className={`whitespace-pre-wrap ${alignClass} ${sizeClass} ${content ? "text-foreground" : "text-muted-foreground"}`}
-                >
-                  {content || "Paragraph content"}
-                </p>
-              );
-            }
-            if (block.type === "image") {
-              const url = "imageUrl" in block ? block.imageUrl : "";
-              if (!url)
-                return (
-                  <div key={block.id} className="text-muted-foreground text-sm">
-                    Image
-                  </div>
-                );
-              const alt =
-                "settings" in block && block.settings?.alt
-                  ? block.settings.alt
-                  : "";
-              return (
-                <img
-                  key={block.id}
-                  src={url}
-                  alt={alt}
-                  className="max-w-full h-auto rounded-md"
-                />
-              );
-            }
-            if (block.type === "youtube_embed") {
-              const vid = "youtubeVideoId" in block ? block.youtubeVideoId : "";
-              if (!vid)
-                return (
-                  <div key={block.id} className="text-muted-foreground text-sm">
-                    YouTube video
-                  </div>
-                );
-              return (
-                <div
-                  key={block.id}
-                  className="aspect-video rounded-md overflow-hidden bg-muted"
-                >
-                  <iframe
-                    title="YouTube"
-                    src={`https://www.youtube.com/embed/${vid}`}
-                    className="w-full h-full"
-                    allowFullScreen
-                  />
-                </div>
-              );
-            }
-            if (block.type === "divider") {
-              return <hr key={block.id} className="border-border" />;
-            }
-            return null;
+            return (
+              <div key={block.id}>
+                <ContentBlockRenderer block={block} />
+              </div>
+            );
           }
           return (
             <InputBlockField
@@ -369,7 +278,6 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
               control={control}
               setValue={setValue}
               watch={watch}
-              setError={setError}
               clearErrors={clearErrors}
               error={errors[block.id]}
             />
@@ -412,7 +320,6 @@ function InputBlockField({
   control,
   setValue,
   watch,
-  setError,
   clearErrors,
   error,
 }: {
@@ -421,12 +328,10 @@ function InputBlockField({
   control: ReturnType<typeof useForm<FormData>>["control"];
   setValue: ReturnType<typeof useForm<FormData>>["setValue"];
   watch: ReturnType<typeof useForm<FormData>>["watch"];
-  setError: ReturnType<typeof useForm<FormData>>["setError"];
   clearErrors: ReturnType<typeof useForm<FormData>>["clearErrors"];
   error: { message?: string } | undefined;
 }) {
   const { id, type, title } = block;
-  const options = "options" in block ? (block.options ?? []) : [];
   const required = block.settings?.required ?? false;
   const labelId = `${id}-label`;
   const singleInputTypes = [
@@ -463,282 +368,56 @@ function InputBlockField({
         <p className="text-sm text-muted-foreground">{block.description}</p>
       )}
 
-      {type === "text" && (() => {
-        const s = block.settings as { minLength?: number; maxLength?: number } | undefined;
-        return (
-          <TextInput
-            id={id}
-            register={register as never}
-            required={required}
-            error={error}
-            placeholder={block.settings?.placeholder}
-            minLength={s?.minLength}
-            maxLength={s?.maxLength}
-            className={inputClass}
-          />
-        );
-      })()}
-
-      {type === "phone" && (() => {
-        const s = block.settings as { minLength?: number; maxLength?: number } | undefined;
-        return (
-          <PhoneInput
-            id={id}
-            register={register as never}
-            required={required}
-            error={error}
-            placeholder={block.settings?.placeholder}
-            minLength={s?.minLength}
-            maxLength={s?.maxLength}
-            className={inputClass}
-          />
-        );
-      })()}
-
-      {type === "url" && (() => {
-        const s = block.settings as { minLength?: number; maxLength?: number } | undefined;
-        return (
-          <UrlInput
-            id={id}
-            register={register as never}
-            required={required}
-            error={error}
-            placeholder={block.settings?.placeholder}
-            minLength={s?.minLength}
-            maxLength={s?.maxLength}
-            className={inputClass}
-          />
-        );
-      })()}
-
+      {type === "text" && (
+        <TextInput block={block} register={register as never} error={error} className={inputClass} />
+      )}
+      {type === "phone" && (
+        <PhoneInput block={block} register={register as never} error={error} className={inputClass} />
+      )}
+      {type === "url" && (
+        <UrlInput block={block} register={register as never} error={error} className={inputClass} />
+      )}
       {type === "email" && (
-        <EmailInput
-          id={id}
-          register={register as never}
-          required={required}
-          error={error}
-          placeholder={block.settings?.placeholder}
-          minLength={(block.settings as { minLength?: number })?.minLength}
-          maxLength={(block.settings as { maxLength?: number })?.maxLength}
-          className={inputClass}
-        />
+        <EmailInput block={block} register={register as never} error={error} className={inputClass} />
       )}
-
-      {type === "long_text" &&
-        (() => {
-          const s = block.settings as
-            | { minLength?: number; maxLength?: number; rows?: number }
-            | undefined;
-          return (
-            <textarea
-              id={id}
-              {...register(id, {
-                required: required ? "This field is required" : false,
-                minLength: s?.minLength
-                  ? {
-                      value: s.minLength,
-                      message: `At least ${s.minLength} characters`,
-                    }
-                  : undefined,
-                maxLength: s?.maxLength
-                  ? {
-                      value: s.maxLength,
-                      message: `At most ${s.maxLength} characters`,
-                    }
-                  : undefined,
-              })}
-              rows={s?.rows ?? 3}
-              minLength={s?.minLength}
-              maxLength={s?.maxLength}
-              placeholder={block.settings?.placeholder ?? "Your answer"}
-              className={inputClass}
-            />
-          );
-        })()}
-
+      {type === "long_text" && (
+        <LongTextInput block={block} register={register as never} error={error} className={inputClass} />
+      )}
       {type === "radio" && (
-        <div className="space-y-2" role="group" aria-labelledby={labelId}>
-          {options.map((opt: string, i: number) => {
-            const optionId = `${id}-option-${i}`;
-            return (
-              <label
-                key={i}
-                htmlFor={optionId}
-                className="flex items-center gap-2 text-foreground"
-              >
-                <input
-                  id={optionId}
-                  type="radio"
-                  {...register(id, {
-                    required: required ? "Select an option" : false,
-                  })}
-                  value={opt}
-                  className="rounded-full border-input"
-                />
-                <span>{opt || `Option ${i + 1}`}</span>
-              </label>
-            );
-          })}
-        </div>
+        <RadioInput block={block} register={register as never} error={error} />
       )}
-
       {type === "checkbox" && (
-        <Controller
-          name={id}
-          control={control}
-          rules={{
-            validate: (v) => {
-              const arr = Array.isArray(v) ? v : [];
-              const minS = block.settings?.minSelections;
-              const maxS = block.settings?.maxSelections;
-              if (minS != null && arr.length < minS)
-                return `Select at least ${minS} option(s)`;
-              if (maxS != null && arr.length > maxS)
-                return `Select at most ${maxS} option(s)`;
-              return true;
-            },
-          }}
-          render={({ field }) => (
-            <CheckboxGroup
-              name={id}
-              fieldId={id}
-              options={options}
-              value={field.value as string[] | undefined}
-              onChange={field.onChange}
-              setValue={setValue}
-              watch={watch}
-              clearErrors={clearErrors}
-            />
-          )}
+        <CheckboxInput
+          block={block}
+          control={control as never}
+          setValue={setValue as never}
+          watch={watch as never}
+          clearErrors={clearErrors as never}
+          error={error}
         />
       )}
-
       {type === "dropdown" && (
-        <select
-          id={id}
-          {...register(id, { required: required ? "Choose an option" : false })}
-          className={inputClass}
-        >
-          <option value="">{block.settings?.placeholder ?? "Choose"}</option>
-          {options.map((opt: string, i: number) => (
-            <option key={i} value={opt}>
-              {opt || `Option ${i + 1}`}
-            </option>
-          ))}
-        </select>
+        <DropdownInput block={block} register={register as never} error={error} className={inputClass} />
       )}
-
       {(type === "date" || type === "time" || type === "datetime") && (
-        <input
-          id={id}
-          {...register(id, {
-            required: required ? "This field is required" : false,
-          })}
-          type={type === "datetime" ? "datetime-local" : type}
-          min={
-            type !== "time" && "minDate" in (block.settings ?? {})
-              ? (block.settings as { minDate?: string }).minDate
-              : undefined
-          }
-          max={
-            type !== "time" && "maxDate" in (block.settings ?? {})
-              ? (block.settings as { maxDate?: string }).maxDate
-              : undefined
-          }
-          className={inputClass}
-        />
+        <DateTimeInput block={block} register={register as never} error={error} className={inputClass} />
       )}
-
       {type === "number" && (
-        <input
-          id={id}
-          {...register(id, {
-            required: required ? "This field is required" : false,
-            min:
-              block.settings?.min != null
-                ? {
-                    value: block.settings.min,
-                    message: `Minimum value is ${block.settings.min}`,
-                  }
-                : undefined,
-            max:
-              block.settings?.max != null
-                ? {
-                    value: block.settings.max,
-                    message: `Maximum value is ${block.settings.max}`,
-                  }
-                : undefined,
-          })}
-          type="number"
-          min={block.settings?.min}
-          max={block.settings?.max}
-          step={block.settings?.step}
-          placeholder={block.settings?.placeholder}
-          className={inputClass}
-        />
+        <NumberInput block={block} register={register as never} error={error} className={inputClass} />
       )}
-
       {type === "star_rating" && (
-        <StarRatingInput
-          id={id}
-          max={Math.min(10, Math.max(3, block.settings?.ratingMax ?? 5))}
-          required={required}
-          control={control}
+        <StarRatingInput block={block} control={control as never} labelId={labelId} />
+      )}
+      {type === "linear_scale" && "settings" in block && block.settings && (
+        <LinearScaleInput
+          block={block}
+          register={register as never}
+          error={error}
+          className={`${inputClass} w-20`}
         />
       )}
-
-      {type === "linear_scale" && "settings" in block && block.settings && (
-        <div
-          className="flex items-center gap-2 flex-wrap"
-          role="group"
-          aria-labelledby={labelId}
-        >
-          <span className="text-sm text-muted-foreground">
-            {block.settings.minLabel ?? block.settings.min}
-          </span>
-          <input
-            id={id}
-            type="number"
-            min={block.settings.min}
-            max={block.settings.max}
-            {...register(id, {
-              required: block.settings.required
-                ? "This field is required"
-                : false,
-            })}
-            className={`${inputClass} w-20`}
-          />
-          <span className="text-sm text-muted-foreground">
-            {block.settings.maxLabel ?? block.settings.max}
-          </span>
-        </div>
-      )}
-
       {type === "yes_no" && (
-        <div className="flex gap-4" role="group" aria-labelledby={labelId}>
-          <label htmlFor={`${id}-yes`} className="flex items-center gap-2">
-            <input
-              id={`${id}-yes`}
-              type="radio"
-              {...register(id, {
-                required: required ? "Select an option" : false,
-              })}
-              value="yes"
-              className="rounded-full border-input"
-            />
-            <span>Yes</span>
-          </label>
-          <label htmlFor={`${id}-no`} className="flex items-center gap-2">
-            <input
-              id={`${id}-no`}
-              type="radio"
-              {...register(id)}
-              value="no"
-              className="rounded-full border-input"
-            />
-            <span>No</span>
-          </label>
-        </div>
+        <YesNoInput block={block} register={register as never} error={error} />
       )}
 
       {type !== "star_rating" && error && (
@@ -746,138 +425,6 @@ function InputBlockField({
           {error.message}
         </p>
       )}
-    </div>
-  );
-}
-
-function StarRatingInput({
-  id,
-  max,
-  required,
-  control,
-}: {
-  id: string;
-  max: number;
-  required: boolean;
-  control: ReturnType<typeof useForm<FormData>>["control"];
-}) {
-  const [hover, setHover] = useState(0);
-
-  return (
-    <Controller
-      name={id}
-      control={control}
-      rules={{
-        required: required ? "Please select a rating" : false,
-        validate: (v) => {
-          const val = typeof v === "string" ? v : "";
-          if (!val && !required) return true;
-          const n = parseInt(val, 10);
-          if (Number.isNaN(n) || n < 1 || n > max)
-            return `Please select between 1 and ${max}`;
-          return true;
-        },
-      }}
-      render={({ field, fieldState }) => {
-        const selected = field.value ? parseInt(String(field.value), 10) : 0;
-        return (
-          <div className="flex flex-col gap-1">
-            <div
-              className="flex gap-1"
-              role="group"
-              aria-labelledby={`${id}-label`}
-            >
-              {Array.from({ length: max }, (_, i) => i + 1).map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => field.onChange(String(star))}
-                  onBlur={field.onBlur}
-                  onMouseEnter={() => setHover(star)}
-                  onMouseLeave={() => setHover(0)}
-                  className="text-2xl transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded p-0.5"
-                  aria-label={`${star} star${star > 1 ? "s" : ""}`}
-                >
-                  {(hover || selected) >= star ? (
-                    <span className="text-amber-400">★</span>
-                  ) : (
-                    <span className="text-muted-foreground/50">☆</span>
-                  )}
-                </button>
-              ))}
-            </div>
-            {fieldState.error?.message && (
-              <p className="text-sm text-destructive" role="alert">
-                {fieldState.error.message}
-              </p>
-            )}
-          </div>
-        );
-      }}
-    />
-  );
-}
-
-function CheckboxGroup({
-  name,
-  fieldId,
-  options,
-  value: valueProp,
-  onChange: onChangeProp,
-  setValue,
-  watch,
-  clearErrors,
-}: {
-  name: string;
-  fieldId: string;
-  options: string[];
-  value?: string[];
-  onChange?: (value: string[]) => void;
-  setValue: ReturnType<typeof useForm<FormData>>["setValue"];
-  watch: ReturnType<typeof useForm<FormData>>["watch"];
-  clearErrors: ReturnType<typeof useForm<FormData>>["clearErrors"];
-}) {
-  const watched = watch(name) as string[] | undefined;
-  const arr = Array.isArray(valueProp)
-    ? valueProp
-    : Array.isArray(watched)
-      ? watched
-      : [];
-
-  const toggle = (opt: string) => {
-    clearErrors(name);
-    const next = arr.includes(opt)
-      ? arr.filter((o) => o !== opt)
-      : [...arr, opt];
-    if (onChangeProp) onChangeProp(next);
-    else setValue(name, next);
-  };
-
-  return (
-    <div
-      className="space-y-2"
-      role="group"
-      aria-labelledby={`${fieldId}-label`}
-    >
-      {options.map((opt: string, i: number) => {
-        const optionId = `${fieldId}-option-${i}`;
-        return (
-          <label
-            key={i}
-            htmlFor={optionId}
-            className="flex items-center gap-2 text-foreground"
-          >
-            <input
-              id={optionId}
-              type="checkbox"
-              checked={arr.includes(opt)}
-              onChange={() => toggle(opt)}
-              className="rounded border-input"
-            />
-            <span>{opt || `Option ${i + 1}`}</span>
-          </label>
-        );
-      })}
     </div>
   );
 }

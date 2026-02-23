@@ -294,7 +294,10 @@ export function createEmptyInputBlock(
     return { ...base, options: ["Option 1", "Option 2"] } as InputBlock;
   }
   if (type === "linear_scale") {
-    return { ...base, settings: { required: false, min: 1, max: 5 } } as InputBlock;
+    return {
+      ...base,
+      settings: { required: false, min: 1, max: 5 },
+    } as InputBlock;
   }
   return base as InputBlock;
 }
@@ -308,7 +311,7 @@ export function createEmptyContentBlock(
   if (type === "heading") return { ...base, text: "" } as ContentBlock;
   if (type === "paragraph") return { ...base, content: "" } as ContentBlock;
   if (type === "image") return { ...base, imageUrl: "" } as ContentBlock;
-  if (type === "youtube_embed") return { ...base, youtubeVideoId: "" } as ContentBlock;
+  if (type === "youtube_embed")
+    return { ...base, youtubeVideoId: "" } as ContentBlock;
   return base as ContentBlock;
 }
-

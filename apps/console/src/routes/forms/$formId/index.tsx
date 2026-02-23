@@ -52,7 +52,11 @@ function sampleValue(b: InputBlock): string {
   }
 }
 
-function buildApiCurl(formId: string, inputBlocks: InputBlock[], baseUrl: string): string {
+function buildApiCurl(
+  formId: string,
+  inputBlocks: InputBlock[],
+  baseUrl: string
+): string {
   const url = `${baseUrl}/form-submission/${formId}`;
   const values: Record<string, string> = {};
   for (const b of inputBlocks) {
@@ -96,9 +100,9 @@ function FormEditorPage() {
   const inputBlocks = blocks.filter(isInputBlock);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
-  const [previewTab, setPreviewTab] = useState<
-    "preview" | "headless" | "api"
-  >("preview");
+  const [previewTab, setPreviewTab] = useState<"preview" | "headless" | "api">(
+    "preview"
+  );
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -236,7 +240,9 @@ function FormEditorPage() {
                   </Button>
                 </div>
                 <pre className="p-4 overflow-x-auto text-xs text-foreground font-mono bg-muted/30 max-h-[480px] overflow-y-auto whitespace-pre">
-                  <code>{apiCurl || "Add input blocks to see the cURL example."}</code>
+                  <code>
+                    {apiCurl || "Add input blocks to see the cURL example."}
+                  </code>
                 </pre>
               </>
             )}

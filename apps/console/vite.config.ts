@@ -8,6 +8,7 @@ import tanstackRouter from "@tanstack/router-plugin/vite";
 export default defineConfig({
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
+    dedupe: ["react", "react-dom", "react-hook-form"],
   },
   build: {
     rollupOptions: {

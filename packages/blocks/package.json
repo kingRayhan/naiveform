@@ -9,7 +9,8 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@repo/types": "*"
+    "@repo/types": "*",
+    "class-variance-authority": "^0.7.1"
   },
   "peerDependencies": {
     "react": ">=18",

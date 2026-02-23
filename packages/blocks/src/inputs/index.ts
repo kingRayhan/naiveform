@@ -17,7 +17,7 @@ export type { CheckboxInputProps } from "./checkbox-input";
 export { DropdownInput } from "./dropdown-input";
 export type { DropdownInputProps } from "./dropdown-input";
 export { DateTimeInput } from "./date-time-input";
-export type { DateTimeInputProps } from "./date-time-input";
+export type { DateTimeInputProps, DateTimeBlockUnion } from "./date-time-input";
 export { NumberInput } from "./number-input";
 export type { NumberInputProps } from "./number-input";
 export { StarRatingInput } from "./star-rating-input";

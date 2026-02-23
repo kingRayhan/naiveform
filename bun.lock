@@ -134,6 +134,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@repo/types": "*",
+        "class-variance-authority": "^0.7.1",
       },
       "devDependencies": {
         "@types/react": "^19",

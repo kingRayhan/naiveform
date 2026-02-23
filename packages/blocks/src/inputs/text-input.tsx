@@ -1,31 +1,28 @@
+import type { TextBlock } from "@repo/types";
 import type { UseFormRegister } from "react-hook-form";
 import { defaultInputClass } from "./constants";
 
 export interface TextInputProps {
-  id: string;
+  block: TextBlock;
   register?: UseFormRegister<Record<string, unknown>>;
-  required?: boolean;
   error?: { message?: string };
-  placeholder?: string;
-  minLength?: number;
-  maxLength?: number;
   className?: string;
-  /** When true, renders a disabled read-only input (e.g. for preview). */
-  disabled?: boolean;
 }
 
 export function TextInput({
-  id,
+  block,
   register,
-  required = false,
   error,
-  placeholder = "Your answer",
-  minLength,
-  maxLength,
   className = defaultInputClass,
-  disabled = false,
 }: TextInputProps) {
-  if (disabled || !register) {
+  const { id, settings } = block;
+  const required = settings?.required ?? false;
+  const placeholder = settings?.placeholder ?? "Your answer";
+  const minLength = settings?.minLength;
+  const maxLength = settings?.maxLength;
+  const disabled = !register;
+
+  if (disabled) {
     return (
       <input
         id={id}

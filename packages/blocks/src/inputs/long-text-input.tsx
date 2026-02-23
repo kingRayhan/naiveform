@@ -1,28 +1,56 @@
+import type { LongTextBlock } from "@repo/types";
+import type { UseFormRegister } from "react-hook-form";
 import { defaultInputClass } from "./constants";
 
 export interface LongTextInputProps {
-  id: string;
-  placeholder?: string;
-  rows?: number;
+  block: LongTextBlock;
+  register?: UseFormRegister<Record<string, unknown>>;
+  error?: { message?: string };
   className?: string;
-  disabled?: boolean;
 }
 
 export function LongTextInput({
-  id,
-  placeholder = "Your answer",
-  rows = 3,
+  block,
+  register,
+  error,
   className = defaultInputClass,
-  disabled = false,
 }: LongTextInputProps) {
+  const { id, settings } = block;
+  const required = settings?.required ?? false;
+  const placeholder = settings?.placeholder ?? "Your answer";
+  const rows = settings?.rows ?? 3;
+  const minLength = settings?.minLength;
+  const maxLength = settings?.maxLength;
+  const disabled = !register;
+
+  if (disabled) {
+    return (
+      <textarea
+        id={id}
+        rows={rows}
+        placeholder={placeholder}
+        className={className}
+        disabled
+        readOnly
+      />
+    );
+  }
   return (
     <textarea
       id={id}
       rows={rows}
       placeholder={placeholder}
+      {...register(id, {
+        required: required ? "This field is required" : false,
+        minLength: minLength
+          ? { value: minLength, message: `At least ${minLength} characters` }
+          : undefined,
+        maxLength: maxLength
+          ? { value: maxLength, message: `At most ${maxLength} characters` }
+          : undefined,
+      })}
       className={className}
-      disabled={disabled}
-      readOnly={disabled}
+      aria-invalid={!!error}
     />
   );
 }

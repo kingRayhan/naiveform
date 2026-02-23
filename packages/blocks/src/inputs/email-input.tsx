@@ -1,32 +1,30 @@
+import type { EmailBlock } from "@repo/types";
 import type { UseFormRegister } from "react-hook-form";
 import { defaultInputClass } from "./constants";
 
 export interface EmailInputProps {
-  id: string;
+  block: EmailBlock;
   register?: UseFormRegister<Record<string, unknown>>;
-  required?: boolean;
   error?: { message?: string };
-  placeholder?: string;
-  minLength?: number;
-  maxLength?: number;
   className?: string;
-  disabled?: boolean;
 }
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function EmailInput({
-  id,
+  block,
   register,
-  required = false,
   error,
-  placeholder = "you@example.com",
-  minLength,
-  maxLength,
   className = defaultInputClass,
-  disabled = false,
 }: EmailInputProps) {
-  if (disabled || !register) {
+  const { id, settings } = block;
+  const required = settings?.required ?? false;
+  const placeholder = settings?.placeholder ?? "you@example.com";
+  const minLength = settings?.minLength;
+  const maxLength = settings?.maxLength;
+  const disabled = !register;
+
+  if (disabled) {
     return (
       <input
         id={id}
@@ -38,8 +36,8 @@ export function EmailInput({
       />
     );
   }
-  const validate = (v: string | string[]) => {
-    const val = typeof v === "string" ? v : "";
+  const validate = (value: unknown) => {
+    const val = typeof value === "string" ? value : Array.isArray(value) ? value[0] ?? "" : "";
     if (!val && !required) return true;
     if (required && !val) return "This field is required";
     if (!emailRegex.test(val)) return "Please enter a valid email address";
