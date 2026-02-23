@@ -36,8 +36,7 @@ function FormFillerForm({
       payload: Record<string, string | string[]>;
       formId: string;
     }) => Promise<
-      | { redirect?: string; success?: SubmitFormSuccess }
-      | undefined
+      { redirect?: string; success?: SubmitFormSuccess } | undefined
     >;
     isPending: boolean;
   };
@@ -70,7 +69,7 @@ function FormFillerForm({
   } = useForm<FormRendererValues>({
     defaultValues,
     resolver: zodResolver(schema) as Resolver<FormRendererValues>,
-    mode: "onSubmit",
+    mode: "onChange",
   });
 
   const onSubmit = async (data: FormRendererValues) => {
