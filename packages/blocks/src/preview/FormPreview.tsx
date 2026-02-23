@@ -66,7 +66,9 @@ export function FormPreview({
                   )}
                 </label>
                 {q.description && (
-                  <p className="text-sm text-muted-foreground">{q.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {q.description}
+                  </p>
                 )}
 
                 {q.type === "text" && (

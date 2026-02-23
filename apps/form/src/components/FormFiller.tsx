@@ -1,41 +1,24 @@
 "use client";
 
 import {
-  CheckboxInput,
-  ContentBlockRenderer,
-  DateTimeInput,
-  defaultInputClass,
-  DropdownInput,
-  EmailInput,
-  LinearScaleInput,
-  LongTextInput,
-  NumberInput,
-  PhoneInput,
-  RadioInput,
-  StarRatingInput,
-  TextInput,
-  UrlInput,
-  YesNoInput,
+  FormRenderer,
+  type FormRendererValues,
 } from "@repo/blocks";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
 import { useQuery } from "@repo/convex/react";
 import { Button } from "@repo/design-system/button";
-import type { InputBlock, SubmitFormSuccess } from "@repo/types";
+import type { SubmitFormSuccess } from "@repo/types";
 import { getFormBlocks, isInputBlock } from "@repo/types";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-
-type FormData = Record<string, string | string[]>;
 
 interface FormFillerProps {
   formIdOrSlug: string;
 }
-
-const inputClass = defaultInputClass;
 
 export function FormFiller({ formIdOrSlug }: FormFillerProps) {
   const router = useRouter();
@@ -86,7 +69,7 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
   const blocks = form ? getFormBlocks(form) : [];
   const inputBlocks = blocks.filter(isInputBlock);
 
-  const defaultValues: FormData = {};
+  const defaultValues: FormRendererValues = {};
   for (const b of inputBlocks) {
     if (b.type === "checkbox") defaultValues[b.id] = [];
     else {
@@ -108,17 +91,16 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
     watch,
     setError,
     clearErrors,
-  } = useForm<FormData>({
+  } = useForm<FormRendererValues>({
     defaultValues,
     mode: "onBlur",
   });
 
-  // Apply default values once when form/blocks first load (e.g. after async fetch)
   const defaultsAppliedRef = useRef(false);
   useEffect(() => {
     if (inputBlocks.length > 0 && !defaultsAppliedRef.current) {
       defaultsAppliedRef.current = true;
-      const initial: FormData = {};
+      const initial: FormRendererValues = {};
       for (const b of inputBlocks) {
         if (b.type === "checkbox") initial[b.id] = [];
         else {
@@ -135,7 +117,6 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputBlocks.length, reset]);
 
-  // Clear submit error when user interacts with the form
   useEffect(() => {
     if (submitError) {
       const timer = setTimeout(() => setSubmitError(null), 5000);
@@ -215,7 +196,7 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
     );
   }
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: FormRendererValues) => {
     for (const b of inputBlocks) {
       if (b.type === "checkbox" && b.settings?.required) {
         const val = data[b.id];
@@ -254,36 +235,17 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-3xl">
-      <div className="mb-6 border-b border-border pb-6">
-        <h1 className="text-2xl font-semibold text-foreground">{form.title}</h1>
-        {form.description && (
-          <p className="mt-2 text-muted-foreground">{form.description}</p>
-        )}
-      </div>
-
-      <div className="space-y-6">
-        {blocks.map((block) => {
-          if (block.kind === "content") {
-            return (
-              <div key={block.id}>
-                <ContentBlockRenderer block={block} />
-              </div>
-            );
-          }
-          return (
-            <InputBlockField
-              key={block.id}
-              block={block}
-              register={register}
-              control={control}
-              setValue={setValue}
-              watch={watch}
-              clearErrors={clearErrors}
-              error={errors[block.id]}
-            />
-          );
-        })}
-      </div>
+      <FormRenderer
+        blocks={blocks}
+        formTitle={form.title}
+        formDescription={form.description ?? undefined}
+        register={register}
+        control={control}
+        errors={errors}
+        setValue={setValue}
+        watch={watch}
+        clearErrors={clearErrors}
+      />
 
       {submitError && (
         <div className="mt-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
@@ -311,120 +273,5 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
         </a>
       </p>
     </form>
-  );
-}
-
-function InputBlockField({
-  block,
-  register,
-  control,
-  setValue,
-  watch,
-  clearErrors,
-  error,
-}: {
-  block: InputBlock;
-  register: ReturnType<typeof useForm<FormData>>["register"];
-  control: ReturnType<typeof useForm<FormData>>["control"];
-  setValue: ReturnType<typeof useForm<FormData>>["setValue"];
-  watch: ReturnType<typeof useForm<FormData>>["watch"];
-  clearErrors: ReturnType<typeof useForm<FormData>>["clearErrors"];
-  error: { message?: string } | undefined;
-}) {
-  const { id, type, title } = block;
-  const required = block.settings?.required ?? false;
-  const labelId = `${id}-label`;
-  const singleInputTypes = [
-    "text",
-    "phone",
-    "url",
-    "email",
-    "long_text",
-    "dropdown",
-    "date",
-    "time",
-    "datetime",
-    "number",
-  ];
-  const hasSingleInput =
-    singleInputTypes.includes(type) ||
-    (type === "linear_scale" && "settings" in block);
-
-  const label = (
-    <label
-      id={labelId}
-      htmlFor={hasSingleInput ? id : undefined}
-      className="block text-sm font-medium text-foreground"
-    >
-      {title || "(Untitled question)"}
-      {required && <span className="text-destructive ml-0.5">*</span>}
-    </label>
-  );
-
-  return (
-    <div className="space-y-2">
-      {label}
-      {block.description && (
-        <p className="text-sm text-muted-foreground">{block.description}</p>
-      )}
-
-      {type === "text" && (
-        <TextInput block={block} register={register as never} error={error} className={inputClass} />
-      )}
-      {type === "phone" && (
-        <PhoneInput block={block} register={register as never} error={error} className={inputClass} />
-      )}
-      {type === "url" && (
-        <UrlInput block={block} register={register as never} error={error} className={inputClass} />
-      )}
-      {type === "email" && (
-        <EmailInput block={block} register={register as never} error={error} className={inputClass} />
-      )}
-      {type === "long_text" && (
-        <LongTextInput block={block} register={register as never} error={error} className={inputClass} />
-      )}
-      {type === "radio" && (
-        <RadioInput block={block} register={register as never} error={error} />
-      )}
-      {type === "checkbox" && (
-        <CheckboxInput
-          block={block}
-          control={control as never}
-          setValue={setValue as never}
-          watch={watch as never}
-          clearErrors={clearErrors as never}
-          error={error}
-        />
-      )}
-      {type === "dropdown" && (
-        <DropdownInput block={block} register={register as never} error={error} className={inputClass} />
-      )}
-      {(type === "date" || type === "time" || type === "datetime") && (
-        <DateTimeInput block={block} register={register as never} error={error} className={inputClass} />
-      )}
-      {type === "number" && (
-        <NumberInput block={block} register={register as never} error={error} className={inputClass} />
-      )}
-      {type === "star_rating" && (
-        <StarRatingInput block={block} control={control as never} labelId={labelId} />
-      )}
-      {type === "linear_scale" && "settings" in block && block.settings && (
-        <LinearScaleInput
-          block={block}
-          register={register as never}
-          error={error}
-          className={`${inputClass} w-20`}
-        />
-      )}
-      {type === "yes_no" && (
-        <YesNoInput block={block} register={register as never} error={error} />
-      )}
-
-      {type !== "star_rating" && error && (
-        <p className="text-sm text-destructive" role="alert">
-          {error.message}
-        </p>
-      )}
-    </div>
   );
 }

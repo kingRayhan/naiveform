@@ -16,11 +16,7 @@ export type { ParagraphBlockProps } from "./paragraph";
 export { YoutubeEmbedBlockContent } from "./youtube-embed";
 export type { YoutubeEmbedBlockProps } from "./youtube-embed";
 
-export function ContentBlockRenderer({
-  block,
-}: {
-  block: ContentBlock;
-}) {
+export function ContentBlockRenderer({ block }: { block: ContentBlock }) {
   switch (block.type) {
     case "heading":
       return <HeadingBlockContent block={block} />;
