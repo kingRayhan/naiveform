@@ -250,6 +250,7 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
         </div>
       )}
 
+      {/* Submit Button */}
       <div className="mt-6 pt-6">
         <Button
           type="submit"
