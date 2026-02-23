@@ -6,6 +6,9 @@
 
 @source "../app/**/*.tsx";
 @source "../components/**/*.tsx";
+/* Scan @repo/blocks so Tailwind generates classes used by FormRenderer and inputs */
+@source "../../../../packages/blocks/src/**/*.tsx";
+@source "../../../../packages/blocks/src/**/*.ts";
 
 html {
   scroll-behavior: smooth;
