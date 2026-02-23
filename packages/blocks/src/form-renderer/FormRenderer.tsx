@@ -63,6 +63,9 @@ function InputBlockField({
   const { id, type, title } = block;
   const required = block.settings?.required ?? false;
   const labelId = `${id}-label`;
+  const fieldClass = error
+    ? `${inputClass} border-destructive focus:ring-destructive/50`
+    : inputClass;
   const singleInputTypes = [
     "text",
     "phone",
@@ -102,7 +105,7 @@ function InputBlockField({
           block={block}
           register={register as never}
           error={error}
-          className={inputClass}
+          className={fieldClass}
         />
       )}
       {type === "phone" && (
@@ -110,7 +113,7 @@ function InputBlockField({
           block={block}
           register={register as never}
           error={error}
-          className={inputClass}
+          className={fieldClass}
         />
       )}
       {type === "url" && (
@@ -118,7 +121,7 @@ function InputBlockField({
           block={block}
           register={register as never}
           error={error}
-          className={inputClass}
+          className={fieldClass}
         />
       )}
       {type === "email" && (
@@ -126,7 +129,7 @@ function InputBlockField({
           block={block}
           register={register as never}
           error={error}
-          className={inputClass}
+          className={fieldClass}
         />
       )}
       {type === "long_text" && (
@@ -134,7 +137,7 @@ function InputBlockField({
           block={block}
           register={register as never}
           error={error}
-          className={inputClass}
+          className={fieldClass}
         />
       )}
       {type === "radio" && (
@@ -155,7 +158,7 @@ function InputBlockField({
           block={block}
           register={register as never}
           error={error}
-          className={inputClass}
+          className={fieldClass}
         />
       )}
       {(type === "date" || type === "time" || type === "datetime") && (
@@ -163,7 +166,7 @@ function InputBlockField({
           block={block}
           register={register as never}
           error={error}
-          className={inputClass}
+          className={fieldClass}
         />
       )}
       {type === "number" && (
@@ -171,7 +174,7 @@ function InputBlockField({
           block={block}
           register={register as never}
           error={error}
-          className={inputClass}
+          className={fieldClass}
         />
       )}
       {type === "star_rating" && (
@@ -179,6 +182,7 @@ function InputBlockField({
           block={block}
           control={control as never}
           labelId={labelId}
+          error={error}
         />
       )}
       {type === "linear_scale" && "settings" in block && block.settings && (
@@ -186,7 +190,7 @@ function InputBlockField({
           block={block}
           register={register as never}
           error={error}
-          className={`${inputClass} w-20`}
+          className={`${fieldClass} w-20`}
         />
       )}
       {type === "yes_no" && (

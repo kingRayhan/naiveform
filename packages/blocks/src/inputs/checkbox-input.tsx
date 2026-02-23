@@ -19,6 +19,7 @@ export function CheckboxInput({
   error: _error,
 }: CheckboxInputProps) {
   const { id, options = [] } = block;
+  const required = block.settings?.required ?? false;
   const minSelections = block.settings?.minSelections;
   const maxSelections = block.settings?.maxSelections;
   const disabled = !control || !setValue || !watch || !clearErrors;
@@ -46,6 +47,7 @@ export function CheckboxInput({
       name={id}
       control={control}
       rules={{
+        required: required ? "Select at least one" : false,
         validate: (v: unknown) => {
           const arr = Array.isArray(v) ? v : [];
           if (minSelections != null && arr.length < minSelections)

@@ -86,11 +86,10 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
     formState: { errors, isSubmitting },
     setValue,
     watch,
-    setError,
     clearErrors,
   } = useForm<FormRendererValues>({
     defaultValues,
-    mode: "onBlur",
+    mode: "onSubmit",
   });
 
   const defaultsAppliedRef = useRef(false);
@@ -194,16 +193,6 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
   }
 
   const onSubmit = async (data: FormRendererValues) => {
-    for (const b of inputBlocks) {
-      if (b.type === "checkbox" && b.settings?.required) {
-        const val = data[b.id];
-        if (!Array.isArray(val) || val.length === 0) {
-          setError(b.id, { message: "Select at least one" });
-          return;
-        }
-      }
-    }
-
     setSubmitError(null);
 
     try {
@@ -232,6 +221,17 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-3xl">
+      {Object.keys(errors).length > 0 && (
+        <div
+          className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4"
+          role="alert"
+        >
+          <p className="text-sm font-medium text-destructive">
+            Please fix the errors below before submitting.
+          </p>
+        </div>
+      )}
+
       <FormRenderer
         blocks={blocks}
         formTitle={form.title}
