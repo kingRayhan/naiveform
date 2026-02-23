@@ -5,6 +5,7 @@ import { useMutation } from "@repo/convex/react";
 import { api } from "@repo/convex";
 import { getErrorMessage } from "@repo/convex/error";
 import { useForm } from "react-hook-form";
+import type { Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { FormInput } from "@repo/design-system/form/form-input";
@@ -90,14 +91,14 @@ function NewFormPage() {
       >
         <FormInput
           name="title"
-          control={form.control}
+          control={form.control as Control<NewFormValues>}
           label="Form title"
           placeholder="Untitled form"
           required
         />
         <FormTextarea
           name="description"
-          control={form.control}
+          control={form.control as Control<NewFormValues>}
           label="Description (optional)"
           placeholder="Add a short description for respondents"
           rows={3}

@@ -5,6 +5,7 @@ import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
 import { getErrorMessage } from "@repo/convex/error";
 import { useForm } from "react-hook-form";
+import type { Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@repo/design-system/button";
@@ -147,14 +148,14 @@ function FormSettingsPage() {
       <form onSubmit={formRHF.handleSubmit(onSubmit)} className="space-y-6">
         <FormInput
           name="title"
-          control={formRHF.control}
+          control={formRHF.control as Control<SettingsValues>}
           label="Form name"
           placeholder="Untitled form"
           required
         />
         <FormTextarea
           name="description"
-          control={formRHF.control}
+          control={formRHF.control as Control<SettingsValues>}
           label="Form description"
           description="Optional short description shown to respondents."
           placeholder="Add a short description"
@@ -162,7 +163,7 @@ function FormSettingsPage() {
         />
         <FormInput
           name="slug"
-          control={formRHF.control}
+          control={formRHF.control as Control<SettingsValues>}
           label="Public URL slug"
           description="Used in the shareable form URL (e.g. event-form-abc12). Letters, numbers and hyphens only."
           placeholder="my-form"
@@ -171,14 +172,14 @@ function FormSettingsPage() {
         <FormFieldGroup title="Response options">
           <FormCheckbox
             name="limitOneResponsePerPerson"
-            control={formRHF.control}
+            control={formRHF.control as Control<SettingsValues>}
             label="Limit to one response per person"
           />
         </FormFieldGroup>
 
         <FormTextarea
           name="confirmationMessage"
-          control={formRHF.control}
+          control={formRHF.control as Control<SettingsValues>}
           label="Confirmation message"
           description="Shown after someone submits the form (optional)."
           placeholder="Thanks for your response!"
@@ -187,7 +188,7 @@ function FormSettingsPage() {
 
         <FormInput
           name="redirectUrl"
-          control={formRHF.control}
+          control={formRHF.control as Control<SettingsValues>}
           label="Redirect URL after submit"
           type="url"
           placeholder="https://..."
@@ -196,7 +197,7 @@ function FormSettingsPage() {
 
         <FormInput
           name="closeAtDate"
-          control={formRHF.control}
+          control={formRHF.control as Control<SettingsValues>}
           label="Close form on date"
           type="date"
           description="Form will stop accepting responses after this date (optional)."
@@ -217,13 +218,13 @@ function FormSettingsPage() {
         <FormFieldGroup title="Status">
           <FormCheckbox
             name="isClosed"
-            control={formRHF.control}
+            control={formRHF.control as Control<SettingsValues>}
             label="Form is closed (stop accepting responses)"
           />
           <div className="bg-destructive/30 py-2 px-1">
             <FormCheckbox
               name="archived"
-              control={formRHF.control}
+              control={formRHF.control as Control<SettingsValues>}
               label="Archive form (hide from dashboard, keep data)"
             />
           </div>
