@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  FormRenderer,
-  type FormRendererValues,
-} from "@repo/blocks";
+import { FormRenderer, type FormRendererValues } from "@repo/blocks";
 import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
 import { useQuery } from "@repo/convex/react";
@@ -256,6 +253,7 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
       <div className="mt-6 pt-6">
         <Button
           type="submit"
+          size={"lg"}
           disabled={isSubmitting || submitMutation.isPending}
         >
           {isSubmitting || submitMutation.isPending ? "Submitting…" : "Submit"}
