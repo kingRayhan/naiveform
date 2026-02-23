@@ -19,9 +19,6 @@ export function CheckboxInput({
   error: _error,
 }: CheckboxInputProps) {
   const { id, options = [] } = block;
-  const required = block.settings?.required ?? false;
-  const minSelections = block.settings?.minSelections;
-  const maxSelections = block.settings?.maxSelections;
   const disabled = !control || !setValue || !watch || !clearErrors;
 
   if (disabled) {
@@ -46,17 +43,7 @@ export function CheckboxInput({
     <Controller
       name={id}
       control={control}
-      rules={{
-        required: required ? "Select at least one" : false,
-        validate: (v: unknown) => {
-          const arr = Array.isArray(v) ? v : [];
-          if (minSelections != null && arr.length < minSelections)
-            return `Select at least ${minSelections} option(s)`;
-          if (maxSelections != null && arr.length > maxSelections)
-            return `Select at most ${maxSelections} option(s)`;
-          return true;
-        },
-      }}
+      rules={{}}
       render={({ field }) => {
         const watched = watch(id) as string[] | undefined;
         const arr = Array.isArray(field.value)

@@ -16,7 +16,6 @@ export function TextInput({
   className = defaultInputClass,
 }: TextInputProps) {
   const { id, settings } = block;
-  const required = settings?.required ?? false;
   const placeholder = settings?.placeholder ?? "Your answer";
   const minLength = settings?.minLength;
   const maxLength = settings?.maxLength;
@@ -38,15 +37,7 @@ export function TextInput({
     <input
       id={id}
       type="text"
-      {...register(id, {
-        required: required ? "This field is required" : false,
-        minLength: minLength
-          ? { value: minLength, message: `At least ${minLength} characters` }
-          : undefined,
-        maxLength: maxLength
-          ? { value: maxLength, message: `At most ${maxLength} characters` }
-          : undefined,
-      })}
+      {...register(id)}
       placeholder={placeholder}
       minLength={minLength}
       maxLength={maxLength}

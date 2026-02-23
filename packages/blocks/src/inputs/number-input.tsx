@@ -16,7 +16,6 @@ export function NumberInput({
   className = defaultInputClass,
 }: NumberInputProps) {
   const { id, settings } = block;
-  const required = settings?.required ?? false;
   const placeholder = settings?.placeholder;
   const min = settings?.min;
   const max = settings?.max;
@@ -39,17 +38,7 @@ export function NumberInput({
     <input
       id={id}
       type="number"
-      {...register(id, {
-        required: required ? "This field is required" : false,
-        min:
-          min != null
-            ? { value: min, message: `Minimum value is ${min}` }
-            : undefined,
-        max:
-          max != null
-            ? { value: max, message: `Maximum value is ${max}` }
-            : undefined,
-      })}
+      {...register(id)}
       placeholder={placeholder}
       min={min}
       max={max}

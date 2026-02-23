@@ -18,7 +18,6 @@ export function DateTimeInput({
   className = defaultInputClass,
 }: DateTimeInputProps) {
   const { id, type } = block;
-  const required = block.settings?.required ?? false;
   const inputType = type === "datetime" ? "datetime-local" : type;
   const settings = block.settings as { minDate?: string; maxDate?: string } | undefined;
   const min = type !== "time" ? settings?.minDate : undefined;
@@ -39,7 +38,7 @@ export function DateTimeInput({
     <input
       id={id}
       type={inputType}
-      {...register(id, { required: required ? "This field is required" : false })}
+      {...register(id)}
       min={min}
       max={max}
       className={className}

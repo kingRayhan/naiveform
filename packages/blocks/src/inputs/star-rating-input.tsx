@@ -60,7 +60,6 @@ export function StarRatingInput({
   labelId,
 }: StarRatingInputProps) {
   const { id } = block;
-  const required = block.settings?.required ?? false;
   const max = block.settings?.ratingMax ?? 5;
   const count = Math.min(10, Math.max(3, max));
   const disabled = !control;
@@ -88,17 +87,7 @@ export function StarRatingInput({
     <Controller
       name={id}
       control={control}
-      rules={{
-        required: required ? "Please select a rating" : false,
-        validate: (v: unknown) => {
-          const val = typeof v === "string" ? v : "";
-          if (!val && !required) return true;
-          const n = parseInt(val, 10);
-          if (Number.isNaN(n) || n < 1 || n > count)
-            return `Please select between 1 and ${count}`;
-          return true;
-        },
-      }}
+      rules={{}}
       render={({ field, fieldState }) => (
         <StarRatingStars
           field={field}

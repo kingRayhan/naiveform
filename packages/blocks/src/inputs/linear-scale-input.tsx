@@ -20,7 +20,6 @@ export function LinearScaleInput({
   const max = settings.max;
   const minLabel = settings.minLabel;
   const maxLabel = settings.maxLabel;
-  const required = settings.required ?? false;
   const scaleClass = className ?? `${defaultInputClass} w-20`;
   const disabled = !register;
 
@@ -47,9 +46,7 @@ export function LinearScaleInput({
         type="number"
         min={min}
         max={max}
-        {...register(id, {
-          required: required ? "This field is required" : false,
-        })}
+        {...register(id)}
         className={scaleClass}
         aria-invalid={!!error}
       />

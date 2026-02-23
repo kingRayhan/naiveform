@@ -13,7 +13,6 @@ export function RadioInput({
   error: _error,
 }: RadioInputProps) {
   const { id, options = [] } = block;
-  const required = block.settings?.required ?? false;
   const disabled = !register;
 
   if (disabled) {
@@ -47,7 +46,7 @@ export function RadioInput({
             <input
               id={optionId}
               type="radio"
-              {...register(id, { required: required ? "Select an option" : false })}
+              {...register(id)}
               value={opt}
               className="rounded-full border-input"
             />

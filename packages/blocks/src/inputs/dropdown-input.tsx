@@ -16,7 +16,6 @@ export function DropdownInput({
   className = defaultInputClass,
 }: DropdownInputProps) {
   const { id, options = [] } = block;
-  const required = block.settings?.required ?? false;
   const placeholder = block.settings?.placeholder ?? "Choose";
   const disabled = !register;
 
@@ -35,7 +34,7 @@ export function DropdownInput({
   return (
     <select
       id={id}
-      {...register(id, { required: required ? "Choose an option" : false })}
+      {...register(id)}
       className={className}
       aria-invalid={!!error}
     >

@@ -17,7 +17,6 @@ export function UrlInput({
   className = defaultInputClass,
 }: UrlInputProps) {
   const { id, settings } = block;
-  const required = settings?.required ?? false;
   const placeholder = settings?.placeholder ?? "Your answer";
   const minLength = settings?.minLength;
   const maxLength = settings?.maxLength;
@@ -49,15 +48,7 @@ export function UrlInput({
       <input
         id={id}
         type="url"
-        {...register(id, {
-          required: required ? "This field is required" : false,
-          minLength: minLength
-            ? { value: minLength, message: `At least ${minLength} characters` }
-            : undefined,
-          maxLength: maxLength
-            ? { value: maxLength, message: `At most ${maxLength} characters` }
-            : undefined,
-        })}
+        {...register(id)}
         placeholder={placeholder}
         minLength={minLength}
         maxLength={maxLength}

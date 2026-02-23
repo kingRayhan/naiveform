@@ -13,7 +13,6 @@ export function YesNoInput({
   error: _error,
 }: YesNoInputProps) {
   const { id } = block;
-  const required = block.settings?.required ?? false;
   const disabled = !register;
 
   if (disabled) {
@@ -46,9 +45,7 @@ export function YesNoInput({
         <input
           id={`${id}-yes`}
           type="radio"
-          {...register(id, {
-            required: required ? "Select an option" : false,
-          })}
+          {...register(id)}
           value="yes"
           className="rounded-full border-input"
         />

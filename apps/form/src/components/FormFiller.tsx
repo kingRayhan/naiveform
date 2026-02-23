@@ -7,11 +7,14 @@ import { useQuery } from "@repo/convex/react";
 import { Button } from "@repo/design-system/button";
 import type { SubmitFormSuccess } from "@repo/types";
 import { getFormBlocks, isInputBlock } from "@repo/types";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { Resolver } from "react-hook-form";
 import { useForm } from "react-hook-form";
+import { buildFormSchema } from "@/lib/formSchema";
 
 interface FormFillerProps {
   formIdOrSlug: string;
@@ -78,6 +81,14 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
     }
   }
 
+  const blockIdsKey = inputBlocks.map((b) => b.id).join(",");
+  const schema = useMemo(
+    () => buildFormSchema(inputBlocks),
+    // Stable key so schema only rebuilds when form or block set changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- inputBlocks ref changes every render
+    [form?._id, blockIdsKey]
+  );
+
   const {
     register,
     control,
@@ -89,6 +100,7 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
     clearErrors,
   } = useForm<FormRendererValues>({
     defaultValues,
+    resolver: zodResolver(schema) as Resolver<FormRendererValues>,
     mode: "onSubmit",
   });
 
