@@ -41,15 +41,21 @@ export const FormResponse = ({
           </Heading>
           <Text className="text-gray-email my-6 mb-3.5">
             You received a new response for <strong>{formTitle}</strong>
-            {submittedAt && <> on {submittedAt}.</>}
+            {submittedAt ? ` on ${submittedAt}.` : "."}
           </Text>
-          <Section className="border border-gray-200 rounded-md p-4 my-6 bg-gray-50">
+          <Section
+            className="my-6 p-4 rounded-md"
+            style={{
+              backgroundColor: "#f9fafb",
+              border: "1px solid #e5e7eb",
+            }}
+          >
             {responses.map((item, index) => (
-              <Section key={index} className="mb-4 last:mb-0">
-                <Text className="text-gray-muted text-xs font-medium uppercase tracking-wide m-0 mb-1">
+              <Section key={index} className="mb-4">
+                <Text className="text-gray-muted text-xs font-medium m-0 mb-1">
                   {item.label}
                 </Text>
-                <Text className="text-gray-email text-sm m-0 whitespace-pre-wrap">
+                <Text className="text-gray-email text-sm m-0">
                   {item.value || "—"}
                 </Text>
               </Section>
