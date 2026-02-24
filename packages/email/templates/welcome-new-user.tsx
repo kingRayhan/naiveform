@@ -20,8 +20,8 @@ export const WelcomeNewUser = ({ userName }: WelcomeNewUserProps) => (
   <Html>
     <Head />
     <Body className="bg-white">
-      <Preview>Welcome to Naiveform, {userName}!</Preview>
       <EmailTailwindProvider>
+        <Preview>Welcome to Naiveform, {userName}!</Preview>
         <Container className="px-3 mx-auto font-sans">
           <Heading className="text-gray-email text-2xl font-bold my-10 p-0">
             Welcome, {userName} 👋
