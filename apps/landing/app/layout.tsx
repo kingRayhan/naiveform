@@ -16,6 +16,13 @@ export const metadata: Metadata = {
   title: "NaiveForm - Free Form Builder",
   description:
     "Create beautiful forms in minutes — free forever. Drag-and-drop builder, unlimited forms & responses, CSV export, webhooks, and API. No credit card required.",
+  icons: {
+    icon: [
+      { url: "/favicons/favicon.ico", sizes: "any" },
+      { url: "/favicons/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/favicons/favicon-apple-icon.png",
+  },
 };
 
 export default function RootLayout({

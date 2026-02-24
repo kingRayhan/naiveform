@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import Image from "next/image";
 import { CONSOLE_APP_URL } from "@/lib/config";
 
 export const BoldFooter = () => {
@@ -78,9 +80,20 @@ export const BoldFooter = () => {
             NAIVEFORM
           </h1>
           <div className="flex justify-between items-end border-t backdrop-blur border-zinc-200 pt-8 pb-6 relative z-10">
-            <span className="text-xs font-medium uppercase tracking-widest text-zinc-400">
-              © {new Date().getFullYear()} NaiveForm
-            </span>
+            <div className="flex items-center gap-3">
+              <Link href="/" className="shrink-0">
+                <Image
+                  src="/naiveform.svg"
+                  alt="Naiveform"
+                  width={100}
+                  height={16}
+                  className="h-4 w-auto"
+                />
+              </Link>
+              <span className="text-xs font-medium uppercase tracking-widest text-zinc-400">
+                © {new Date().getFullYear()}
+              </span>
+            </div>
             <div className="flex gap-8">
               <span className="text-xs text-zinc-400">
                 v1.0.0 — {new Date().getFullYear()}
