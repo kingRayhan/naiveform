@@ -8,6 +8,7 @@ services:
     ports:
       - "4000:4000"
     restart: unless-stopped
+    # add env variables for the api app
   
   # naiveform-console:
   #   build:
