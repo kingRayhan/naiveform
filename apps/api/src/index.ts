@@ -11,6 +11,7 @@ import { cors } from "hono/cors";
 import z, { ZodError } from "zod";
 import { FORM_SCRIPT } from "./formScript";
 import { parseFormUrlencoded, submitFormResponse } from "./services/formSubmit";
+import { handleClerkWebhook } from "./webhooks/clerk";
 
 const app = new Hono();
 
@@ -18,6 +19,8 @@ app.use(cors() as unknown as MiddlewareHandler);
 
 app.get("/", (c) => c.json({ ok: true, message: "Naiveform API" }));
 app.get("/health", (c) => c.json({ status: "ok" }));
+
+app.post("/webhooks/clerk", handleClerkWebhook);
 
 app.get("/form.js", (c) =>
   c.body(FORM_SCRIPT, 200, {

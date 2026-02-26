@@ -125,6 +125,12 @@ All submission routes return JSON on error (4xx/5xx) and on success unless redir
 | Console | `VITE_FORM_APP_URL` | Form app base URL |
 | Console | `VITE_HEADLESS_FORM_ACTION_URL` | API base for embed/curl |
 | API | `CONVEX_URL` | Convex HTTP client |
+| API | `CLERK_WEBHOOK_SIGNING_SECRET` | Clerk webhook signing secret (for welcome email on signup) |
+| API | `SMTP_HOST` | SMTP host (default: smtp.forwardemail.net) |
+| API | `SMTP_PORT` | SMTP port (default: 465) |
+| API | `SMTP_USER` / `SMTP_PASS` | SMTP auth (welcome email sent when both set) |
+| API | `EMAIL_FROM` | (Optional) From address for emails |
+| API | `CONSOLE_APP_URL` | (Optional) Console base URL for links in emails |
 | Form | `NEXT_PUBLIC_CONVEX_URL` | Convex for form page |
 | Form | `NEXT_PUBLIC_FORM_API_URL` | API base for submit (e.g. `/f/:id`) |
 | Landing | `NEXT_PUBLIC_CONSOLE_APP_URL` | Link to console |

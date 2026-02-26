@@ -24,5 +24,8 @@
   "overrides": {
     "react-hook-form": "7.71.2",
     "esbuild": "0.25.10"
+  },
+  "dependencies": {
+    "@clerk/backend": "^2.32.1"
   }
 }
