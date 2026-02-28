@@ -2,6 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { ClerkProvider } from "@clerk/clerk-react";
+import * as Sentry from "@sentry/react";
+
 import { ConvexProviderWithURL } from "@repo/convex/react";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
@@ -15,6 +17,13 @@ if (!PUBLISHABLE_KEY) {
 if (!CONVEX_URL) {
   throw new Error("Add VITE_CONVEX_URL to the .env file");
 }
+
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  // Setting this option to true will send default PII data to Sentry.
+  // For example, automatic IP address collection on events
+  sendDefaultPii: true,
+});
 
 const router = createRouter({ routeTree });
 
