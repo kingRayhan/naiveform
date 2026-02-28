@@ -85,12 +85,10 @@ export function UseCases() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              whileHover={{ backgroundColor: '#0f0f0f' }}
+              whileHover={{ backgroundColor: "#0f0f0f" }}
               className="bg-background p-7 transition-colors duration-150"
             >
-              <div className="mb-4 text-orange-500">
-                {item.icon}
-              </div>
+              <div className="mb-4 text-orange-500">{item.icon}</div>
               <h3 className="mb-2 text-sm font-semibold text-foreground">
                 {item.title}
               </h3>

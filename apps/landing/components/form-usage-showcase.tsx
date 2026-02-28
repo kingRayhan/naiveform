@@ -23,15 +23,15 @@ const usageMethods = [
       "Instant form hosting",
       "Custom slugs available",
       "Mobile responsive",
-      "Built-in analytics"
+      "Built-in analytics",
     ],
-    example: "https://form.naiveform.com/contact-us",
+    example: "https://f.naiveform.com/contact-us",
     code: "",
     preview: {
       title: "Contact Us Form",
       fields: ["Name", "Email", "Message"],
-      buttonText: "Submit"
-    }
+      buttonText: "Submit",
+    },
   },
   {
     id: "headless",
@@ -42,7 +42,7 @@ const usageMethods = [
       "Zero styling conflicts",
       "Full customization",
       "Lightweight integration",
-      "Your branding preserved"
+      "Your branding preserved",
     ],
     example: '<form action="https://api.naiveform.com/html-action/form_123">',
     code: `<form action="https://api.naiveform.com/html-action/form_123" method="POST">
@@ -60,8 +60,8 @@ const usageMethods = [
     preview: {
       title: "Embedded Contact Form",
       fields: ["Name", "Email", "Message"],
-      buttonText: "Send Message"
-    }
+      buttonText: "Send Message",
+    },
   },
   {
     id: "api",
@@ -72,7 +72,7 @@ const usageMethods = [
       "Full programmatic control",
       "Custom validation",
       "Batch submissions",
-      "Integration with any system"
+      "Integration with any system",
     ],
     example: "curl -X POST https://api.naiveform.com/form-submission/form_123",
     code: `curl --request POST \\
@@ -88,16 +88,18 @@ const usageMethods = [
     preview: {
       title: "API Submission Example",
       fields: ["name", "email", "message"],
-      buttonText: "API Call"
-    }
-  }
+      buttonText: "API Call",
+    },
+  },
 ];
 
 export function FormUsageShowcase() {
   const [activeMethod, setActiveMethod] = useState("hosted");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const currentMethod = usageMethods.find(method => method.id === activeMethod)!;
+  const currentMethod = usageMethods.find(
+    (method) => method.id === activeMethod
+  )!;
 
   const copyToClipboard = async (text: string, id: string) => {
     try {
@@ -105,7 +107,7 @@ export function FormUsageShowcase() {
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error("Failed to copy:", err);
     }
   };
 
@@ -130,11 +132,14 @@ export function FormUsageShowcase() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              whileHover={{ backgroundColor: activeMethod === method.id ? '#0f0f0f' : '#121212' }}
+              whileHover={{
+                backgroundColor:
+                  activeMethod === method.id ? "#0f0f0f" : "#121212",
+              }}
               onClick={() => setActiveMethod(method.id)}
               className={`bg-background p-7 transition-all duration-200 text-left relative overflow-hidden ${
-                activeMethod === method.id 
-                  ? "bg-[#0f0f0f] ring-2 ring-orange-500/30" 
+                activeMethod === method.id
+                  ? "bg-[#0f0f0f] ring-2 ring-orange-500/30"
                   : ""
               }`}
             >
@@ -142,19 +147,25 @@ export function FormUsageShowcase() {
               {activeMethod === method.id && (
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-orange-500"></div>
               )}
-              
-              <div className={`mb-4 ${activeMethod === method.id ? "text-orange-400" : "text-orange-500"}`}>
+
+              <div
+                className={`mb-4 ${activeMethod === method.id ? "text-orange-400" : "text-orange-500"}`}
+              >
                 {method.icon}
               </div>
-              <h3 className={`mb-2 text-sm font-semibold ${
-                activeMethod === method.id ? "text-foreground" : "text-foreground"
-              }`}>
+              <h3
+                className={`mb-2 text-sm font-semibold ${
+                  activeMethod === method.id
+                    ? "text-foreground"
+                    : "text-foreground"
+                }`}
+              >
                 {method.title}
               </h3>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 {method.description}
               </p>
-              
+
               {/* Active border glow */}
               {activeMethod === method.id && (
                 <div className="absolute inset-0 rounded-lg shadow-[0_0_0_1px_rgba(255,107,53,0.3)] pointer-events-none"></div>
@@ -178,7 +189,12 @@ export function FormUsageShowcase() {
                 {currentMethod.title}
               </h3>
               <button
-                onClick={() => copyToClipboard(currentMethod.code || currentMethod.example, currentMethod.id)}
+                onClick={() =>
+                  copyToClipboard(
+                    currentMethod.code || currentMethod.example,
+                    currentMethod.id
+                  )
+                }
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 {copiedId === currentMethod.id ? (
@@ -194,7 +210,7 @@ export function FormUsageShowcase() {
                 )}
               </button>
             </div>
-            
+
             <div className="p-6">
               {currentMethod.id === "hosted" && (
                 <div className="space-y-4">
@@ -207,7 +223,9 @@ export function FormUsageShowcase() {
                         {currentMethod.example}
                       </code>
                       <button
-                        onClick={() => copyToClipboard(currentMethod.example, "link")}
+                        onClick={() =>
+                          copyToClipboard(currentMethod.example, "link")
+                        }
                         className="p-2 rounded-md hover:bg-muted transition-colors"
                       >
                         {copiedId === "link" ? (
@@ -218,14 +236,18 @@ export function FormUsageShowcase() {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="pt-4 border-t border-border">
-                    <h4 className="font-medium text-foreground mb-3">Key Features:</h4>
+                    <h4 className="font-medium text-foreground mb-3">
+                      Key Features:
+                    </h4>
                     <ul className="space-y-2">
                       {currentMethod.features.map((feature, index) => (
                         <li key={index} className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                          <span className="text-muted-foreground text-sm">{feature}</span>
+                          <span className="text-muted-foreground text-sm">
+                            {feature}
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -245,14 +267,18 @@ export function FormUsageShowcase() {
                       </code>
                     </pre>
                   </div>
-                  
+
                   <div className="pt-4 border-t border-border">
-                    <h4 className="font-medium text-foreground mb-3">Benefits:</h4>
+                    <h4 className="font-medium text-foreground mb-3">
+                      Benefits:
+                    </h4>
                     <ul className="space-y-2">
                       {currentMethod.features.map((feature, index) => (
                         <li key={index} className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                          <span className="text-muted-foreground text-sm">{feature}</span>
+                          <span className="text-muted-foreground text-sm">
+                            {feature}
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -272,14 +298,18 @@ export function FormUsageShowcase() {
                       </code>
                     </pre>
                   </div>
-                  
+
                   <div className="pt-4 border-t border-border">
-                    <h4 className="font-medium text-foreground mb-3">Use Cases:</h4>
+                    <h4 className="font-medium text-foreground mb-3">
+                      Use Cases:
+                    </h4>
                     <ul className="space-y-2">
                       {currentMethod.features.map((feature, index) => (
                         <li key={index} className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                          <span className="text-muted-foreground text-sm">{feature}</span>
+                          <span className="text-muted-foreground text-sm">
+                            {feature}
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -297,27 +327,31 @@ export function FormUsageShowcase() {
             transition={{ duration: 0.3, delay: 0.1 }}
             className="bg-card border border-border rounded-xl p-6"
           >
-            <h3 className="text-xl font-semibold text-foreground mb-6">Live Preview</h3>
-            
+            <h3 className="text-xl font-semibold text-foreground mb-6">
+              Live Preview
+            </h3>
+
             <div className="bg-muted/30 rounded-lg p-6 space-y-4">
               <h2 className="text-2xl font-bold text-foreground">
                 {currentMethod.preview.title}
               </h2>
-              
+
               {currentMethod.preview.fields.map((field, index) => (
                 <div key={index}>
                   <label className="block text-sm font-medium text-foreground mb-1">
                     {field}
-                    {index < 2 && <span className="text-orange-500 ml-1">*</span>}
+                    {index < 2 && (
+                      <span className="text-orange-500 ml-1">*</span>
+                    )}
                   </label>
                   {field === "Message" ? (
-                    <textarea 
+                    <textarea
                       placeholder={`Enter your ${field.toLowerCase()}...`}
                       rows={3}
                       className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground resize-none"
                     />
                   ) : (
-                    <input 
+                    <input
                       type={field === "Email" ? "email" : "text"}
                       placeholder={`Enter your ${field.toLowerCase()}...`}
                       className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground"
@@ -325,14 +359,18 @@ export function FormUsageShowcase() {
                   )}
                 </div>
               ))}
-              
+
               <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2.5 rounded-md transition-colors flex items-center justify-center gap-2">
                 {currentMethod.preview.buttonText}
-                {currentMethod.id === "hosted" && <ExternalLink className="h-4 w-4" />}
-                {currentMethod.id === "headless" && <Code className="h-4 w-4" />}
+                {currentMethod.id === "hosted" && (
+                  <ExternalLink className="h-4 w-4" />
+                )}
+                {currentMethod.id === "headless" && (
+                  <Code className="h-4 w-4" />
+                )}
                 {currentMethod.id === "api" && <Terminal className="h-4 w-4" />}
               </button>
-              
+
               {currentMethod.id === "hosted" && (
                 <div className="pt-4 text-center">
                   <p className="text-xs text-muted-foreground">
@@ -340,7 +378,7 @@ export function FormUsageShowcase() {
                   </p>
                 </div>
               )}
-              
+
               {currentMethod.id === "headless" && (
                 <div className="pt-4 text-center">
                   <p className="text-xs text-muted-foreground">
@@ -348,7 +386,7 @@ export function FormUsageShowcase() {
                   </p>
                 </div>
               )}
-              
+
               {currentMethod.id === "api" && (
                 <div className="pt-4 text-center">
                   <p className="text-xs text-muted-foreground">
@@ -357,10 +395,12 @@ export function FormUsageShowcase() {
                 </div>
               )}
             </div>
-            
+
             <div className="mt-6 pt-6 border-t border-border">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">Ready to try?</span>
+                <span className="text-sm font-medium text-foreground">
+                  Ready to try?
+                </span>
                 <button className="text-orange-500 hover:text-orange-600 text-sm font-medium flex items-center gap-1 transition-colors">
                   Get started
                   <ArrowRight className="h-4 w-4" />

@@ -20,8 +20,8 @@ export default function Home() {
       <FormUsageShowcase />
       <UseCases />
       <HowItWorks />
-      <Testimonials />
-      <EverythingIncluded />
+      {/* <Testimonials /> */}
+      {/* <EverythingIncluded /> */}
       <CtaSection />
       <BoldFooter />
     </main>

@@ -22,7 +22,7 @@ const sampleBlocks = [
     level: 2,
   },
   {
-    id: "2", 
+    id: "2",
     type: "text",
     label: "Full Name",
     placeholder: "Enter your full name",
@@ -66,23 +66,35 @@ export function FormEditorSimulation() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "heading": return <span className="font-bold text-lg">H2</span>;
-      case "text": return <Text className="h-4 w-4" />;
-      case "email": return <Mail className="h-4 w-4" />;
-      case "radio": return <SquareCheckBig className="h-4 w-4" />;
-      case "long_text": return <span className="text-xs">📝</span>;
-      default: return <Text className="h-4 w-4" />;
+      case "heading":
+        return <span className="font-bold text-lg">H2</span>;
+      case "text":
+        return <Text className="h-4 w-4" />;
+      case "email":
+        return <Mail className="h-4 w-4" />;
+      case "radio":
+        return <SquareCheckBig className="h-4 w-4" />;
+      case "long_text":
+        return <span className="text-xs">📝</span>;
+      default:
+        return <Text className="h-4 w-4" />;
     }
   };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case "heading": return "Heading";
-      case "text": return "Short Text";
-      case "email": return "Email";
-      case "radio": return "Multiple Choice";
-      case "long_text": return "Long Text";
-      default: return type;
+      case "heading":
+        return "Heading";
+      case "text":
+        return "Short Text";
+      case "email":
+        return "Email";
+      case "radio":
+        return "Multiple Choice";
+      case "long_text":
+        return "Long Text";
+      default:
+        return type;
     }
   };
 
@@ -122,16 +134,19 @@ export function FormEditorSimulation() {
                 </div>
               </div>
             </div>
-            
+
             <div className="p-4 space-y-3 min-h-[400px]">
               {sampleBlocks.map((block, index) => (
                 <motion.div
                   key={block.id}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ 
-                    opacity: 1, 
+                  animate={{
+                    opacity: 1,
                     y: 0,
-                    backgroundColor: animationStep === index ? "rgba(255, 107, 53, 0.1)" : "transparent"
+                    backgroundColor:
+                      animationStep === index
+                        ? "rgba(255, 107, 53, 0.1)"
+                        : "transparent",
                   }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                   className={`group relative bg-background border border-border rounded-lg p-3 hover:border-orange-500/30 transition-all duration-200 cursor-move ${
@@ -144,7 +159,7 @@ export function FormEditorSimulation() {
                     <div className="mt-1">
                       <GripVertical className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="flex items-center gap-1.5">
@@ -156,39 +171,52 @@ export function FormEditorSimulation() {
                           </span>
                         </div>
                         {block.required && (
-                          <span className="text-xs text-orange-500 font-medium">Required</span>
+                          <span className="text-xs text-orange-500 font-medium">
+                            Required
+                          </span>
                         )}
                       </div>
-                      
+
                       {"label" in block && (
                         <h4 className="font-medium text-foreground mb-1">
                           {block.label}
-                          {block.required && <span className="text-orange-500 ml-1">*</span>}
+                          {block.required && (
+                            <span className="text-orange-500 ml-1">*</span>
+                          )}
                         </h4>
                       )}
-                      
+
                       {"content" in block && (
-                        <h4 className="font-bold text-lg text-foreground">{block.content}</h4>
+                        <h4 className="font-bold text-lg text-foreground">
+                          {block.content}
+                        </h4>
                       )}
-                      
+
                       {"placeholder" in block && (
                         <div className="text-sm text-muted-foreground italic">
                           {block.placeholder}
                         </div>
                       )}
-                      
+
                       {"options" in block && (
                         <div className="space-y-1 mt-2">
-                          {block.options?.map((option: string, optIndex: number) => (
-                            <div key={optIndex} className="flex items-center gap-2">
-                              <div className="w-3 h-3 rounded-full border border-muted-foreground"></div>
-                              <span className="text-sm text-foreground">{option}</span>
-                            </div>
-                          ))}
+                          {block.options?.map(
+                            (option: string, optIndex: number) => (
+                              <div
+                                key={optIndex}
+                                className="flex items-center gap-2"
+                              >
+                                <div className="w-3 h-3 rounded-full border border-muted-foreground"></div>
+                                <span className="text-sm text-foreground">
+                                  {option}
+                                </span>
+                              </div>
+                            )
+                          )}
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                       <button className="p-1.5 rounded hover:bg-muted">
                         <Plus className="h-3.5 w-3.5 text-muted-foreground" />
@@ -201,7 +229,7 @@ export function FormEditorSimulation() {
                   </div>
                 </motion.div>
               ))}
-              
+
               {/* Add Block Button */}
               <motion.button
                 initial={{ opacity: 0 }}
@@ -224,57 +252,73 @@ export function FormEditorSimulation() {
             className="space-y-8"
           >
             <div className="bg-card border border-border rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-foreground mb-4">Live Preview</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-4">
+                Live Preview
+              </h3>
               <div className="bg-muted/30 rounded-lg p-6 space-y-4">
-                <h2 className="text-2xl font-bold text-foreground">Contact Information</h2>
-                
+                <h2 className="text-2xl font-bold text-foreground">
+                  Contact Information
+                </h2>
+
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">
                     Full Name <span className="text-orange-500">*</span>
                   </label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Enter your full name"
                     className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">
                     Email Address <span className="text-orange-500">*</span>
                   </label>
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
                     placeholder="you@example.com"
                     className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
                     How did you hear about us?
                   </label>
                   <div className="space-y-2">
-                    {["Social Media", "Search Engine", "Friend Referral", "Other"].map((option) => (
-                      <label key={option} className="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="source" className="text-orange-500" />
+                    {[
+                      "Social Media",
+                      "Search Engine",
+                      "Friend Referral",
+                      "Other",
+                    ].map((option) => (
+                      <label
+                        key={option}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="source"
+                          className="text-orange-500"
+                        />
                         <span className="text-foreground">{option}</span>
                       </label>
                     ))}
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">
                     Tell us about your project
                   </label>
-                  <textarea 
+                  <textarea
                     placeholder="Describe what you're working on..."
                     rows={3}
                     className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground resize-none"
                   />
                 </div>
-                
+
                 <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2.5 rounded-md transition-colors">
                   Submit
                 </button>
@@ -286,37 +330,45 @@ export function FormEditorSimulation() {
                 <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center mb-3">
                   <GripVertical className="h-5 w-5 text-orange-500" />
                 </div>
-                <h4 className="font-semibold text-foreground mb-2">Drag & Drop</h4>
+                <h4 className="font-semibold text-foreground mb-2">
+                  Drag & Drop
+                </h4>
                 <p className="text-sm text-muted-foreground">
                   Reorder blocks with simple drag gestures
                 </p>
               </div>
-              
+
               <div className="bg-card border border-border rounded-lg p-5">
                 <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center mb-3">
                   <span className="text-orange-500 font-bold">⚡</span>
                 </div>
-                <h4 className="font-semibold text-foreground mb-2">No Coding</h4>
+                <h4 className="font-semibold text-foreground mb-2">
+                  No Coding
+                </h4>
                 <p className="text-sm text-muted-foreground">
                   Build forms visually without writing code
                 </p>
               </div>
-              
+
               <div className="bg-card border border-border rounded-lg p-5">
                 <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center mb-3">
                   <span className="text-orange-500 font-bold">🔄</span>
                 </div>
-                <h4 className="font-semibold text-foreground mb-2">Real-time Preview</h4>
+                <h4 className="font-semibold text-foreground mb-2">
+                  Real-time Preview
+                </h4>
                 <p className="text-sm text-muted-foreground">
                   See changes instantly as you build
                 </p>
               </div>
-              
+
               <div className="bg-card border border-border rounded-lg p-5">
                 <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center mb-3">
                   <span className="text-orange-500 font-bold">🎨</span>
                 </div>
-                <h4 className="font-semibold text-foreground mb-2">Customizable</h4>
+                <h4 className="font-semibold text-foreground mb-2">
+                  Customizable
+                </h4>
                 <p className="text-sm text-muted-foreground">
                   Adjust labels, options, and requirements easily
                 </p>
