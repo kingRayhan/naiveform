@@ -1,6 +1,8 @@
 import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
 import { Features } from "@/components/features";
+import { FormEditorSimulation } from "@/components/form-editor-simulation";
+import { FormUsageShowcase } from "@/components/form-usage-showcase";
 import { UseCases } from "@/components/use-cases";
 import { HowItWorks } from "@/components/how-it-works";
 import { Testimonials } from "@/components/testimonials";
@@ -14,13 +16,14 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Features />
-      {/* <Features />
+      <FormEditorSimulation />
+      <FormUsageShowcase />
       <UseCases />
       <HowItWorks />
       <Testimonials />
       <EverythingIncluded />
       <CtaSection />
-      <BoldFooter /> */}
+      <BoldFooter />
     </main>
   );
 }
