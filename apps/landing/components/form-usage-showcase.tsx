@@ -130,21 +130,35 @@ export function FormUsageShowcase() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              whileHover={{ backgroundColor: '#0f0f0f' }}
+              whileHover={{ backgroundColor: activeMethod === method.id ? '#0f0f0f' : '#121212' }}
               onClick={() => setActiveMethod(method.id)}
-              className={`bg-background p-7 transition-colors duration-150 text-left ${
-                activeMethod === method.id ? "bg-[#0f0f0f]" : ""
+              className={`bg-background p-7 transition-all duration-200 text-left relative overflow-hidden ${
+                activeMethod === method.id 
+                  ? "bg-[#0f0f0f] ring-2 ring-orange-500/30" 
+                  : ""
               }`}
             >
-              <div className="mb-4 text-orange-500">
+              {/* Active indicator */}
+              {activeMethod === method.id && (
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-orange-500"></div>
+              )}
+              
+              <div className={`mb-4 ${activeMethod === method.id ? "text-orange-400" : "text-orange-500"}`}>
                 {method.icon}
               </div>
-              <h3 className="mb-2 text-sm font-semibold text-foreground">
+              <h3 className={`mb-2 text-sm font-semibold ${
+                activeMethod === method.id ? "text-foreground" : "text-foreground"
+              }`}>
                 {method.title}
               </h3>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 {method.description}
               </p>
+              
+              {/* Active border glow */}
+              {activeMethod === method.id && (
+                <div className="absolute inset-0 rounded-lg shadow-[0_0_0_1px_rgba(255,107,53,0.3)] pointer-events-none"></div>
+              )}
             </motion.button>
           ))}
         </div>

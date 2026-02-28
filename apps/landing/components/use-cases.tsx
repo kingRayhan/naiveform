@@ -77,30 +77,26 @@ export function UseCases() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
           {useCases.map((item, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.08 }}
-              whileHover={{ y: -8 }}
-              className="group flex gap-4 p-6 rounded-xl bg-card border border-border hover:border-orange-500/30 transition-all duration-300"
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              whileHover={{ backgroundColor: '#0f0f0f' }}
+              className="bg-background p-7 transition-colors duration-150"
             >
-              <div
-                className={`w-12 h-12 rounded-lg ${item.bgColor} border border-border flex items-center justify-center ${item.color} shrink-0`}
-              >
+              <div className="mb-4 text-orange-500">
                 {item.icon}
               </div>
-              <div className="min-w-0">
-                <h3 className="text-lg font-bold text-foreground mb-2 group-hover:text-orange-400 transition-colors">
-                  {item.title}
-                </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
+              <h3 className="mb-2 text-sm font-semibold text-foreground">
+                {item.title}
+              </h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {item.description}
+              </p>
             </motion.div>
           ))}
         </div>
