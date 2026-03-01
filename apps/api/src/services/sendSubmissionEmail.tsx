@@ -56,6 +56,15 @@ export async function sendSubmissionEmail({
       html: emailHtml,
     });
 
+    console.log("Submission email sent to:", {
+      to,
+      formTitle,
+      formId,
+      responses,
+      submittedAt,
+      success: true,
+    });
+
     return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

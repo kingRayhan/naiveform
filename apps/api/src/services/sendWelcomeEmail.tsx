@@ -40,6 +40,14 @@ export async function sendWelcomeEmail({
       html: emailHtml,
     });
 
+    console.log("Welcome email sent to:", {
+      to,
+      userName,
+      subject: `Welcome to Naiveform, ${userName}!`,
+      html: emailHtml,
+      success: true,
+    });
+
     return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
