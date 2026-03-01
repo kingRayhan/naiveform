@@ -43,7 +43,7 @@ export async function handleClerkWebhook(c: Context): Promise<Response> {
       });
       await sendWelcomeEmail({
         to: user.email_addresses[0].email_address,
-        userName: user.email_addresses?.[0]?.email_address ?? "",
+        userName: `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim(),
       });
     }
 

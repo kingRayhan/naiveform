@@ -1,10 +1,6 @@
-import { createElement } from "react";
 import { render } from "@react-email/render";
+import { FormResponse, getFormResponsesUrl } from "@repo/email";
 import nodemailer from "nodemailer";
-import {
-  FormResponse,
-  getFormResponsesUrl,
-} from "@repo/email";
 
 const hasSmtpAuth = process.env.SMTP_USER && process.env.SMTP_PASS;
 
@@ -45,12 +41,12 @@ export async function sendSubmissionEmail({
   try {
     const responsesUrl = getFormResponsesUrl(formId);
     const emailHtml = await render(
-      createElement(FormResponse, {
-        formTitle,
-        responsesUrl,
-        responses,
-        submittedAt,
-      })
+      <FormResponse
+        formTitle={formTitle}
+        responsesUrl={responsesUrl}
+        responses={responses}
+        submittedAt={submittedAt}
+      />
     );
 
     await transporter.sendMail({
