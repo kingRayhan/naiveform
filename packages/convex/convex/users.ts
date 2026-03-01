@@ -1,5 +1,6 @@
-import { mutation, query } from "./_generated/server";
+import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation } from "./functions";
 
 /**
  * Payload from Clerk webhook (user.created / user.updated).

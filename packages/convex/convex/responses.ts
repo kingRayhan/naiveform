@@ -1,19 +1,21 @@
 import { ConvexError, v } from "convex/values";
-import {
-  internalAction,
-  internalMutation,
-  internalQuery,
-  mutation,
-  query,
-} from "./_generated/server";
+import { internalAction, internalQuery, query } from "./_generated/server";
 import { api, internal } from "./_generated/api";
+import { internalMutation, mutation } from "./functions";
 
 /** Input blocks only (for answers). */
-function getInputBlocks(form: { blocks?: unknown[] }): Array<{ id: string; title?: string }> {
+function getInputBlocks(form: {
+  blocks?: unknown[];
+}): Array<{ id: string; title?: string }> {
   const blocks = form.blocks;
   if (!blocks?.length) return [];
   return blocks
-    .filter((b): b is { id: string; kind: string; title?: string } => typeof b === "object" && b !== null && (b as { kind?: string }).kind === "input")
+    .filter(
+      (b): b is { id: string; kind: string; title?: string } =>
+        typeof b === "object" &&
+        b !== null &&
+        (b as { kind?: string }).kind === "input"
+    )
     .map((b) => ({ id: b.id, title: b.title }));
 }
 
