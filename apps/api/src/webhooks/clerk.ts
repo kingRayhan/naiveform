@@ -41,25 +41,10 @@ export async function handleClerkWebhook(c: Context): Promise<Response> {
           primary_email_address_id: str(user.primary_email_address_id),
         },
       });
-    }
-
-    if (event.type === "user.created") {
-      const user = event.data;
-      const primaryEmailId = user.primary_email_address_id;
-      const emailRecord = user.email_addresses?.find(
-        (e) => e.id === primaryEmailId
-      );
-      const email = emailRecord?.email_address;
-
-      const userName =
-        [user.first_name, user.last_name].filter(Boolean).join(" ") ||
-        user.username ||
-        email?.split("@")[0] ||
-        "there";
-
-      if (email) {
-        await sendWelcomeEmail({ to: email, userName });
-      }
+      await sendWelcomeEmail({
+        to: user.email_addresses[0].email_address,
+        userName: user.email_addresses?.[0]?.email_address ?? "",
+      });
     }
 
     return c.json({ received: true }, 200);

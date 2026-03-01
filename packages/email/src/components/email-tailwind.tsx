@@ -5,7 +5,7 @@ const emailTailwindConfig = {
   theme: {
     extend: {
       colors: {
-        brand: "#673ab7",
+        brand: "#ce582e",
         "gray-email": "#333",
         "gray-muted": "#898989",
       },
