@@ -28,6 +28,12 @@ export const create = mutation({
         .first();
       if (existing) throw new ConvexError("This slug is already in use.");
     }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
+      .first();
+
     const now = Date.now();
     return await ctx.db.insert("forms", {
       title: args.title,
@@ -36,6 +42,9 @@ export const create = mutation({
       blocks: args.blocks ?? [],
       slug: args.slug?.trim() || undefined,
       updatedAt: now,
+      settings: {
+        notificationEmails: [user?.email ?? ""],
+      },
     });
   },
 });
