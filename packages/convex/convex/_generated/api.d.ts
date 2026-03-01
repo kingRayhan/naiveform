@@ -11,6 +11,7 @@
 import type * as forms from "../forms.js";
 import type * as http from "../http.js";
 import type * as responses from "../responses.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -22,6 +23,7 @@ declare const fullApi: ApiFromModules<{
   forms: typeof forms;
   http: typeof http;
   responses: typeof responses;
+  users: typeof users;
 }>;
 
 /**

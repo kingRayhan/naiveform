@@ -7,11 +7,23 @@ const formSettingsValidator = {
   closeAt: v.optional(v.number()), // timestamp
   redirectUrl: v.optional(v.string()),
   webhooks: v.optional(v.array(v.string())),
+  notificationEmails: v.optional(v.array(v.string())), // emails to receive new response notifications
   recaptchaSiteKey: v.optional(v.string()),
   recaptchaSecretKey: v.optional(v.string()),
 };
 
 export default defineSchema({
+  users: defineTable({
+    userId: v.string(), // Clerk (or other auth provider) user id; same id as forms.userId
+    email: v.optional(v.string()),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    username: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_user_id", ["userId"]),
+
   forms: defineTable({
     title: v.string(),
     description: v.optional(v.string()),

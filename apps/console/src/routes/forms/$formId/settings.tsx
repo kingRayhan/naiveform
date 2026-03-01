@@ -35,6 +35,18 @@ const settingsSchema = z.object({
       "Enter a valid URL or leave empty"
     ),
   closeAtDate: z.string().optional(), // YYYY-MM-DD or empty
+  notificationEmails: z
+    .string()
+    .optional()
+    .refine((v) => {
+      if (!v || !v.trim()) return true;
+      const emails = v
+        .split(/[\n,]+/)
+        .map((e) => e.trim())
+        .filter(Boolean);
+      const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emails.every((e) => valid.test(e));
+    }, "Enter valid emails (one per line or comma-separated)"),
   isClosed: z.boolean(),
   archived: z.boolean(),
 });
@@ -61,6 +73,7 @@ function FormSettingsPage() {
       confirmationMessage: "",
       redirectUrl: "",
       closeAtDate: "",
+      notificationEmails: "",
       isClosed: false,
       archived: false,
     },
@@ -88,6 +101,12 @@ function FormSettingsPage() {
       confirmationMessage: s?.confirmationMessage ?? "",
       redirectUrl: s?.redirectUrl ?? "",
       closeAtDate,
+      notificationEmails: Array.isArray(s?.notificationEmails)
+        ? s.notificationEmails.filter(Boolean).join("\n")
+        : typeof (s as { notificationEmail?: string })?.notificationEmail ===
+            "string"
+          ? (s as { notificationEmail: string }).notificationEmail
+          : "",
       isClosed: form.isClosed ?? false,
       archived: form.archived ?? false,
     });
@@ -114,6 +133,12 @@ function FormSettingsPage() {
           confirmationMessage: data.confirmationMessage?.trim() || undefined,
           redirectUrl: redirectUrl || undefined,
           webhooks: form.settings?.webhooks ?? [],
+          notificationEmails: data.notificationEmails
+            ? data.notificationEmails
+                .split(/[\n,]+/)
+                .map((e) => e.trim())
+                .filter(Boolean)
+            : undefined,
           closeAt,
         },
       });
@@ -193,6 +218,15 @@ function FormSettingsPage() {
           type="url"
           placeholder="https://..."
           description="Leave empty to show the confirmation message on the same page."
+        />
+
+        <FormTextarea
+          name="notificationEmails"
+          control={formRHF.control as Control<SettingsValues>}
+          label="Emails for new response notifications"
+          placeholder="you@example.com"
+          description="One email per line or comma-separated. All receive a notification when someone submits (optional)"
+          rows={3}
         />
 
         <FormInput

@@ -7,6 +7,7 @@ const formSettingsValidator = {
   closeAt: v.optional(v.number()),
   redirectUrl: v.optional(v.string()),
   webhooks: v.optional(v.array(v.string())),
+  notificationEmails: v.optional(v.array(v.string())),
   recaptchaSiteKey: v.optional(v.string()),
   recaptchaSecretKey: v.optional(v.string()),
 };

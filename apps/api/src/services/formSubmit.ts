@@ -2,6 +2,7 @@ import { api } from "@repo/convex";
 import type { Id } from "@repo/convex/dataModel";
 import { getClient } from "../clients";
 import { escapeHtml } from "../utils";
+import { sendSubmissionEmail } from "./sendSubmissionEmail";
 
 export type SubmitFormResult = {
   responseId: string;
@@ -12,9 +13,9 @@ export type SubmitFormResult = {
  * Parse application/x-www-form-urlencoded body (headless HTML form).
  * Input names must match form question ids.
  */
-export async function parseFormUrlencoded(
-  req: { text: () => Promise<string> }
-): Promise<Record<string, string | string[]>> {
+export async function parseFormUrlencoded(req: {
+  text: () => Promise<string>;
+}): Promise<Record<string, string | string[]>> {
   const text = await req.text();
   const params = new URLSearchParams(text);
   const values: Record<string, string | string[]> = {};
@@ -73,6 +74,36 @@ export async function submitFormResponse(
     responseId,
     answers,
   });
+
+  const settings = form.settings ?? {};
+  const notificationEmails = (
+    Array.isArray(settings.notificationEmails)
+      ? settings.notificationEmails
+      : typeof (settings as { notificationEmail?: string }).notificationEmail === "string"
+        ? [(settings as { notificationEmail: string }).notificationEmail]
+        : []
+  )
+    .map((e) => (typeof e === "string" ? e : "").trim())
+    .filter((e) => e.length > 0);
+  if (notificationEmails.length > 0) {
+    const inputBlocks = form.blocks?.filter((b) => b.kind === "input") ?? [];
+    const blocksById = new Map(inputBlocks.map((b) => [b.id, b]));
+    const responses = Object.entries(answers).map(([blockId, value]) => ({
+      label: (blocksById.get(blockId) as { title?: string } | undefined)?.title ?? blockId,
+      value: typeof value === "string" ? value : String(value),
+    }));
+    const submittedAt = new Date().toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+    await sendSubmissionEmail({
+      to: notificationEmails,
+      formTitle: form.title,
+      formId: formId as Id<"forms">,
+      responses,
+      submittedAt,
+    });
+  }
 
   return {
     responseId,

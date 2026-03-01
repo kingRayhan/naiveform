@@ -1,0 +1,69 @@
+import { createElement } from "react";
+import { render } from "@react-email/render";
+import nodemailer from "nodemailer";
+import {
+  FormResponse,
+  getFormResponsesUrl,
+} from "@repo/email";
+
+const hasSmtpAuth = process.env.SMTP_USER && process.env.SMTP_PASS;
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST ?? "smtp.forwardemail.net",
+  port: Number(process.env.SMTP_PORT ?? 465),
+  secure: process.env.SMTP_SECURE !== "false",
+  auth: hasSmtpAuth
+    ? {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      }
+    : undefined,
+});
+
+const FROM_EMAIL = process.env.EMAIL_FROM ?? "you@example.com";
+
+export type FormResponseItem = { label: string; value: string };
+
+export async function sendSubmissionEmail({
+  to,
+  formTitle,
+  formId,
+  responses,
+  submittedAt,
+}: {
+  to: string | string[];
+  formTitle: string;
+  formId: string;
+  responses: FormResponseItem[];
+  submittedAt?: string;
+}): Promise<{ success: boolean; error?: string }> {
+  if (!hasSmtpAuth) {
+    console.warn("SMTP_USER/SMTP_PASS not set; skipping submission email");
+    return { success: false, error: "SMTP not configured" };
+  }
+
+  try {
+    const responsesUrl = getFormResponsesUrl(formId);
+    const emailHtml = await render(
+      createElement(FormResponse, {
+        formTitle,
+        responsesUrl,
+        responses,
+        submittedAt,
+      })
+    );
+
+    await transporter.sendMail({
+      from: FROM_EMAIL,
+      to,
+      subject: `New response: ${formTitle}`,
+      html: emailHtml,
+    });
+
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("Failed to send submission email:", message);
+    return { success: false, error: message };
+  }
+}
