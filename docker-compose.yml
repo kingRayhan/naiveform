@@ -3,39 +3,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
-    env_file:
-      - docker.env
+    environment:
+      - CONVEX_URL=https://adept-badger-863.convex.cloud
+      - CLERK_WEBHOOK_SIGNING_SECRET=whsec_KvPHYy4GEQVzX8gj9qPO6dt5lxLO3HOx
+      - SMTP_HOST=smtp.resend.com
+      - SMTP_PORT=465
+      - SMTP_USER=resend
+      - SMTP_PASS=re_H2sKaowY_JzoUSQdFyMLeqaQtsTuNQz1F
+      - SMTP_SECURE=true
+      - EMAIL_FROM=naiveform-noreply@graphland.dev
     ports:
       - "4000:4000"
     restart: unless-stopped
-    # add env variables for the api app
-  
-  # naiveform-console:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.console
-  #   ports:
-  #     - "3003:80"
-  #   env_file:
-  #     - .env.docker
-  #   restart: unless-stopped
-  
-  # naiveform-form:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.form
-  #   ports:
-  #     - "3002:3000"
-  #   env_file:
-  #     - .env.docker
-  #   restart: unless-stopped
-
-  # naiveform-landing:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.landing
-  #   ports:
-  #     - "3001:3000"
-  #   env_file:
-  #     - .env.docker
-  #   restart: unless-stopped
