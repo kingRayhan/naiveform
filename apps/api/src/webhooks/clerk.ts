@@ -41,9 +41,13 @@ export async function handleClerkWebhook(c: Context): Promise<Response> {
           primary_email_address_id: str(user.primary_email_address_id),
         },
       });
+    }
+
+    if (event.type === "user.created") {
       await sendWelcomeEmail({
-        to: user.email_addresses[0].email_address,
-        userName: `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim(),
+        to: event.data.email_addresses[0].email_address,
+        userName:
+          `${event.data.first_name ?? ""} ${event.data.last_name ?? ""}`.trim(),
       });
     }
 
