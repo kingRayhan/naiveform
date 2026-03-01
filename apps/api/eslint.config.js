@@ -7,11 +7,11 @@ import tseslint from "typescript-eslint";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default [
-  { ignores: ["node_modules"] },
+  { ignores: ["node_modules", "dist"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["**/*.ts"],
+    files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       ecmaVersion: 2022,
       globals: globals.node,
