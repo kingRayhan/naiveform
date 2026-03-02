@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@repo/design-system/button";
 import { useUser } from "@clerk/clerk-react";
-import { useMutation } from "@repo/convex/react";
+import { useMutation, useQuery } from "@repo/convex/react";
 import { api } from "@repo/convex";
 import { getErrorMessage } from "@repo/convex/error";
 import { useForm } from "react-hook-form";
@@ -42,6 +42,10 @@ function NewFormPage() {
   const { templateId } = Route.useSearch();
   const template = templateId ? getTemplateById(templateId) : undefined;
   const { user } = useUser();
+  const convexUser = useQuery(
+    api.users.getByAuthId,
+    user?.id ? { authId: user.id } : "skip"
+  );
   const createForm = useMutation(api.forms.create);
 
   const form = useForm<NewFormValues>({
@@ -63,18 +67,27 @@ function NewFormPage() {
       setError("root", { message: "You must be signed in to create a form." });
       return;
     }
+    const ownerId = convexUser?.id;
+    if (!ownerId) {
+      setError("root", {
+        message: "Your account is still syncing. Please try again in a moment.",
+      });
+      return;
+    }
     try {
       const title = data.title.trim() || "Untitled form";
       const formId = await createForm({
         title,
         description: data.description?.trim() || undefined,
-        userId: user.id,
+        userId: ownerId,
         blocks: template?.form.blocks,
         slug: createFormSlugFromTitle(title),
       });
       navigate({ to: "/forms/$formId", params: { formId } });
     } catch (err) {
-      setError("root", { message: getErrorMessage(err, "Failed to create form") });
+      setError("root", {
+        message: getErrorMessage(err, "Failed to create form"),
+      });
     }
   };
 
@@ -109,8 +122,17 @@ function NewFormPage() {
           </p>
         )}
         <div className="flex gap-2">
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating…" : "Create form"}
+          <Button
+            type="submit"
+            disabled={
+              isSubmitting || convexUser === undefined || convexUser === null
+            }
+          >
+            {isSubmitting
+              ? "Creating…"
+              : convexUser === undefined
+                ? "Loading…"
+                : "Create form"}
           </Button>
           <Button
             type="button"

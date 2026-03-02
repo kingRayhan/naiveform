@@ -38,11 +38,11 @@ export const upsertFromClerk = mutation({
 
     const existing = await ctx.db
       .query("users")
-      .withIndex("by_user_id", (q) => q.eq("userId", p.id))
+      .withIndex("by_auth_id", (q) => q.eq("authId", p.id))
       .first();
 
     const doc = {
-      userId: p.id,
+      authId: p.id,
       email,
       firstName: p.first_name,
       lastName: p.last_name,
@@ -60,12 +60,12 @@ export const upsertFromClerk = mutation({
   },
 });
 
-export const getByUserId = query({
-  args: { userId: v.string() },
+export const getByAuthId = query({
+  args: { authId: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("users")
-      .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
+      .withIndex("by_auth_id", (q) => q.eq("authId", args.authId))
       .first();
   },
 });

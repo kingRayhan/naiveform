@@ -11,7 +11,6 @@ import {
 } from "@repo/types";
 import type { InputBlock, ContentBlock } from "@repo/types";
 import { arrayMove } from "@dnd-kit/sortable";
-import type { Id } from "@repo/convex/dataModel";
 
 function uniqueBlockId(prefix: string, existingIds: string[]): string {
   const set = new Set(existingIds);
@@ -42,11 +41,10 @@ export function FormBuilderProvider({
     if (!formId || initialBlocks === undefined) return;
     if (lastFormId.current !== formId) {
       lastFormId.current = formId;
-      setBlocks(
-        initialBlocks?.length
-          ? initialBlocks
-          : [createEmptyInputBlock(uniqueBlockId("field", []))]
-      );
+      const nextBlocks = initialBlocks?.length
+        ? initialBlocks
+        : [createEmptyInputBlock(uniqueBlockId("field", []))];
+      queueMicrotask(() => setBlocks(nextBlocks));
     }
   }, [formId, initialBlocks]);
 

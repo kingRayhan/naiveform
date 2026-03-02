@@ -15,7 +15,7 @@ const formSettingsValidator = {
 export default defineSchema({
   users: defineTable({
     id: v.optional(v.string()),
-    userId: v.string(), // Clerk (or other auth provider) user id
+    authId: v.string(), // Clerk (or other auth provider) user id
     email: v.optional(v.string()),
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
@@ -24,7 +24,7 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index("by_user_id", ["userId"])
+    .index("by_auth_id", ["authId"])
     .index("by_custom_id", ["id"]),
 
   forms: defineTable({

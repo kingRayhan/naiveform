@@ -30,12 +30,17 @@ export const create = mutation({
       if (existing) throw new ConvexError("This slug is already in use.");
     }
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
-      .first();
+    // userId may be custom id (from frontend) or Clerk id (legacy); resolve to user for email
+    const user =
+      (await ctx.db
+        .query("users")
+        .withIndex("by_custom_id", (q) => q.eq("id", args.userId))
+        .first()) ??
+      (await ctx.db
+        .query("users")
+        .withIndex("by_auth_id", (q) => q.eq("authId", args.userId))
+        .first());
 
-    // Use user's custom id for ownership (portable across DBs)
     const ownerId = user?.id ?? args.userId;
 
     const now = Date.now();
@@ -118,16 +123,15 @@ export const update = mutation({
 
 export const listByUser = query({
   args: {
-    userId: v.string(), // Clerk user id; resolved to custom id for query
+    authId: v.string(), // Auth provider (e.g. Clerk) user id; resolved to custom id for query
     showArchivedOnly: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    // Resolve Clerk id to user's custom id for ownership lookup
     const user = await ctx.db
       .query("users")
-      .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
+      .withIndex("by_auth_id", (q) => q.eq("authId", args.authId))
       .first();
-    const ownerId = user?.id ?? args.userId;
+    const ownerId = user?.id ?? args.authId;
 
     const forms = await ctx.db
       .query("forms")

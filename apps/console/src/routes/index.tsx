@@ -24,7 +24,7 @@ function DashboardPage() {
   const [showArchived, setShowArchived] = useState(false);
   const forms = useQuery(
     api.forms.listByUser,
-    user?.id ? { userId: user.id, showArchivedOnly: showArchived } : "skip"
+    user?.id ? { authId: user.id, showArchivedOnly: showArchived } : "skip"
   );
 
   return (
