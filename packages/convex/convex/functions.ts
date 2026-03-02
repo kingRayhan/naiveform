@@ -2,8 +2,7 @@ import {
   mutation as rawMutation,
   internalMutation as rawInternalMutation,
 } from "./_generated/server";
-/* eslint-enable no-restricted-imports */
-import { DataModel } from "./_generated/dataModel";
+import type { DataModel } from "./_generated/dataModel";
 import { Triggers } from "convex-helpers/server/triggers";
 import {
   customCtx,
