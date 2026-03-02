@@ -1,7 +1,6 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery } from "@repo/convex/react";
 import { api } from "@repo/convex";
-import type { Id } from "@repo/convex/dataModel";
 import { Button } from "@repo/design-system/button";
 import type { Doc } from "@repo/convex/dataModel";
 import { getFormBlocks } from "@repo/types";
@@ -43,9 +42,8 @@ function formatAnswer(
 
 function FormResponsesPage() {
   const { formId } = useParams({ from: "/forms/$formId/responses" });
-  const formIdTyped = formId as Id<"forms">;
-  const form = useQuery(api.forms.get, { formId: formIdTyped });
-  const responses = useQuery(api.responses.listByForm, { formId: formIdTyped });
+  const form = useQuery(api.forms.get, { formId: formId ?? "" });
+  const responses = useQuery(api.responses.listByForm, { formId: formId ?? "" });
 
   if (form === undefined || responses === undefined) {
     return (

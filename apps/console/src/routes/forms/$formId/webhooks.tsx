@@ -2,7 +2,6 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation } from "@repo/convex/react";
 import { api } from "@repo/convex";
-import type { Id } from "@repo/convex/dataModel";
 import { getErrorMessage } from "@repo/convex/error";
 import { Button } from "@repo/design-system/button";
 import { FormFieldGroup } from "@repo/design-system/form/form-field-group";
@@ -27,10 +26,9 @@ export const Route = createFileRoute("/forms/$formId/webhooks")({
 
 function FormWebhooksPage() {
   const { formId } = useParams({ from: "/forms/$formId/webhooks" });
-  const formIdTyped = formId as Id<"forms">;
-  const form = useQuery(api.forms.get, { formId: formIdTyped });
+  const form = useQuery(api.forms.get, { formId: formId ?? "" });
   const logs = useQuery(api.responses.listWebhookLogsByForm, {
-    formId: formIdTyped,
+    formId: formId ?? "",
     limit: 100,
   });
   const updateForm = useMutation(api.forms.update);
@@ -59,7 +57,7 @@ function FormWebhooksPage() {
     const trimmed = webhookUrls.map((u) => u.trim()).filter((u) => u.length > 0);
     try {
       await updateForm({
-        formId: formIdTyped,
+        formId: formId ?? "",
         settings: {
           ...form.settings,
           webhooks: trimmed,

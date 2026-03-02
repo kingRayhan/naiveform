@@ -1,5 +1,4 @@
 import { api } from "@repo/convex";
-import type { Id } from "@repo/convex/dataModel";
 import { getClient } from "../clients";
 import { escapeHtml } from "../utils";
 import { sendSubmissionEmail } from "./sendSubmissionEmail";
@@ -37,9 +36,11 @@ export async function submitFormResponse(
   values: Record<string, string | string[]>
 ): Promise<SubmitFormResult> {
   const convexClient = getClient();
-  const form = await convexClient.query(api.forms.get, {
-    formId: formId as Id<"forms">,
-  });
+  // formId may be slug or custom id (UUID)
+  let form = await convexClient.query(api.forms.getBySlug, { slug: formId });
+  if (!form) {
+    form = await convexClient.query(api.forms.get, { formId });
+  }
 
   if (!form) throw new Error("Form not found");
   if (form.isClosed) throw new Error("Form is closed");
@@ -65,12 +66,12 @@ export async function submitFormResponse(
 
   const responseId = await convexClient.mutation(api.responses.saveResponse, {
     answers,
-    formId: formId as Id<"forms">,
+    formId: form.id ?? formId,
   });
 
   await triggerWebhooksFromApi(convexClient, {
     form,
-    formId: formId as Id<"forms">,
+    formId: form.id ?? formId,
     responseId,
     answers,
   });
@@ -116,7 +117,7 @@ async function triggerWebhooksFromApi(
   convexClient: ReturnType<typeof getClient>,
   ctx: {
     form: Awaited<ReturnType<typeof convexClient.query<typeof api.forms.get>>>;
-    formId: Id<"forms">;
+    formId: string;
     responseId: string;
     answers: Record<string, string>;
   }
@@ -136,7 +137,7 @@ async function triggerWebhooksFromApi(
     answersByFieldName[block?.title ?? key] = value;
   }
   const payload = {
-    formId: form._id,
+    formId: ctx.formId,
     formTitle: form.title,
     responseId: ctx.responseId,
     submittedAt: Date.now(),
@@ -154,7 +155,7 @@ async function triggerWebhooksFromApi(
       });
       await convexClient.mutation(api.responses.logWebhookDelivery, {
         formId: ctx.formId,
-        responseId: ctx.responseId as Id<"responses">,
+        responseId: ctx.responseId,
         url: trimmedUrl,
         success: res.ok,
         statusCode: res.status,
@@ -163,7 +164,7 @@ async function triggerWebhooksFromApi(
       const errorMessage = err instanceof Error ? err.message : String(err);
       await convexClient.mutation(api.responses.logWebhookDelivery, {
         formId: ctx.formId,
-        responseId: ctx.responseId as Id<"responses">,
+        responseId: ctx.responseId,
         url: trimmedUrl,
         success: false,
         errorMessage,

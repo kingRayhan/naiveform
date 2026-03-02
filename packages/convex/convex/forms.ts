@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation } from "./functions";
+import { query } from "./_generated/server";
 
 const formSettingsValidator = {
   limitOneResponsePerPerson: v.optional(v.boolean()),
@@ -29,16 +30,24 @@ export const create = mutation({
       if (existing) throw new ConvexError("This slug is already in use.");
     }
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
-      .first();
+    // userId may be custom id (from frontend) or Clerk id (legacy); resolve to user for email
+    const user =
+      (await ctx.db
+        .query("users")
+        .withIndex("by_custom_id", (q) => q.eq("id", args.userId))
+        .first()) ??
+      (await ctx.db
+        .query("users")
+        .withIndex("by_auth_id", (q) => q.eq("authId", args.userId))
+        .first());
+
+    const ownerId = user?.id ?? args.userId;
 
     const now = Date.now();
-    return await ctx.db.insert("forms", {
+    const _id = await ctx.db.insert("forms", {
       title: args.title,
       description: args.description,
-      userId: args.userId,
+      userId: ownerId,
       blocks: args.blocks ?? [],
       slug: args.slug?.trim() || undefined,
       updatedAt: now,
@@ -46,13 +55,18 @@ export const create = mutation({
         notificationEmails: [user?.email ?? ""],
       },
     });
+    const form = await ctx.db.get(_id);
+    return form?.id ?? _id;
   },
 });
 
 export const get = query({
-  args: { formId: v.id("forms") },
+  args: { formId: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.formId);
+    return await ctx.db
+      .query("forms")
+      .withIndex("by_custom_id", (q) => q.eq("id", args.formId))
+      .first();
   },
 });
 
@@ -69,7 +83,7 @@ export const getBySlug = query({
 
 export const update = mutation({
   args: {
-    formId: v.id("forms"),
+    formId: v.string(),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
     blocks: v.optional(v.array(v.any())),
@@ -80,7 +94,10 @@ export const update = mutation({
   },
   handler: async (ctx, args) => {
     const { formId, ...updates } = args;
-    const form = await ctx.db.get(formId);
+    const form = await ctx.db
+      .query("forms")
+      .withIndex("by_custom_id", (q) => q.eq("id", formId))
+      .first();
     if (!form) throw new ConvexError("Form not found.");
     const newSlug =
       updates.slug !== undefined ? updates.slug.trim() || undefined : undefined;
@@ -89,7 +106,7 @@ export const update = mutation({
         .query("forms")
         .withIndex("by_slug", (q) => q.eq("slug", newSlug))
         .first();
-      if (existing && existing._id !== formId) {
+      if (existing && existing._id !== form._id) {
         throw new ConvexError("This slug is already in use.");
       }
     }
@@ -99,20 +116,26 @@ export const update = mutation({
       ...(updates.slug !== undefined && { slug: newSlug }),
       updatedAt: now,
     };
-    await ctx.db.patch(formId, patch);
-    return formId;
+    await ctx.db.patch(form._id, patch);
+    return form.id ?? formId;
   },
 });
 
 export const listByUser = query({
   args: {
-    userId: v.string(),
+    authId: v.string(), // Auth provider (e.g. Clerk) user id; resolved to custom id for query
     showArchivedOnly: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_auth_id", (q) => q.eq("authId", args.authId))
+      .first();
+    const ownerId = user?.id ?? args.authId;
+
     const forms = await ctx.db
       .query("forms")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", ownerId))
       .order("desc")
       .collect();
     if (args.showArchivedOnly) return forms.filter((f) => !!f.archived);

@@ -1,7 +1,6 @@
 import { createFileRoute, Link, Outlet, useParams } from "@tanstack/react-router";
 import { useQuery } from "@repo/convex/react";
 import { api } from "@repo/convex";
-import type { Id } from "@repo/convex/dataModel";
 import { getFormBlocks } from "@repo/types";
 import { FormBuilderProvider } from "@/components/form-builder/FormBuilderProvider";
 
@@ -19,8 +18,7 @@ const formNav: { to: string; label: string }[] = [
 
 function FormLayoutPage() {
   const { formId } = useParams({ from: "/forms/$formId" });
-  const formIdTyped = formId as Id<"forms">;
-  const form = useQuery(api.forms.get, { formId: formIdTyped });
+  const form = useQuery(api.forms.get, { formId: formId ?? "" });
 
   if (form === undefined) {
     return (
@@ -40,7 +38,7 @@ function FormLayoutPage() {
 
   return (
     <FormBuilderProvider
-      formId={formIdTyped}
+      formId={formId ?? ""}
       initialBlocks={getFormBlocks(form)}
     >
       <div>

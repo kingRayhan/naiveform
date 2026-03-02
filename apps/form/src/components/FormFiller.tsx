@@ -2,7 +2,6 @@
 
 import { FormRenderer, type FormRendererValues } from "@repo/blocks";
 import { api } from "@repo/convex";
-import type { Id } from "@repo/convex/dataModel";
 import type { Doc } from "@repo/convex/dataModel";
 import { useQuery } from "@repo/convex/react";
 import { Button } from "@repo/design-system/button";
@@ -77,7 +76,7 @@ function FormFillerForm({
     try {
       const result = await submitMutation.mutateAsync({
         payload: data,
-        formId: form._id as Id<"forms">,
+        formId: form.id ?? form._id,
       });
       setSubmitted(true);
       if (result && "redirect" in result && result.redirect) {
@@ -156,7 +155,7 @@ export function FormFiller({ formIdOrSlug }: FormFillerProps) {
   const formBySlug = useQuery(api.forms.getBySlug, { slug: formIdOrSlug });
   const formById = useQuery(
     api.forms.get,
-    formBySlug === null ? { formId: formIdOrSlug as Id<"forms"> } : "skip"
+    formBySlug === null ? { formId: formIdOrSlug } : "skip"
   );
 
   const form = formBySlug ?? (formBySlug === null ? formById : undefined);

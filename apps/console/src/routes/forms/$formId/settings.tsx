@@ -2,7 +2,6 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@repo/convex/react";
 import { api } from "@repo/convex";
-import type { Id } from "@repo/convex/dataModel";
 import { getErrorMessage } from "@repo/convex/error";
 import { useForm } from "react-hook-form";
 import type { Control } from "react-hook-form";
@@ -59,8 +58,7 @@ export const Route = createFileRoute("/forms/$formId/settings")({
 
 function FormSettingsPage() {
   const { formId } = useParams({ from: "/forms/$formId/settings" });
-  const formIdTyped = formId as Id<"forms">;
-  const form = useQuery(api.forms.get, { formId: formIdTyped });
+  const form = useQuery(api.forms.get, { formId: formId ?? "" });
   const updateForm = useMutation(api.forms.update);
 
   const formRHF = useForm<SettingsValues>({
@@ -122,7 +120,7 @@ function FormSettingsPage() {
       typeof data.redirectUrl === "string" ? data.redirectUrl.trim() : "";
     try {
       await updateForm({
-        formId: formIdTyped,
+        formId: formId ?? "",
         title: data.title.trim(),
         description: data.description?.trim() || undefined,
         slug: data.slug?.trim() || undefined,
