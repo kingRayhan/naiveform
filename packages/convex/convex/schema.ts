@@ -25,7 +25,7 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_user_id", ["userId"])
-    .index("by_id", ["id"]),
+    .index("by_custom_id", ["id"]),
 
   forms: defineTable({
     id: v.optional(v.string()),
@@ -44,7 +44,7 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_slug", ["slug"])
     .index("by_user_updated", ["userId", "updatedAt"])
-    .index("by_id", ["id"]),
+    .index("by_custom_id", ["id"]),
 
   responses: defineTable({
     id: v.optional(v.string()),
@@ -55,7 +55,7 @@ export default defineSchema({
     ), // input block id -> value
   })
     .index("by_form", ["formId"])
-    .index("by_id", ["id"]),
+    .index("by_custom_id", ["id"]),
 
   webhookLogs: defineTable({
     id: v.optional(v.string()),
@@ -67,5 +67,5 @@ export default defineSchema({
     errorMessage: v.optional(v.string()),
   })
     .index("by_form", ["formId"])
-    .index("by_id", ["id"]),
+    .index("by_custom_id", ["id"]),
 });

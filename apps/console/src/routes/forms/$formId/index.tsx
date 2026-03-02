@@ -2,7 +2,6 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@repo/convex/react";
 import { api } from "@repo/convex";
-import type { Id } from "@repo/convex/dataModel";
 import { ExternalLink } from "lucide-react";
 import { FormEditor } from "../../../components/form-builder/FormEditor";
 import { FormPreview } from "@repo/blocks";
@@ -94,8 +93,7 @@ function formatLastSaved(ms: number): string {
 
 function FormEditorPage() {
   const { formId } = useParams({ from: "/forms/$formId/" });
-  const formIdTyped = formId as Id<"forms">;
-  const form = useQuery(api.forms.get, { formId: formIdTyped });
+  const form = useQuery(api.forms.get, { formId: formId ?? "" });
   const { blocks, saveForm } = useFormBuilder();
   const inputBlocks = blocks.filter(isInputBlock);
   const [isSaving, setIsSaving] = useState(false);
@@ -115,16 +113,16 @@ function FormEditorPage() {
   };
 
   const savedAt = lastSavedAt ?? form?.updatedAt;
-  const formIdOrSlug = form?.slug?.trim() || formId;
-  const headlessActionUrl = HEADLESS_FORM_ACTION_URL
-    ? `${HEADLESS_FORM_ACTION_URL}/html-action/${form?._id as Id<"forms">}`
+  const formIdOrSlug = form?.slug?.trim() || form?.id || formId;
+  const headlessActionUrl = HEADLESS_FORM_ACTION_URL && form?.id
+    ? `${HEADLESS_FORM_ACTION_URL}/html-action/${form.id}`
     : "";
   const headlessHtml = headlessActionUrl
     ? buildHeadlessHtml(blocks, headlessActionUrl)
     : "";
   const apiCurl =
-    HEADLESS_FORM_ACTION_URL && form?._id && inputBlocks.length > 0
-      ? buildApiCurl(form._id as string, inputBlocks, HEADLESS_FORM_ACTION_URL)
+    HEADLESS_FORM_ACTION_URL && form?.id && inputBlocks.length > 0
+      ? buildApiCurl(form.id, inputBlocks, HEADLESS_FORM_ACTION_URL)
       : "";
 
   return (

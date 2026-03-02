@@ -58,11 +58,13 @@ function DashboardPage() {
             <Link
               key={form._id}
               to="/forms/$formId"
-              params={{ formId: form._id }}
+              params={{ formId: form.id ?? form._id }}
               className="block p-4 border border-border rounded-lg bg-card hover:bg-muted/50 transition-colors text-left"
             >
               <div className="flex items-center gap-2">
-                <h3 className="font-medium text-foreground truncate">{form.title}</h3>
+                <h3 className="font-medium text-foreground truncate">
+                  {form.title}
+                </h3>
                 {form.archived && (
                   <span className="shrink-0 rounded px-1.5 py-0.5 text-xs bg-muted text-muted-foreground">
                     Archived
@@ -79,9 +81,7 @@ function DashboardPage() {
         </div>
       )}
 
-      {forms?.length === 0 && !showArchived && (
-        <EmptyState />
-      )}
+      {forms?.length === 0 && !showArchived && <EmptyState />}
       {forms?.length === 0 && showArchived && (
         <div className="rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">
           No archived forms.
@@ -91,12 +91,17 @@ function DashboardPage() {
   );
 }
 
-const POPULAR_TEMPLATE_IDS = ["feedback", "contact", "event-registration", "quiz"];
+const POPULAR_TEMPLATE_IDS = [
+  "feedback",
+  "contact",
+  "event-registration",
+  "quiz",
+];
 
 function EmptyState() {
-  const popularTemplates = POPULAR_TEMPLATE_IDS
-    .map((id) => TEMPLATES.find((t) => t.id === id))
-    .filter(Boolean);
+  const popularTemplates = POPULAR_TEMPLATE_IDS.map((id) =>
+    TEMPLATES.find((t) => t.id === id)
+  ).filter(Boolean);
 
   return (
     <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 sm:p-12 text-center">
@@ -127,7 +132,9 @@ function EmptyState() {
                 search={{ templateId: t!.id }}
                 className="block p-4 rounded-lg border border-border bg-card hover:bg-muted/50 hover:border-primary/50 transition-colors text-left"
               >
-                <span className="font-medium text-foreground text-sm">{t!.name}</span>
+                <span className="font-medium text-foreground text-sm">
+                  {t!.name}
+                </span>
                 <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
                   {t!.description}
                 </p>

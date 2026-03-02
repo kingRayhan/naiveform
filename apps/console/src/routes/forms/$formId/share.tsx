@@ -1,7 +1,6 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery } from "@repo/convex/react";
 import { api } from "@repo/convex";
-import type { Id } from "@repo/convex/dataModel";
 import { Button } from "@repo/design-system/button";
 import { buildHeadlessHtml } from "@/lib/headlessHtml";
 import { getFormBlocks } from "@repo/types";
@@ -17,8 +16,8 @@ export const Route = createFileRoute("/forms/$formId/share")({
 
 function FormSharePage() {
   const { formId } = useParams({ from: "/forms/$formId/share" });
-  const form = useQuery(api.forms.get, { formId: formId as Id<"forms"> });
-  const formIdOrSlug = form?.slug?.trim() || formId;
+  const form = useQuery(api.forms.get, { formId: formId ?? "" });
+  const formIdOrSlug = form?.slug?.trim() || form?.id || formId;
   const formUrl = FORM_APP_URL
     ? `${FORM_APP_URL.replace(/\/$/, "")}/${formIdOrSlug}`
     : "";
@@ -27,8 +26,8 @@ function FormSharePage() {
     : "";
 
   const headlessActionUrl =
-    HEADLESS_FORM_ACTION_URL && form?._id
-      ? `${HEADLESS_FORM_ACTION_URL}/html-action/${form._id}`
+    HEADLESS_FORM_ACTION_URL && form?.id
+      ? `${HEADLESS_FORM_ACTION_URL}/html-action/${form.id}`
       : "";
   const blocks = getFormBlocks(form ?? {});
   const headlessHtml =

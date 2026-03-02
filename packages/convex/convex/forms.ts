@@ -36,7 +36,7 @@ export const create = mutation({
       .first();
 
     const now = Date.now();
-    return await ctx.db.insert("forms", {
+    const _id = await ctx.db.insert("forms", {
       title: args.title,
       description: args.description,
       userId: args.userId,
@@ -47,13 +47,18 @@ export const create = mutation({
         notificationEmails: [user?.email ?? ""],
       },
     });
+    const form = await ctx.db.get(_id);
+    return form?.id ?? _id;
   },
 });
 
 export const get = query({
-  args: { formId: v.id("forms") },
+  args: { formId: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.formId);
+    return await ctx.db
+      .query("forms")
+      .withIndex("by_custom_id", (q) => q.eq("id", args.formId))
+      .first();
   },
 });
 
@@ -70,7 +75,7 @@ export const getBySlug = query({
 
 export const update = mutation({
   args: {
-    formId: v.id("forms"),
+    formId: v.string(),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
     blocks: v.optional(v.array(v.any())),
@@ -81,7 +86,10 @@ export const update = mutation({
   },
   handler: async (ctx, args) => {
     const { formId, ...updates } = args;
-    const form = await ctx.db.get(formId);
+    const form = await ctx.db
+      .query("forms")
+      .withIndex("by_custom_id", (q) => q.eq("id", formId))
+      .first();
     if (!form) throw new ConvexError("Form not found.");
     const newSlug =
       updates.slug !== undefined ? updates.slug.trim() || undefined : undefined;
@@ -90,7 +98,7 @@ export const update = mutation({
         .query("forms")
         .withIndex("by_slug", (q) => q.eq("slug", newSlug))
         .first();
-      if (existing && existing._id !== formId) {
+      if (existing && existing._id !== form._id) {
         throw new ConvexError("This slug is already in use.");
       }
     }
@@ -100,8 +108,8 @@ export const update = mutation({
       ...(updates.slug !== undefined && { slug: newSlug }),
       updatedAt: now,
     };
-    await ctx.db.patch(formId, patch);
-    return formId;
+    await ctx.db.patch(form._id, patch);
+    return form.id ?? formId;
   },
 });
 

@@ -20,11 +20,16 @@ function getInputBlocks(form: {
 }
 
 export const listByForm = query({
-  args: { formId: v.id("forms") },
+  args: { formId: v.string() },
   handler: async (ctx, args) => {
+    const form = await ctx.db
+      .query("forms")
+      .withIndex("by_custom_id", (q) => q.eq("id", args.formId))
+      .first();
+    if (!form) return [];
     return await ctx.db
       .query("responses")
-      .withIndex("by_form", (q) => q.eq("formId", args.formId))
+      .withIndex("by_form", (q) => q.eq("formId", form._id))
       .order("desc")
       .collect();
   },
@@ -32,14 +37,17 @@ export const listByForm = query({
 
 export const submit = mutation({
   args: {
-    formId: v.id("forms"),
+    formId: v.string(),
     answers: v.record(
       v.string(),
       v.union(v.string(), v.array(v.string()), v.number())
     ),
   },
   handler: async (ctx, args) => {
-    const form = await ctx.db.get(args.formId);
+    const form = await ctx.db
+      .query("forms")
+      .withIndex("by_custom_id", (q) => q.eq("id", args.formId))
+      .first();
     if (!form) throw new ConvexError("Form not found.");
 
     if (form.isClosed) throw new ConvexError("This form is closed.");
@@ -58,36 +66,44 @@ export const submit = mutation({
       answersByFieldName[fieldName] = value;
     }
 
-    const responseId = await ctx.db.insert("responses", {
-      formId: args.formId,
+    const responseConvexId = await ctx.db.insert("responses", {
+      formId: form._id,
       answers: answersByFieldName,
     });
+    const response = await ctx.db.get(responseConvexId);
 
     const webhooks = form.settings?.webhooks?.filter(
       (url): url is string => typeof url === "string" && url.trim().length > 0
     );
     if (webhooks?.length) {
       await ctx.scheduler.runAfter(0, internal.responses.triggerWebhooks, {
-        responseId,
-        formId: args.formId,
+        responseId: responseConvexId,
+        formId: form._id,
       });
     }
 
-    return responseId;
+    return response?.id ?? responseConvexId;
   },
 });
 
 // Save response to database
 export const saveResponse = mutation({
   args: {
-    formId: v.id("forms"),
+    formId: v.string(),
     answers: v.record(v.string(), v.string()),
   },
-  handler: (ctx, args) => {
-    return ctx.db.insert("responses", {
-      formId: args.formId,
+  handler: async (ctx, args) => {
+    const form = await ctx.db
+      .query("forms")
+      .withIndex("by_custom_id", (q) => q.eq("id", args.formId))
+      .first();
+    if (!form) throw new ConvexError("Form not found.");
+    const responseConvexId = await ctx.db.insert("responses", {
+      formId: form._id,
       answers: args.answers,
     });
+    const response = await ctx.db.get(responseConvexId);
+    return response?.id ?? responseConvexId;
   },
 });
 
@@ -109,9 +125,9 @@ export const getWebhookPayload = internalQuery({
       answersByFieldName[fieldName] = value;
     }
     return {
-      formId: form._id,
+      formId: form.id ?? form._id,
       formTitle: form.title,
-      responseId: response._id,
+      responseId: response.id ?? response._id,
       submittedAt: response._creationTime,
       answers: answersByFieldName,
     };
@@ -142,17 +158,26 @@ export const insertWebhookLog = internalMutation({
 /** Public mutation for the API to log webhook delivery (webhooks triggered from API). */
 export const logWebhookDelivery = mutation({
   args: {
-    formId: v.id("forms"),
-    responseId: v.id("responses"),
+    formId: v.string(),
+    responseId: v.string(),
     url: v.string(),
     success: v.boolean(),
     statusCode: v.optional(v.number()),
     errorMessage: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const form = await ctx.db
+      .query("forms")
+      .withIndex("by_custom_id", (q) => q.eq("id", args.formId))
+      .first();
+    const response = await ctx.db
+      .query("responses")
+      .withIndex("by_custom_id", (q) => q.eq("id", args.responseId))
+      .first();
+    if (!form || !response) throw new ConvexError("Form or response not found.");
     await ctx.db.insert("webhookLogs", {
-      formId: args.formId,
-      responseId: args.responseId,
+      formId: form._id,
+      responseId: response._id,
       url: args.url,
       success: args.success,
       statusCode: args.statusCode,
@@ -163,14 +188,19 @@ export const logWebhookDelivery = mutation({
 
 export const listWebhookLogsByForm = query({
   args: {
-    formId: v.id("forms"),
+    formId: v.string(),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const form = await ctx.db
+      .query("forms")
+      .withIndex("by_custom_id", (q) => q.eq("id", args.formId))
+      .first();
+    if (!form) return [];
     const limit = Math.min(args.limit ?? 50, 100);
     return await ctx.db
       .query("webhookLogs")
-      .withIndex("by_form", (q) => q.eq("formId", args.formId))
+      .withIndex("by_form", (q) => q.eq("formId", form._id))
       .order("desc")
       .take(limit);
   },

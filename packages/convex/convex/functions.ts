@@ -16,25 +16,25 @@ const triggers = new Triggers<DataModel>();
 // Set custom id (UUID) on insert for DB portability
 triggers.register("forms", async (ctx, change) => {
   if (change.operation === "insert") {
-    ctx.db.patch(change.id, { id: crypto.randomUUID() });
+    await ctx.db.patch(change.id, { id: crypto.randomUUID() });
   }
 });
 
 triggers.register("responses", async (ctx, change) => {
   if (change.operation === "insert") {
-    ctx.db.patch(change.id, { id: crypto.randomUUID() });
+    await ctx.db.patch(change.id, { id: crypto.randomUUID() });
   }
 });
 
 triggers.register("webhookLogs", async (ctx, change) => {
   if (change.operation === "insert") {
-    ctx.db.patch(change.id, { id: crypto.randomUUID() });
+    await ctx.db.patch(change.id, { id: crypto.randomUUID() });
   }
 });
 
 triggers.register("users", async (ctx, change) => {
   if (change.operation === "insert") {
-    ctx.db.patch(change.id, { id: crypto.randomUUID() });
+    await ctx.db.patch(change.id, { id: crypto.randomUUID() });
   }
 });
 

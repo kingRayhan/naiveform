@@ -23,7 +23,7 @@ function uniqueBlockId(prefix: string, existingIds: string[]): string {
 
 interface FormBuilderProviderProps {
   children: ReactNode;
-  formId?: Id<"forms"> | null;
+  formId?: string | null;
   initialBlocks?: FormBlock[] | null;
 }
 
