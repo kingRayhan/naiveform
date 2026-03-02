@@ -35,11 +35,14 @@ export const create = mutation({
       .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
       .first();
 
+    // Use user's custom id for ownership (portable across DBs)
+    const ownerId = user?.id ?? args.userId;
+
     const now = Date.now();
     const _id = await ctx.db.insert("forms", {
       title: args.title,
       description: args.description,
-      userId: args.userId,
+      userId: ownerId,
       blocks: args.blocks ?? [],
       slug: args.slug?.trim() || undefined,
       updatedAt: now,
@@ -115,13 +118,20 @@ export const update = mutation({
 
 export const listByUser = query({
   args: {
-    userId: v.string(),
+    userId: v.string(), // Clerk user id; resolved to custom id for query
     showArchivedOnly: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    // Resolve Clerk id to user's custom id for ownership lookup
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
+      .first();
+    const ownerId = user?.id ?? args.userId;
+
     const forms = await ctx.db
       .query("forms")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", ownerId))
       .order("desc")
       .collect();
     if (args.showArchivedOnly) return forms.filter((f) => !!f.archived);

@@ -15,7 +15,7 @@ const formSettingsValidator = {
 export default defineSchema({
   users: defineTable({
     id: v.optional(v.string()),
-    userId: v.string(), // Clerk (or other auth provider) user id; same id as forms.userId
+    userId: v.string(), // Clerk (or other auth provider) user id
     email: v.optional(v.string()),
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
@@ -33,7 +33,7 @@ export default defineSchema({
     description: v.optional(v.string()),
     headerImageId: v.optional(v.id("_storage")),
     headerImageUrl: v.optional(v.string()),
-    userId: v.string(), // Clerk user id
+    userId: v.string(), // User's custom id (from users.id) for ownership
     blocks: v.optional(v.array(v.any())), // Block shape from @repo/types (id, kind, type, ...)
     settings: v.optional(v.object(formSettingsValidator)),
     slug: v.optional(v.string()), // for /f/:slug URLs
